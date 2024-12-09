@@ -1,302 +1,203 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { supabase } from "$lib/supabaseClient";
+	import { onMount } from "svelte";
+	import { supabase } from "$lib/supabaseClient";
+	import { Plus, Trash2, Save, PlusCircle } from "lucide-svelte";
+	import OpportunityCard from "$lib/components/dept-opts/OpportunityCard.svelte";
 
-  interface Opportunity {
-    id: number;
-    opt_statement: string;
-    planned_actions: string;
-    kpi: string;
-    key_persons: string;
-    target_output: string;
-    budget: number;
-    profile_id: string;
-  }
+	interface Opportunity {
+		id: number;
+		opt_statement: string;
+		planned_actions: string;
+		kpi: string;
+		key_persons: string;
+		target_output: string;
+		budget: number;
+		profile_id: string;
+	}
 
-  let opportunities: Opportunity[] = [];
-  let selectedOpportunity: Opportunity | null = null;
-  let isLoading = false;
-  let isSaving = false;
-  let formData = [
-    {
-      opt_statement: "",
-      planned_actions: "",
-      kpi: "",
-      key_persons: "",
-      target_output: "",
-      budget: 0,
-      profile_id: "",
-      department_id: "", 
-    },
-  ];
-  let profileId: string | null = null;
+	// Reactive states
+	let opportunities: Opportunity[] = $state([]);
+	let selectedOpportunity: Opportunity | null = $state(null);
+	let isLoading: boolean = $state(false);
+	let isSaving: boolean = $state(false);
+	let formData = $state([
+		{
+			opt_statement: "",
+			planned_actions: "",
+			kpi: "",
+			key_persons: "",
+			target_output: "",
+			budget: 0,
+			profile_id: "",
+			department_id: "",
+		},
+	]);
+	let profileId: string | null = $state(null);
 
-  const fetchUserProfile = async (): Promise<void> => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+	// Functions
+	const fetchUserProfile = async (): Promise<void> => {
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
 
-    if (session) {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, department_id")
-        .eq("id", session.user.id)
-        .single();
+		if (session) {
+			const { data, error } = await supabase.from("profiles").select("id, department_id").eq("id", session.user.id).single();
 
-      if (error) {
-        console.error("Error fetching profile:", error);
-      } else {
-        profileId = data.id; // User's profile ID
-        formData.forEach((row) => {
-          row.department_id = data.department_id; // Add department_id to each row
-        });
-      }
-    } else {
-      console.log("User is not logged in");
-    }
-  };
-  
-      const createOpportunity = async () => {
-        if (!profileId) return;
+			if (error) {
+				console.error("Error fetching profile:", error);
+			} else {
+				profileId = data.id;
+				formData.forEach((row) => {
+					row.department_id = data.department_id;
+				});
+			}
+		}
+	};
 
-        isSaving = true; // Set saving state
-        try {
-            // Insert the opportunity
-            const { data, error } = await supabase.from("opportunities").insert(
-                formData.map((row) => ({
-                    ...row,
-                    profile_id: profileId,
-                    department_id: row.department_id, // Include department_id
-                }))
-            ).select(); // Return the created rows
+	const createOpportunity = async () => {
+		if (!profileId) return;
 
-            if (error) {
-                console.error("Error creating opportunities:", error);
-                return;
-            }
+		isSaving = true;
+		try {
+			const { data, error } = await supabase
+				.from("opportunities")
+				.insert(
+					formData.map((row) => ({
+						...row,
+						profile_id: profileId,
+						department_id: row.department_id,
+					}))
+				)
+				.select();
 
-            if (data && data.length > 0) {
-        // Map over the created opportunities
-        const events = await Promise.all(
-            data.map(async (opportunity) => {
-                // Fetch the department name based on the department_id
-                const { data: departmentData, error: departmentError } = await supabase
-                    .from("departments") // Replace with your department table name
-                    .select("name")
-                    .eq("id", opportunity.department_id)
-                    .single();
+			if (error) {
+				console.error("Error creating opportunities:", error);
+				return;
+			}
 
-                if (departmentError) {
-                    console.error(`Error fetching department name for ID ${opportunity.department_id}:`, departmentError);
-                    return null; // Skip creating event if department fetch fails
-                }
+			if (data && data.length > 0) {
+				const events = await Promise.all(
+					data.map(async (opportunity) => {
+						const { data: departmentData, error: departmentError } = await supabase.from("departments").select("name").eq("id", opportunity.department_id).single();
 
-                const departmentName = departmentData?.name || "Unknown Department";
+						if (departmentError) {
+							console.error(`Error fetching department name for ID ${opportunity.department_id}:`, departmentError);
+							return null;
+						}
 
-                // Return the event object with department name included in description
-                return {
-                    event_id: opportunity.id, // Use the opportunity's ID
-                    event_type: "opportunity",
-                    description: `${departmentName} created a new opportunity`,
-                };
-            })
-        );
+						const departmentName = departmentData?.name || "Unknown Department";
 
-        // Filter out any null values in case fetching department data failed
-        const validEvents = events.filter((event) => event !== null);
+						return {
+							event_id: opportunity.id,
+							event_type: "opportunity",
+							description: `${departmentName} created a new opportunity`,
+						};
+					})
+				);
 
-        // Insert events into the recent_events table
-        if (validEvents.length > 0) {
-            const { error: eventError } = await supabase.from("recent_events").insert(validEvents);
+				const validEvents = events.filter((event) => event !== null);
 
-            if (eventError) {
-                console.error("Error adding to recent events:", eventError);
-            } else {
-                console.log("Recent events updated successfully.");
-            }
-        }
-    }
+				if (validEvents.length > 0) {
+					await supabase.from("recent_events").insert(validEvents);
+				}
+			}
 
+			// Reset form and refresh
+			await fetchOpportunities();
+			formData = [
+				{
+					opt_statement: "",
+					planned_actions: "",
+					kpi: "",
+					key_persons: "",
+					target_output: "",
+					budget: 0,
+					profile_id: "",
+					department_id: formData[0].department_id,
+				},
+			];
+		} catch (err) {
+			console.error("Unexpected error:", err);
+		} finally {
+			isSaving = false;
+		}
+	};
 
-        // Reset the form and fetch updated opportunities
-        fetchOpportunities();
-        formData = [
-            {
-                opt_statement: "",
-                planned_actions: "",
-                kpi: "",
-                key_persons: "",
-                target_output: "",
-                budget: 0,
-                profile_id: "",
-                department_id: "",
-            },
-        ];
-    } catch (err) {
-        console.error("Unexpected error:", err);
-    } finally {
-        isSaving = false; // Reset saving state
-    }
-};
+	const fetchOpportunities = async (): Promise<void> => {
+		isLoading = true;
+		const { data, error } = await supabase.from("opportunities").select("*").eq("profile_id", profileId);
 
+		if (error) {
+			console.error("Error fetching opportunities:", error);
+		} else {
+			opportunities = data;
+		}
+		isLoading = false;
+	};
 
-  const fetchOpportunities = async (): Promise<void> => {
-    isLoading = true;
-    const { data, error } = await supabase
-      .from("opportunities")
-      .select("*")
-      .eq("profile_id", profileId);
+	const deleteCard = (index: number) => {
+		formData.splice(index, 1);
+		formData = [...formData];
+	};
 
-    if (error) {
-      console.error("Error fetching opportunities:", error);
-    } else {
-      opportunities = data;
-    }
-    isLoading = false;
-  };
+	const addCard = () => {
+		formData = [
+			...formData,
+			{
+				opt_statement: "",
+				planned_actions: "",
+				kpi: "",
+				key_persons: "",
+				target_output: "",
+				budget: 0,
+				profile_id: profileId || "",
+				department_id: formData[0]?.department_id || "",
+			},
+		];
+	};
 
-  const deleteRow = (index: number) => {
-    formData.splice(index, 1);
-    formData = [...formData];
-  };
-
-  const addRow = () => {
-    formData = [
-      ...formData,
-      {
-        opt_statement: "",
-        planned_actions: "",
-        kpi: "",
-        key_persons: "",
-        target_output: "",
-        budget: 0,
-        profile_id: profileId || "",
-        department_id: formData[0]?.department_id || "", // Use existing department_id
-      },
-    ];
-  };
-
-  const adjustTextarea = (event: Event) => {
-    const target = event.target as HTMLTextAreaElement;
-    target.style.height = "auto"; // Reset height to calculate scroll height
-    target.style.width = "auto"; // Reset width to calculate scroll width
-    target.style.height = `${target.scrollHeight}px`; // Adjust height
-    target.style.width = `${Math.max(target.scrollWidth, 200)}px`; // Adjust width with a minimum
-  };
-
-  onMount(() => {
-    fetchUserProfile();
-    if (profileId) {
-      fetchOpportunities();
-    }
-  });
+	onMount(() => {
+		fetchUserProfile();
+		if (profileId) {
+			fetchOpportunities();
+		}
+	});
 </script>
 
-<div class="container mx-auto p-6">
-  <div class="p-6 rounded-lg shadow-lg mb-6">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-semibold">
-        {selectedOpportunity ? "Edit Opportunity" : "Create Opportunity"}
-      </h2>
-      <button
-        on:click={() => console.log("Save Progress")}
-        class="btn btn-success"
-        disabled={isSaving}
-      >
-        Save Progress
-      </button>
-    </div>
+<div class="container mx-auto px-4 py-8">
+	<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+		<div class="flex justify-between items-center mb-6">
+			<h1 class="text-2xl font-bold text-gray-800">
+				{selectedOpportunity ? "Edit Opportunity" : "Create Opportunity"}
+			</h1>
+			<button class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50" disabled={isSaving} onclick={() => console.log("Save Progress")}>
+				<Save class="w-4 h-4 mr-2" />
+				Save Progress
+			</button>
+		</div>
 
-    <div class="overflow-x-auto">
-      <table class="table-auto table table-zebra w-full">
-        <thead>
-          <tr class="text-sm">
-            <th class="px-4 py-2 text-left">Opportunity Statement</th>
-            <th class="px-4 py-2 text-left">Planned Actions</th>
-            <th class="px-4 py-2 text-left">KPI</th>
-            <th class="px-4 py-2 text-left">Key Persons</th>
-            <th class="px-4 py-2 text-left">Target Output</th>
-            <th class="px-4 py-2 text-left">Budget</th>
-            <th class="px-4 py-2 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each formData as row, index}
-            <tr>
-              <td class="px-4 py-2">
-                <textarea
-                  bind:value={row.opt_statement}
-                  placeholder="Opportunity Statement"
-                  class="textarea textarea-bordered w-full"
-                  on:input={adjustTextarea}
-                  style="overflow: hidden"
-                ></textarea>
-              </td>
-              <td class="px-4 py-2">
-                <textarea
-                  bind:value={row.planned_actions}
-                  placeholder="Planned Actions"
-                  class="textarea textarea-bordered w-full"
-                  on:input={adjustTextarea}
-                  style="overflow: hidden"
-                ></textarea>
-              </td>
-              <td class="px-4 py-2">
-                <textarea
-                  bind:value={row.kpi}
-                  placeholder="KPI"
-                  class="textarea textarea-bordered w-full"
-                  on:input={adjustTextarea}
-                  style="overflow: hidden"
-                ></textarea>
-              </td>
-              <td class="px-4 py-2">
-                <textarea
-                  bind:value={row.key_persons}
-                  placeholder="Key Persons"
-                  class="textarea textarea-bordered w-full"
-                  on:input={adjustTextarea}
-                  style="overflow: hidden"
-                ></textarea>
-              </td>
-              <td class="px-4 py-2">
-                <textarea
-                  bind:value={row.target_output}
-                  placeholder="Target Output"
-                  class="textarea textarea-bordered w-full"
-                  on:input={adjustTextarea}
-                  style="overflow: hidden"
-                ></textarea>
-              </td>
-              <td class="px-4 py-2">
-                <input
-                  type="number"
-                  bind:value={row.budget}
-                  placeholder="Budget"
-                  class="input input-bordered w-full"
-                />
-              </td>
-              <td class="px-4 py-2">
-                <button
-                  class="btn btn-sm btn-error"
-                  on:click={() => deleteRow(index)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
+		<!-- Cards Container -->
+		<div class="grid grid-cols-1 gap-6 mb-6">
+			{#each formData as data, index}
+				<OpportunityCard {data} {index} onDelete={() => deleteCard(index)} />
+			{/each}
+		</div>
 
-    <button on:click={addRow} class="btn btn-secondary mt-4"> Add Row </button>
-    <button
-      on:click={createOpportunity}
-      class="btn btn-primary mt-4"
-      disabled={isLoading}
-    >
-      {selectedOpportunity ? "Save Changes" : "Submit Opportunities"}
-    </button>
-  </div>
+		<!-- Action Buttons -->
+		<div class="flex flex-wrap gap-4">
+			<button onclick={addCard} class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+				<Plus class="w-4 h-4 mr-2" />
+				Add New Opportunity
+			</button>
+
+			<button onclick={createOpportunity} class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50" disabled={isLoading || isSaving}>
+				<PlusCircle class="w-4 h-4 mr-2" />
+				{#if isSaving}
+          <div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+				{:else}
+					{selectedOpportunity ? "Save Changes" : "Submit Opportunities"}
+				{/if}
+			</button>
+		</div>
+	</div>
 </div>
