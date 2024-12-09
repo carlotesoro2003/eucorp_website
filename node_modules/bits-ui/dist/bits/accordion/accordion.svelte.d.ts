@@ -1,0 +1,140 @@
+import type { Box, ReadableBoxedValues, WritableBoxedValues } from "../../internal/box.svelte.js";
+import type { WithRefProps } from "../../internal/types.js";
+import { type UseRovingFocusReturn } from "../../internal/use-roving-focus.svelte.js";
+import type { Orientation } from "../../shared/index.js";
+type AccordionBaseStateProps = WithRefProps<ReadableBoxedValues<{
+    disabled: boolean;
+    orientation: Orientation;
+    loop: boolean;
+}>>;
+declare class AccordionBaseState {
+    #private;
+    disabled: AccordionBaseStateProps["disabled"];
+    orientation: AccordionBaseStateProps["orientation"];
+    rovingFocusGroup: UseRovingFocusReturn;
+    constructor(props: AccordionBaseStateProps);
+    props: {
+        readonly id: string;
+        readonly "data-orientation": "horizontal" | "vertical";
+        readonly "data-disabled": "" | undefined;
+        readonly "data-accordion-root": "";
+    };
+}
+type AccordionSingleStateProps = AccordionBaseStateProps & WritableBoxedValues<{
+    value: string;
+}>;
+export declare class AccordionSingleState extends AccordionBaseState {
+    #private;
+    isMulti: false;
+    constructor(props: AccordionSingleStateProps);
+    includesItem: (item: string) => boolean;
+    toggleItem: (item: string) => void;
+}
+type AccordionMultiStateProps = AccordionBaseStateProps & WritableBoxedValues<{
+    value: string[];
+}>;
+export declare class AccordionMultiState extends AccordionBaseState {
+    #private;
+    isMulti: true;
+    constructor(props: AccordionMultiStateProps);
+    includesItem: (item: string) => boolean;
+    toggleItem: (item: string) => void;
+}
+type AccordionItemStateProps = WithRefProps<ReadableBoxedValues<{
+    value: string;
+    disabled: boolean;
+}> & {
+    rootState: AccordionState;
+}>;
+export declare class AccordionItemState {
+    #private;
+    value: AccordionItemStateProps["value"];
+    disabled: AccordionItemStateProps["disabled"];
+    root: AccordionState;
+    isActive: boolean;
+    isDisabled: boolean;
+    constructor(props: AccordionItemStateProps);
+    updateValue: () => void;
+    props: {
+        readonly id: string;
+        readonly "data-state": "open" | "closed";
+        readonly "data-disabled": "" | undefined;
+        readonly "data-orientation": "horizontal" | "vertical";
+        readonly "data-accordion-item": "";
+    };
+}
+type AccordionTriggerStateProps = WithRefProps<ReadableBoxedValues<{
+    disabled: boolean | null | undefined;
+}>>;
+declare class AccordionTriggerState {
+    #private;
+    constructor(props: AccordionTriggerStateProps, itemState: AccordionItemState);
+    props: {
+        readonly id: string;
+        readonly disabled: boolean;
+        readonly "aria-expanded": "true" | "false";
+        readonly "aria-disabled": "true" | "false";
+        readonly "data-disabled": "" | undefined;
+        readonly "data-state": "open" | "closed";
+        readonly "data-orientation": "horizontal" | "vertical";
+        readonly "data-accordion-trigger": "";
+        readonly tabindex: 0;
+        readonly onpointerdown: (e: PointerEvent) => void;
+        readonly onpointerup: (e: PointerEvent) => void;
+        readonly onkeydown: (e: KeyboardEvent) => void;
+    };
+}
+type AccordionContentStateProps = WithRefProps<ReadableBoxedValues<{
+    forceMount: boolean;
+}>>;
+declare class AccordionContentState {
+    #private;
+    item: AccordionItemState;
+    present: boolean;
+    constructor(props: AccordionContentStateProps, item: AccordionItemState);
+    snippetProps: {
+        open: boolean;
+    };
+    props: {
+        readonly id: string;
+        readonly "data-state": "open" | "closed";
+        readonly "data-disabled": "" | undefined;
+        readonly "data-orientation": "horizontal" | "vertical";
+        readonly "data-accordion-content": "";
+        readonly style: {
+            readonly "--bits-accordion-content-height": `${number}px`;
+            readonly "--bits-accordion-content-width": `${number}px`;
+        };
+    };
+}
+type AccordionHeaderStateProps = WithRefProps<ReadableBoxedValues<{
+    level: 1 | 2 | 3 | 4 | 5 | 6;
+}>>;
+declare class AccordionHeaderState {
+    #private;
+    constructor(props: AccordionHeaderStateProps, item: AccordionItemState);
+    props: {
+        readonly id: string;
+        readonly role: "heading";
+        readonly "aria-level": 1 | 2 | 3 | 4 | 5 | 6;
+        readonly "data-heading-level": 1 | 2 | 3 | 4 | 5 | 6;
+        readonly "data-state": "open" | "closed";
+        readonly "data-orientation": "horizontal" | "vertical";
+        readonly "data-accordion-header": "";
+    };
+}
+type AccordionState = AccordionSingleState | AccordionMultiState;
+type InitAccordionProps = WithRefProps<{
+    type: "single" | "multiple";
+    value: Box<string> | Box<string[]>;
+} & ReadableBoxedValues<{
+    disabled: boolean;
+    orientation: Orientation;
+    loop: boolean;
+}>>;
+export declare function useAccordionRoot(props: InitAccordionProps): AccordionState;
+export declare function useAccordionItem(props: Omit<AccordionItemStateProps, "rootState">): AccordionItemState;
+export declare function useAccordionTrigger(props: AccordionTriggerStateProps): AccordionTriggerState;
+export declare function useAccordionContent(props: AccordionContentStateProps): AccordionContentState;
+export declare function useAccordionHeader(props: AccordionHeaderStateProps): AccordionHeaderState;
+export {};

@@ -1,0 +1,254 @@
+import { untrack } from "svelte";
+import { box, onDestroyEffect, useRefById } from "svelte-toolbelt";
+import { DateFieldInputState, useDateFieldRoot } from "../date-field/date-field.svelte.js";
+import { useId } from "../../internal/use-id.js";
+import { createContext } from "../../internal/create-context.js";
+import { getDataDisabled, getDataInvalid } from "../../internal/attrs.js";
+import { createFormatter } from "../../internal/date-time/formatter.js";
+import { removeDescriptionElement } from "../../internal/date-time/field/helpers.js";
+import { isBefore } from "../../internal/date-time/utils.js";
+import { getFirstSegment } from "../../internal/date-time/field/segments.js";
+export const DATE_RANGE_FIELD_ROOT_ATTR = "data-date-range-field-root";
+const DATE_RANGE_FIELD_LABEL_ATTR = "data-date-range-field-label";
+export class DateRangeFieldRootState {
+    ref;
+    id;
+    value;
+    placeholder;
+    readonlySegments;
+    validate;
+    minValue;
+    maxValue;
+    disabled;
+    readonly;
+    granularity;
+    hourCycle;
+    locale;
+    hideTimeZone;
+    required;
+    startValue;
+    endValue;
+    onInvalid;
+    errorMessageId;
+    startFieldState = undefined;
+    endFieldState = undefined;
+    descriptionId = useId();
+    formatter;
+    fieldNode = $state(null);
+    labelNode = $state(null);
+    descriptionNode = $state(null);
+    startValueComplete = $derived.by(() => this.startValue.current !== undefined);
+    endValueComplete = $derived.by(() => this.endValue.current !== undefined);
+    rangeComplete = $derived(this.startValueComplete && this.endValueComplete);
+    mergedValues = $derived.by(() => {
+        if (this.startValue.current === undefined || this.endValue.current === undefined) {
+            return {
+                start: undefined,
+                end: undefined,
+            };
+        }
+        else {
+            return {
+                start: this.startValue.current,
+                end: this.endValue.current,
+            };
+        }
+    });
+    constructor(props) {
+        this.value = props.value;
+        this.startValue = props.startValue;
+        this.endValue = props.endValue;
+        this.placeholder = props.placeholder;
+        this.validate = props.validate;
+        this.onInvalid = props.onInvalid;
+        this.minValue = props.minValue;
+        this.maxValue = props.maxValue;
+        this.disabled = props.disabled;
+        this.readonly = props.readonly;
+        this.granularity = props.granularity;
+        this.readonlySegments = props.readonlySegments;
+        this.hourCycle = props.hourCycle;
+        this.locale = props.locale;
+        this.hideTimeZone = props.hideTimeZone;
+        this.required = props.required;
+        this.errorMessageId = props.errorMessageId;
+        this.formatter = createFormatter(this.locale.current);
+        this.id = props.id;
+        this.ref = props.ref;
+        useRefById({
+            id: this.id,
+            ref: this.ref,
+            onRefChange: (node) => {
+                this.fieldNode = node;
+            },
+        });
+        onDestroyEffect(() => {
+            removeDescriptionElement(this.descriptionId);
+        });
+        $effect(() => {
+            if (this.formatter.getLocale() === this.locale.current)
+                return;
+            this.formatter.setLocale(this.locale.current);
+        });
+        $effect(() => {
+            const startValue = this.value.current.start;
+            untrack(() => {
+                if (startValue)
+                    this.placeholder.current = startValue;
+            });
+        });
+        $effect(() => {
+            const endValue = this.value.current.end;
+            untrack(() => {
+                if (endValue)
+                    this.placeholder.current = endValue;
+            });
+        });
+        /**
+         * Sync values set programatically with the `startValue` and `endValue`
+         */
+        $effect(() => {
+            const value = this.value.current;
+            untrack(() => {
+                if (value.start !== undefined && value.start !== this.startValue.current) {
+                    this.setStartValue(value.start);
+                }
+                if (value.end !== undefined && value.end !== this.endValue.current) {
+                    this.setEndValue(value.end);
+                }
+            });
+        });
+        // TODO: Handle description element
+        $effect(() => {
+            const placeholder = untrack(() => this.placeholder.current);
+            const startValue = untrack(() => this.startValue.current);
+            if (this.startValueComplete && placeholder !== startValue) {
+                untrack(() => {
+                    if (startValue) {
+                        this.placeholder.current = startValue;
+                    }
+                });
+            }
+        });
+        $effect(() => {
+            this.value.current = this.mergedValues;
+        });
+    }
+    validationStatus = $derived.by(() => {
+        const value = this.value.current;
+        if (value === undefined)
+            return false;
+        if (value.start === undefined || value.end === undefined)
+            return false;
+        const msg = this.validate.current?.({
+            start: value.start,
+            end: value.end,
+        });
+        if (msg) {
+            return {
+                reason: "custom",
+                message: msg,
+            };
+        }
+        const minValue = this.minValue.current;
+        if (minValue && value.start && isBefore(value.start, minValue)) {
+            return {
+                reason: "min",
+            };
+        }
+        const maxValue = this.maxValue.current;
+        if ((maxValue && value.end && isBefore(maxValue, value.end)) ||
+            (maxValue && value.start && isBefore(maxValue, value.start))) {
+            return {
+                reason: "max",
+            };
+        }
+        return false;
+    });
+    isInvalid = $derived.by(() => {
+        if (this.validationStatus === false)
+            return false;
+        return true;
+    });
+    setStartValue = (value) => {
+        this.startValue.current = value;
+    };
+    setEndValue = (value) => {
+        this.endValue.current = value;
+    };
+    /**
+     * These props are used to override those of the child fields.
+     * TODO:
+     */
+    childFieldPropOverrides = {};
+    props = $derived.by(() => ({
+        id: this.id.current,
+        role: "group",
+        [DATE_RANGE_FIELD_ROOT_ATTR]: "",
+        "data-invalid": getDataInvalid(this.isInvalid),
+    }));
+}
+class DateRangeFieldLabelState {
+    #id;
+    #ref;
+    #root;
+    constructor(props, root) {
+        this.#id = props.id;
+        this.#ref = props.ref;
+        this.#root = root;
+        useRefById({
+            id: this.#id,
+            ref: this.#ref,
+            onRefChange: (node) => {
+                this.#root.labelNode = node;
+            },
+        });
+    }
+    #onclick = () => {
+        if (this.#root.disabled.current)
+            return;
+        const firstSegment = getFirstSegment(this.#root.fieldNode);
+        if (!firstSegment)
+            return;
+        firstSegment.focus();
+    };
+    props = $derived.by(() => ({
+        id: this.#id.current,
+        // TODO: invalid state for field
+        "data-invalid": getDataInvalid(this.#root.isInvalid),
+        "data-disabled": getDataDisabled(this.#root.disabled.current),
+        [DATE_RANGE_FIELD_LABEL_ATTR]: "",
+        onclick: this.#onclick,
+    }));
+}
+const [setDateRangeFieldRootContext, getDateRangeFieldRootContext] = createContext("DateRangeField.Root");
+export function useDateRangeFieldRoot(props) {
+    return setDateRangeFieldRootContext(new DateRangeFieldRootState(props));
+}
+export function useDateRangeFieldLabel(props) {
+    const root = getDateRangeFieldRootContext();
+    return new DateRangeFieldLabelState(props, root);
+}
+export function useDateRangeFieldInput(props, type) {
+    const root = getDateRangeFieldRootContext();
+    const fieldState = useDateFieldRoot({
+        value: type === "start" ? root.startValue : root.endValue,
+        disabled: root.disabled,
+        readonly: root.readonly,
+        readonlySegments: root.readonlySegments,
+        validate: box.with(() => undefined),
+        minValue: root.minValue,
+        maxValue: root.maxValue,
+        hourCycle: root.hourCycle,
+        locale: root.locale,
+        hideTimeZone: root.hideTimeZone,
+        required: root.required,
+        granularity: root.granularity,
+        placeholder: root.placeholder,
+        onInvalid: root.onInvalid,
+        errorMessageId: root.errorMessageId,
+        isInvalidProp: box.with(() => root.isInvalid),
+    }, root);
+    return new DateFieldInputState({ name: props.name, id: props.id, ref: props.ref }, fieldState);
+}
+export { getDateRangeFieldRootContext };

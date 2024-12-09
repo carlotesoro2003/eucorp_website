@@ -1,0 +1,221 @@
+import { type DateValue } from "@internationalized/date";
+import type { DateRange, Month } from "../../shared/index.js";
+import type { ReadableBoxedValues, WritableBoxedValues } from "../../internal/box.svelte.js";
+import type { WithRefProps } from "../../internal/types.js";
+import { type Announcer } from "../../internal/date-time/announcer.js";
+import { type Formatter } from "../../internal/date-time/formatter.js";
+import { type CalendarParts } from "../../internal/date-time/calendar-helpers.svelte.js";
+type RangeCalendarRootStateProps = WithRefProps<WritableBoxedValues<{
+    value: DateRange;
+    placeholder: DateValue;
+    startValue: DateValue | undefined;
+    endValue: DateValue | undefined;
+}> & ReadableBoxedValues<{
+    preventDeselect: boolean;
+    minValue: DateValue | undefined;
+    maxValue: DateValue | undefined;
+    disabled: boolean;
+    pagedNavigation: boolean;
+    weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    weekdayFormat: Intl.DateTimeFormatOptions["weekday"];
+    isDateDisabled: (date: DateValue) => boolean;
+    isDateUnavailable: (date: DateValue) => boolean;
+    fixedWeeks: boolean;
+    numberOfMonths: number;
+    locale: string;
+    calendarLabel: string;
+    readonly: boolean;
+    disableDaysOutsideMonth: boolean;
+    /**
+     * This is strictly used by the `DateRangePicker` component to close the popover when a date range
+     * is selected. It is not intended to be used by the user.
+     */
+    onRangeSelect?: () => void;
+}>>;
+export declare class RangeCalendarRootState {
+    #private;
+    id: RangeCalendarRootStateProps["id"];
+    ref: RangeCalendarRootStateProps["ref"];
+    value: RangeCalendarRootStateProps["value"];
+    placeholder: RangeCalendarRootStateProps["placeholder"];
+    preventDeselect: RangeCalendarRootStateProps["preventDeselect"];
+    minValue: RangeCalendarRootStateProps["minValue"];
+    maxValue: RangeCalendarRootStateProps["maxValue"];
+    disabled: RangeCalendarRootStateProps["disabled"];
+    pagedNavigation: RangeCalendarRootStateProps["pagedNavigation"];
+    weekStartsOn: RangeCalendarRootStateProps["weekStartsOn"];
+    weekdayFormat: RangeCalendarRootStateProps["weekdayFormat"];
+    isDateDisabledProp: RangeCalendarRootStateProps["isDateDisabled"];
+    isDateUnavailableProp: RangeCalendarRootStateProps["isDateUnavailable"];
+    fixedWeeks: RangeCalendarRootStateProps["fixedWeeks"];
+    numberOfMonths: RangeCalendarRootStateProps["numberOfMonths"];
+    locale: RangeCalendarRootStateProps["locale"];
+    calendarLabel: RangeCalendarRootStateProps["calendarLabel"];
+    readonly: RangeCalendarRootStateProps["readonly"];
+    disableDaysOutsideMonth: RangeCalendarRootStateProps["disableDaysOutsideMonth"];
+    onRangeSelect: RangeCalendarRootStateProps["onRangeSelect"];
+    startValue: RangeCalendarRootStateProps["startValue"];
+    endValue: RangeCalendarRootStateProps["endValue"];
+    months: Month<DateValue>[];
+    visibleMonths: DateValue[];
+    announcer: Announcer;
+    formatter: Formatter;
+    accessibleHeadingId: string;
+    focusedValue: DateValue | undefined;
+    lastPressedDateValue: DateValue | undefined;
+    constructor(props: RangeCalendarRootStateProps);
+    setStartValue: (value: DateValue | undefined) => void;
+    setEndValue: (value: DateValue | undefined) => void;
+    /**
+     * This derived state holds an array of localized day names for the current
+     * locale and calendar view. It dynamically syncs with the 'weekStartsOn' option,
+     * updating its content when the option changes. Using this state to render the
+     * calendar's days of the week is strongly recommended, as it guarantees that
+     * the days are correctly formatted for the current locale and calendar view.
+     */
+    weekdays: string[];
+    isOutsideVisibleMonths: (date: DateValue) => boolean;
+    isDateDisabled: (date: DateValue) => boolean;
+    isDateUnavailable: (date: DateValue) => boolean;
+    isStartInvalid: boolean;
+    isEndInvalid: boolean;
+    isInvalid: boolean;
+    isNextButtonDisabled: boolean;
+    isPrevButtonDisabled: boolean;
+    headingValue: string;
+    fullCalendarLabel: string;
+    isSelectionStart: (date: DateValue) => boolean;
+    isSelectionEnd: (date: DateValue) => boolean;
+    isSelected: (date: DateValue) => boolean;
+    highlightedRange: {
+        start: DateValue;
+        end: DateValue;
+    } | null;
+    handleCellClick: (e: Event, date: DateValue) => void;
+    /**
+     * Navigates to the next page of the calendar.
+     */
+    nextPage: () => void;
+    /**
+     * Navigates to the previous page of the calendar.
+     */
+    prevPage: () => void;
+    nextYear: () => void;
+    prevYear: () => void;
+    setYear: (year: number) => void;
+    setMonth: (month: number) => void;
+    getBitsAttr: (part: CalendarParts) => string;
+    snippetProps: {
+        months: Month<DateValue>[];
+        weekdays: string[];
+    };
+    props: {
+        readonly onkeydown: (event: KeyboardEvent) => void;
+        readonly id: string;
+        readonly role: "application";
+        readonly "aria-label": string;
+        readonly "data-invalid": "" | undefined;
+        readonly "data-disabled": "" | undefined;
+        readonly "data-readonly": "" | undefined;
+    };
+}
+type RangeCalendarCellStateProps = WithRefProps<ReadableBoxedValues<{
+    date: DateValue;
+    month: DateValue;
+}>>;
+export declare class RangeCalendarCellState {
+    readonly root: RangeCalendarRootState;
+    id: RangeCalendarCellStateProps["id"];
+    ref: RangeCalendarCellStateProps["ref"];
+    date: RangeCalendarCellStateProps["date"];
+    month: RangeCalendarCellStateProps["month"];
+    cellDate: Date;
+    isDisabled: boolean;
+    isUnavailable: boolean;
+    isDateToday: boolean;
+    isOutsideMonth: boolean;
+    isOutsideVisibleMonths: boolean;
+    isFocusedDate: boolean;
+    isSelectedDate: boolean;
+    isSelectionStart: boolean;
+    isSelectionEnd: boolean;
+    isHighlighted: boolean;
+    labelText: string;
+    constructor(props: RangeCalendarCellStateProps, root: RangeCalendarRootState);
+    snippetProps: {
+        disabled: boolean;
+        unavailable: boolean;
+        selected: boolean;
+    };
+    ariaDisabled: boolean;
+    sharedDataAttrs: {
+        readonly "data-unavailable": "" | undefined;
+        readonly "data-today": "" | undefined;
+        readonly "data-outside-month": "" | undefined;
+        readonly "data-outside-visible-months": "" | undefined;
+        readonly "data-focused": "" | undefined;
+        readonly "data-selection-start": "" | undefined;
+        readonly "data-selection-end": "" | undefined;
+        readonly "data-highlighted": "" | undefined;
+        readonly "data-selected": "" | undefined;
+        readonly "data-value": string;
+        readonly "data-disabled": "" | undefined;
+    };
+    props: {
+        readonly "data-unavailable": "" | undefined;
+        readonly "data-today": "" | undefined;
+        readonly "data-outside-month": "" | undefined;
+        readonly "data-outside-visible-months": "" | undefined;
+        readonly "data-focused": "" | undefined;
+        readonly "data-selection-start": "" | undefined;
+        readonly "data-selection-end": "" | undefined;
+        readonly "data-highlighted": "" | undefined;
+        readonly "data-selected": "" | undefined;
+        readonly "data-value": string;
+        readonly "data-disabled": "" | undefined;
+        readonly id: string;
+        readonly role: "gridcell";
+        readonly "aria-selected": "true" | "false";
+        readonly "aria-disabled": "true" | "false";
+    };
+}
+type RangeCalendarDayStateProps = WithRefProps;
+declare class RangeCalendarDayState {
+    #private;
+    readonly cell: RangeCalendarCellState;
+    id: RangeCalendarDayStateProps["id"];
+    ref: RangeCalendarDayStateProps["ref"];
+    constructor(props: RangeCalendarDayStateProps, cell: RangeCalendarCellState);
+    snippetProps: {
+        disabled: boolean;
+        unavailable: boolean;
+        selected: boolean;
+        day: string;
+    };
+    props: {
+        readonly tabindex: number | undefined;
+        readonly "data-bits-day": "";
+        readonly onclick: (e: MouseEvent) => void;
+        readonly onmouseenter: () => void;
+        readonly onfocusin: () => void;
+        readonly "data-unavailable": "" | undefined;
+        readonly "data-today": "" | undefined;
+        readonly "data-outside-month": "" | undefined;
+        readonly "data-outside-visible-months": "" | undefined;
+        readonly "data-focused": "" | undefined;
+        readonly "data-selection-start": "" | undefined;
+        readonly "data-selection-end": "" | undefined;
+        readonly "data-highlighted": "" | undefined;
+        readonly "data-selected": "" | undefined;
+        readonly "data-value": string;
+        readonly "data-disabled": "" | undefined;
+        readonly id: string;
+        readonly role: "button";
+        readonly "aria-label": string;
+        readonly "aria-disabled": "true" | "false";
+    };
+}
+export declare function useRangeCalendarRoot(props: RangeCalendarRootStateProps): RangeCalendarRootState;
+export declare function useRangeCalendarCell(props: RangeCalendarCellStateProps): RangeCalendarCellState;
+export declare function useRangeCalendarDay(props: RangeCalendarDayStateProps): RangeCalendarDayState;
+export {};

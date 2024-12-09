@@ -1,0 +1,81 @@
+{
+	"/": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.ts"
+	],
+	"/api/evaluate-goal": [
+		"src/routes/api/evaluate-goal/+server.ts"
+	],
+	"/api/summary-report-opt-monitoring": [
+		"src/routes/api/summary-report-opt-monitoring/+server.ts"
+	],
+	"/api/summary-report-plan-monitoring": [
+		"src/routes/api/summary-report-plan-monitoring/+server.ts"
+	],
+	"/auth/callback": [
+		"src/routes/auth/callback/+server.ts"
+	],
+	"/classification": [
+		"src/routes/+layout.ts"
+	],
+	"/dashboard": [
+		"src/routes/+layout.ts"
+	],
+	"/departments": [
+		"src/routes/+layout.ts"
+	],
+	"/leads": [
+		"src/routes/+layout.ts"
+	],
+	"/login": [
+		"src/routes/+layout.ts"
+	],
+	"/monitoring": [
+		"src/routes/+layout.ts"
+	],
+	"/monitoring/mid-year": [
+		"src/routes/+layout.ts"
+	],
+	"/monitoring/year-end": [
+		"src/routes/+layout.ts"
+	],
+	"/opportunities": [
+		"src/routes/+layout.ts"
+	],
+	"/plans": [
+		"src/routes/+layout.ts"
+	],
+	"/plans/operationalPlans": [
+		"src/routes/+layout.ts"
+	],
+	"/plans/operationalPlans/[id]": [
+		"src/routes/+layout.ts"
+	],
+	"/plans/strategicPlans": [
+		"src/routes/+layout.ts"
+	],
+	"/plans/[id]": [
+		"src/routes/+layout.ts"
+	],
+	"/plans/[id]/[id]": [
+		"src/routes/+layout.ts"
+	],
+	"/profile": [
+		"src/routes/+layout.ts"
+	],
+	"/riskManagement": [
+		"src/routes/+layout.ts"
+	],
+	"/risks": [
+		"src/routes/+layout.ts"
+	],
+	"/risks/riskAssessment": [
+		"src/routes/+layout.ts"
+	],
+	"/test-sidebar": [
+		"src/routes/+layout.ts"
+	],
+	"/users": [
+		"src/routes/+layout.ts"
+	]
+}

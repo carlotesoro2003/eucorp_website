@@ -1,0 +1,90 @@
+import { type WritableBox } from "svelte-toolbelt";
+import type { ReadableBoxedValues, WritableBoxedValues } from "../../internal/box.svelte.js";
+import type { Orientation } from "../../shared/index.js";
+import { type UseRovingFocusReturn } from "../../internal/use-roving-focus.svelte.js";
+import type { WithRefProps } from "../../internal/types.js";
+type ToggleGroupBaseStateProps = WithRefProps<ReadableBoxedValues<{
+    disabled: boolean;
+    rovingFocus: boolean;
+    loop: boolean;
+    orientation: Orientation;
+}>>;
+declare class ToggleGroupBaseState {
+    id: ToggleGroupBaseStateProps["id"];
+    ref: ToggleGroupBaseStateProps["ref"];
+    disabled: ToggleGroupBaseStateProps["disabled"];
+    rovingFocus: ToggleGroupBaseStateProps["rovingFocus"];
+    loop: ToggleGroupBaseStateProps["loop"];
+    orientation: ToggleGroupBaseStateProps["orientation"];
+    rovingFocusGroup: UseRovingFocusReturn;
+    constructor(props: ToggleGroupBaseStateProps);
+    props: {
+        readonly id: string;
+        readonly "data-toggle-group-root": "";
+        readonly role: "group";
+        readonly "data-orientation": "horizontal" | "vertical";
+        readonly "data-disabled": "" | undefined;
+    };
+}
+type ToggleGroupSingleStateProps = ToggleGroupBaseStateProps & WritableBoxedValues<{
+    value: string;
+}>;
+declare class ToggleGroupSingleState extends ToggleGroupBaseState {
+    #private;
+    isMulti: boolean;
+    anyPressed: boolean;
+    constructor(props: ToggleGroupSingleStateProps);
+    includesItem: (item: string) => boolean;
+    toggleItem: (item: string, id: string) => void;
+}
+type ToggleGroupMultipleStateProps = ToggleGroupBaseStateProps & WritableBoxedValues<{
+    value: string[];
+}>;
+declare class ToggleGroupMultipleState extends ToggleGroupBaseState {
+    #private;
+    isMulti: boolean;
+    anyPressed: boolean;
+    constructor(props: ToggleGroupMultipleStateProps);
+    includesItem: (item: string) => boolean;
+    toggleItem: (item: string, id: string) => void;
+}
+type ToggleGroupState = ToggleGroupSingleState | ToggleGroupMultipleState;
+type ToggleGroupItemStateProps = WithRefProps<ReadableBoxedValues<{
+    value: string;
+    disabled: boolean;
+}> & {
+    rootState: ToggleGroupState;
+}>;
+declare class ToggleGroupItemState {
+    #private;
+    constructor(props: ToggleGroupItemStateProps);
+    toggleItem: () => void;
+    isPressed: boolean;
+    props: {
+        readonly id: string;
+        readonly role: "radio" | undefined;
+        readonly tabindex: number;
+        readonly "data-orientation": "horizontal" | "vertical";
+        readonly "data-disabled": "" | undefined;
+        readonly "data-state": "off" | "on";
+        readonly "data-value": string;
+        readonly "aria-pressed": "true" | "false" | undefined;
+        readonly "aria-checked": "true" | "false" | "mixed" | undefined;
+        readonly disabled: true | undefined;
+        readonly "data-toggle-group-item": "";
+        readonly onclick: () => void;
+        readonly onkeydown: (e: KeyboardEvent) => void;
+    };
+}
+type InitToggleGroupProps = WithRefProps<{
+    type: "single" | "multiple";
+    value: WritableBox<string> | WritableBox<string[]>;
+} & ReadableBoxedValues<{
+    disabled: boolean;
+    rovingFocus: boolean;
+    loop: boolean;
+    orientation: Orientation;
+}>>;
+export declare function useToggleGroupRoot(props: InitToggleGroupProps): ToggleGroupState;
+export declare function useToggleGroupItem(props: Omit<ToggleGroupItemStateProps, "rootState">): ToggleGroupItemState;
+export {};

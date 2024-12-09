@@ -1,0 +1,10 @@
+import * as universal from '../entries/pages/_layout.ts.js';
+
+export const index = 0;
+let component_cache;
+export const component = async () => component_cache ??= (await import('../entries/pages/_layout.svelte.js')).default;
+export { universal };
+export const universal_id = "src/routes/+layout.ts";
+export const imports = ["_app/immutable/nodes/0.V7sR6GRa.js","_app/immutable/chunks/supabaseClient.CaMOPPuz.js","_app/immutable/chunks/preload-helper.C1FmrZbK.js","_app/immutable/chunks/disclose-version.Bg9kRutz.js","_app/immutable/chunks/runtime.CLSstnwU.js","_app/immutable/chunks/utils.kA-YjkFf.js","_app/immutable/chunks/if.b2Q-jNLG.js","_app/immutable/chunks/Icon.BPJo08Fo.js","_app/immutable/chunks/each.sV1uapQk.js","_app/immutable/chunks/attributes.DiUoHvyc.js","_app/immutable/chunks/misc.C2nsS1Cr.js","_app/immutable/chunks/lifecycle.V0dJQ05z.js","_app/immutable/chunks/props.BD0jg91j.js","_app/immutable/chunks/proxy.D-58ufVl.js","_app/immutable/chunks/store.D2tkwa9F.js","_app/immutable/chunks/utils.CnaD8cHY.js","_app/immutable/chunks/entry.SSTTWxxn.js","_app/immutable/chunks/index.Czza9BHq.js","_app/immutable/chunks/index-client.DT-fMr9Z.js","_app/immutable/chunks/stores.DWte6y18.js","_app/immutable/chunks/breadcrumb-page.u5MrjT7m.js","_app/immutable/chunks/this.DPsfiZVB.js","_app/immutable/chunks/svelte-component.C1haptp8.js","_app/immutable/chunks/render.D17u6ZCY.js","_app/immutable/chunks/x.DXpGL3Re.js","_app/immutable/chunks/chevron-right.BVstNg2_.js","_app/immutable/chunks/plus.WugTGZSv.js","_app/immutable/chunks/class.9GukHOdr.js","_app/immutable/chunks/Login.COpvZdt1.js","_app/immutable/chunks/input.CQDk-SFX.js","_app/immutable/chunks/shared.D0owhxs8.js","_app/immutable/chunks/event-modifiers.CWmzcjye.js","_app/immutable/chunks/eye.DvOF9_YA.js"];
+export const stylesheets = ["_app/immutable/assets/0.5u4VM-2d.css","_app/immutable/assets/tailwind.BXiy2upv.css"];
+export const fonts = [];

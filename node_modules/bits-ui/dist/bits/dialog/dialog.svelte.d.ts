@@ -1,0 +1,160 @@
+import type { KeyboardEventHandler, MouseEventHandler, PointerEventHandler } from "svelte/elements";
+import type { ReadableBoxedValues, WritableBoxedValues } from "../../internal/box.svelte.js";
+import type { WithRefProps } from "../../internal/types.js";
+type DialogVariant = "alert-dialog" | "dialog";
+type DialogRootStateProps = WritableBoxedValues<{
+    open: boolean;
+}> & ReadableBoxedValues<{
+    variant: DialogVariant;
+}>;
+declare class DialogRootState {
+    open: DialogRootStateProps["open"];
+    variant: DialogRootStateProps["variant"];
+    triggerNode: HTMLElement | null;
+    titleNode: HTMLElement | null;
+    contentNode: HTMLElement | null;
+    descriptionNode: HTMLElement | null;
+    contentId: string | undefined;
+    titleId: string | undefined;
+    triggerId: string | undefined;
+    descriptionId: string | undefined;
+    cancelNode: HTMLElement | null;
+    attrs: {
+        readonly content: "data-dialog-content" | "data-alert-dialog-content";
+        readonly trigger: "data-dialog-trigger" | "data-alert-dialog-trigger";
+        readonly overlay: "data-dialog-overlay" | "data-alert-dialog-overlay";
+        readonly title: "data-dialog-title" | "data-alert-dialog-title";
+        readonly description: "data-dialog-description" | "data-alert-dialog-description";
+        readonly close: "data-dialog-close" | "data-alert-dialog-close";
+        readonly cancel: "data-dialog-cancel" | "data-alert-dialog-cancel";
+        readonly action: "data-dialog-action" | "data-alert-dialog-action";
+    };
+    constructor(props: DialogRootStateProps);
+    handleOpen: () => void;
+    handleClose: () => void;
+    sharedProps: {
+        readonly "data-state": "open" | "closed";
+    };
+}
+type DialogTriggerStateProps = WithRefProps & ReadableBoxedValues<{
+    disabled: boolean;
+}>;
+declare class DialogTriggerState {
+    #private;
+    constructor(props: DialogTriggerStateProps, root: DialogRootState);
+    props: {
+        readonly "data-state": "open" | "closed";
+        readonly id: string;
+        readonly "aria-haspopup": "dialog";
+        readonly "aria-expanded": "true" | "false";
+        readonly "aria-controls": string | undefined;
+        readonly onpointerdown: PointerEventHandler<HTMLButtonElement>;
+        readonly onkeydown: KeyboardEventHandler<HTMLButtonElement>;
+        readonly onclick: MouseEventHandler<HTMLButtonElement>;
+    };
+}
+type DialogCloseStateProps = WithRefProps & ReadableBoxedValues<{
+    variant: "action" | "cancel" | "close";
+    disabled: boolean;
+}>;
+declare class DialogCloseState {
+    #private;
+    constructor(props: DialogCloseStateProps, root: DialogRootState);
+    props: {
+        readonly "data-state": "open" | "closed";
+        readonly id: string;
+        readonly onpointerdown: PointerEventHandler<HTMLButtonElement>;
+        readonly onclick: MouseEventHandler<HTMLButtonElement>;
+        readonly onkeydown: KeyboardEventHandler<HTMLButtonElement>;
+    };
+}
+type DialogActionStateProps = WithRefProps;
+declare class DialogActionState {
+    #private;
+    constructor(props: DialogActionStateProps, root: DialogRootState);
+    props: {
+        readonly "data-state": "open" | "closed";
+        readonly id: string;
+    };
+}
+type DialogTitleStateProps = WithRefProps<ReadableBoxedValues<{
+    level: 1 | 2 | 3 | 4 | 5 | 6;
+}>>;
+declare class DialogTitleState {
+    #private;
+    constructor(props: DialogTitleStateProps, root: DialogRootState);
+    props: {
+        readonly "data-state": "open" | "closed";
+        readonly id: string;
+        readonly role: "heading";
+        readonly "aria-level": 1 | 2 | 3 | 4 | 5 | 6;
+    };
+}
+type DialogDescriptionStateProps = WithRefProps;
+declare class DialogDescriptionState {
+    #private;
+    constructor(props: DialogDescriptionStateProps, root: DialogRootState);
+    props: {
+        readonly "data-state": "open" | "closed";
+        readonly id: string;
+    };
+}
+type DialogContentStateProps = WithRefProps;
+declare class DialogContentState {
+    #private;
+    root: DialogRootState;
+    constructor(props: DialogContentStateProps, root: DialogRootState);
+    snippetProps: {
+        open: boolean;
+    };
+    props: {
+        readonly "data-state": "open" | "closed";
+        readonly id: string;
+        readonly role: "dialog" | "alertdialog";
+        readonly "aria-describedby": string | undefined;
+        readonly "aria-labelledby": string | undefined;
+        readonly style: {
+            readonly pointerEvents: "auto";
+        };
+    };
+}
+type DialogOverlayStateProps = WithRefProps;
+declare class DialogOverlayState {
+    #private;
+    root: DialogRootState;
+    constructor(props: DialogOverlayStateProps, root: DialogRootState);
+    snippetProps: {
+        open: boolean;
+    };
+    props: {
+        readonly "data-state": "open" | "closed";
+        readonly id: string;
+        readonly style: {
+            readonly pointerEvents: "auto";
+        };
+    };
+}
+type AlertDialogCancelStateProps = WithRefProps & ReadableBoxedValues<{
+    disabled: boolean;
+}>;
+declare class AlertDialogCancelState {
+    #private;
+    constructor(props: AlertDialogCancelStateProps, root: DialogRootState);
+    props: {
+        readonly "data-state": "open" | "closed";
+        readonly id: string;
+        readonly onpointerdown: PointerEventHandler<HTMLButtonElement>;
+        readonly onclick: MouseEventHandler<HTMLButtonElement>;
+        readonly onkeydown: KeyboardEventHandler<HTMLButtonElement>;
+    };
+}
+export declare function useDialogRoot(props: DialogRootStateProps): DialogRootState;
+export declare function useDialogTrigger(props: DialogTriggerStateProps): DialogTriggerState;
+export declare function useDialogTitle(props: DialogTitleStateProps): DialogTitleState;
+export declare function useDialogContent(props: DialogContentStateProps): DialogContentState;
+export declare function useDialogOverlay(props: DialogOverlayStateProps): DialogOverlayState;
+export declare function useDialogDescription(props: DialogDescriptionStateProps): DialogDescriptionState;
+export declare function useDialogClose(props: DialogCloseStateProps): DialogCloseState;
+export declare function useAlertDialogCancel(props: AlertDialogCancelStateProps): AlertDialogCancelState;
+export declare function useAlertDialogAction(props: DialogActionStateProps): DialogActionState;
+export {};
