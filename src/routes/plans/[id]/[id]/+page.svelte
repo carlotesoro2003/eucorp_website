@@ -4,6 +4,8 @@
   import jsPDF from "jspdf";
   import autoTable from "jspdf-autotable";
   import { page } from "$app/stores";
+  import { Search, ArrowUpDown } from "lucide-svelte";
+
 
   interface ActionPlan {
     id: number;
@@ -31,11 +33,22 @@
     name: string;
   }
 
+	type SortField = "department_name" | "actions_taken" | "kpi" | "target_output" | "key_person_responsible";
+	type SortDirection = "asc" | "desc";
+
+  let searchQuery: string = $state("");
+	let currentPage: number = $state(1);
+	let itemsPerPage: number = $state(5);
+	let sortField: SortField = $state("department_name");
+	let sortDirection: SortDirection = $state("asc");
+
+  
+
   let actionPlans: ActionPlan[] = [];
-  let displayedActionPlans: ActionPlan[] = [];
-  let departments: { id: string; name: string }[] = [];
-  let selectedDepartment: string | "all" = "all";
-  let filterType: "all" | "approved" | "notApproved" = "all";
+  let displayedActionPlans: ActionPlan[] = $state([]);
+  let departments: { id: string; name: string }[] = $state([]);
+  let selectedDepartment: string | "all" = $state("all");
+  let filterType: "all" | "approved" | "notApproved" = $state("all");
 
   let objective: StrategicObjective | null = null;
   let strategicGoal: StrategicGoal | null = null;
@@ -395,60 +408,107 @@
 
     doc.save("ActionPlans.pdf");
   };
+
+  const filteredAndSortedPlans = $derived(
+		displayedActionPlans
+			.filter((plan) => {
+				const searchFields = `${plan.department_name} ${plan.actions_taken} ${plan.kpi} ${plan.target_output} ${plan.key_person_responsible}`.toLowerCase();
+				return searchFields.includes(searchQuery.toLowerCase());
+			})
+			.sort((a, b) => {
+				const aValue = a[sortField].toString().toLowerCase();
+				const bValue = b[sortField].toString().toLowerCase();
+				return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+			})
+	);
+
+	const paginatedPlans = $derived(filteredAndSortedPlans.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
+
+	const totalPages = $derived(Math.ceil(filteredAndSortedPlans.length / itemsPerPage));
+
+	/** Toggle sort direction and field */
+	const toggleSort = (field: SortField) => {
+		if (sortField === field) {
+			sortDirection = sortDirection === "asc" ? "desc" : "asc";
+		} else {
+			sortField = field;
+			sortDirection = "asc";
+		}
+	};
+      
+
 </script>
 
 <div class="min-h-screen p-8">
   <h1 class="text-2xl font-bold mb-4">Action Plans</h1>
 
-  <!-- Department Filter -->
-  <div class="mb-4 flex gap-4">
-    <select
-      class="select select-bordered"
-      bind:value={selectedDepartment}
-      on:change={applyFilters}
-    >
-      <option value="all">All Departments</option>
-      {#each departments as department}
-        <option value={department.name}>{department.name}</option>
-      {/each}
-    </select>
+  <div class="flex flex-col md:flex-row gap-4 mb-4">
+		<div class="flex flex-col md:flex-row gap-4 w-full">
+			<!-- Search Input -->
+			<div class="relative flex-1">
+				<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+				<input type="text" bind:value={searchQuery} placeholder="Search action plans..." class="pl-10 pr-4 py-2 bg-secondary border-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring" />
+			</div>
 
-    <button class="btn btn-primary" on:click={() => { filterType = "all"; applyFilters(); }}>
-      All
-    </button>
-    <button class="btn btn-secondary" on:click={() => { filterType = "approved"; applyFilters(); }}>
-      Approved
-    </button>
-    <button class="btn btn-error" on:click={() => { filterType = "notApproved"; applyFilters(); }}>
-      Not Approved
-    </button>
-  </div>
+			<!-- Department Filter -->
+			<select class="select select-bordered w-full md:w-48" bind:value={selectedDepartment} onchange={applyFilters}>
+				<option value="all">All Departments</option>
+				{#each departments as department}
+					<option value={department.name}>{department.name}</option>
+				{/each}
+			</select>
 
-  <!-- Export to PDF -->
-  {#if displayedActionPlans.length > 0}
-    <button class="btn btn-secondary mb-4" on:click={exportToPDF}>
-      Export to PDF
-    </button>
-  {/if}
+			<!-- Status Filter -->
+			<select class="select select-bordered w-full md:w-48" bind:value={filterType} onchange={applyFilters}>
+				<option value="all">All Status</option>
+				<option value="approved">Approved</option>
+				<option value="notApproved">Not Approved</option>
+			</select>
 
+			<!-- Items per page -->
+			<select bind:value={itemsPerPage} class="select select-bordered w-full md:w-48">
+				<option value={5}>5 per page</option>
+				<option value={10}>10 per page</option>
+				<option value={25}>25 per page</option>
+				<option value={50}>50 per page</option>
+			</select>
+		</div>
+
+		<!-- Export Button -->
+		{#if displayedActionPlans.length > 0}
+			<button class="btn btn-secondary whitespace-nowrap" onclick={exportToPDF}>Export to PDF</button>
+		{/if}
+	</div>
   <!-- Table for Action Plans -->
   {#if isLoading}
-    <div>Loading action plans...</div>
-  {:else if displayedActionPlans.length > 0}
-    <div class="overflow-x-auto">
-      <table class="table w-full shadow-lg rounded-lg">
-        <thead>
+  <div class="flex justify-center p-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+  {:else if paginatedPlans.length > 0}
+    <div class="overflow-x-auto bg-card rounded-lg shadow border border-border">
+      <table class="min-w-full table-auto">
+        <thead class="bg-muted/50">
           <tr>
-            <th>Department</th>
-            <th>Actions Taken</th>
+            <th class="px-4 py-3 text-left">
+							<button onclick={() => toggleSort("department_name")} class="flex items-center gap-1 hover:text-primary">
+								Department
+								<ArrowUpDown size={16} class={sortField === "department_name" ? "text-primary" : ""} />
+							</button>
+						</th>
+            <th class="px-4 py-3 text-left">
+							<button onclick={() => toggleSort("actions_taken")} class="flex items-center gap-1 hover:text-primary">
+								Actions Taken
+								<ArrowUpDown size={16} class={sortField === "actions_taken" ? "text-primary" : ""} />
+							</button>
+						</th>
             <th>KPI</th>
             <th>Target Output</th>
             <th>Key Person Responsible</th>
-            <th>Actions</th>
+            <th class="px-4 py-3 text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {#each displayedActionPlans as plan}
+          {#each paginatedPlans as plan}
             <tr>
               <td>{plan.department_name}</td>
               <td>{plan.actions_taken}</td>
@@ -458,7 +518,7 @@
               <td class="flex space-x-2">
                 <button
                   class="btn btn-sm btn-success text-white"
-                  on:click={() => approveActionPlan(plan.id)}
+                  onclick={() => approveActionPlan(plan.id)}
                   disabled={
                     isLoading || // Disable while loading
                     (currentUserRole === "admin" && plan.is_approved) || 
@@ -482,7 +542,7 @@
                       : "Approve as President"
                     : "Approve"}
                 </button>
-                <button class="btn btn-sm btn-error text-white" on:click={() => deleteActionPlan(plan.id)}>
+                <button class="btn btn-sm btn-error text-white" onclick={() => deleteActionPlan(plan.id)}>
                   Delete
                 </button>
               </td>
@@ -491,6 +551,17 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Pagination -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
+			<div class="text-sm text-muted-foreground">
+				Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredAndSortedPlans.length)} of {filteredAndSortedPlans.length} results
+			</div>
+			<div class="flex gap-2">
+				<button disabled={currentPage === 1} onclick={() => (currentPage -= 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">Previous</button>
+				<button disabled={currentPage === totalPages} onclick={() => (currentPage += 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">Next</button>
+			</div>
+		</div>
   {:else}
     <div>No action plans found for this objective.</div>
   {/if}
