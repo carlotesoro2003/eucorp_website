@@ -93,39 +93,46 @@
   };
 
   const fetchActionPlans = async () => {
-    const { data: plansData, error: plansError } = await supabase
-      .from("action_plans")
-      .select(`
-        *,
-        profiles (
-          first_name,
-          last_name,
-          departments (name)
-        )
-      `);
+  if (!objective_id) {
+    console.error("Objective ID is missing.");
+    return;
+  }
 
-    if (plansError) {
-      console.error("Error fetching action plans:", plansError);
-    } else {
-      actionPlans = plansData.map((plan: any) => ({
-        id: plan.id,
-        actions_taken: plan.actions_taken,
-        kpi: plan.kpi,
-        target_output: plan.target_output,
-        key_person_responsible: plan.key_person_responsible,
-        created_at: plan.created_at,
-        objective_id: plan.objective_id,
-        is_approved: plan.is_approved,
-        is_approved_vp: plan.is_approved_vp,
-        is_approved_president: plan.is_approved_president,
-        profile_id: plan.profile_id,
-        department_name: plan.profiles?.departments?.name || "Unknown",
-        user_name: `${plan.profiles?.first_name || ""} ${plan.profiles?.last_name || ""}`,
-      }));
+  const { data: plansData, error: plansError } = await supabase
+    .from("action_plans")
+    .select(`
+      *,
+      profiles (
+        first_name,
+        last_name,
+        departments (name)
+      )
+    `)
+    .eq("objective_id", objective_id); // Filter by objective_id
 
-      applyFilters();
-    }
-  };
+  if (plansError) {
+    console.error("Error fetching action plans:", plansError);
+  } else {
+    actionPlans = plansData.map((plan: any) => ({
+      id: plan.id,
+      actions_taken: plan.actions_taken,
+      kpi: plan.kpi,
+      target_output: plan.target_output,
+      key_person_responsible: plan.key_person_responsible,
+      created_at: plan.created_at,
+      objective_id: plan.objective_id,
+      is_approved: plan.is_approved,
+      is_approved_vp: plan.is_approved_vp,
+      is_approved_president: plan.is_approved_president,
+      profile_id: plan.profile_id,
+      department_name: plan.profiles?.departments?.name || "Unknown",
+      user_name: `${plan.profiles?.first_name || ""} ${plan.profiles?.last_name || ""}`,
+    }));
+
+    applyFilters();
+  }
+};
+
 
   const fetchDepartments = async () => {
     const { data: departmentData, error: departmentError } = await supabase
