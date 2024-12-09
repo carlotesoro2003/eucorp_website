@@ -2,6 +2,7 @@
   import { supabase } from "$lib/supabaseClient";
   import { onMount } from "svelte";
 
+  // Interfaces
   interface Risk {
     id: string;
     rrn: string;
@@ -49,6 +50,7 @@
     riskMonitoringRating: number | null;
   }
 
+  // Variables
   let risks: Risk[] = [];
   let savedRisks: Risk[] = [];
   let riskAssessments: RiskAssessment[] = [];
@@ -57,6 +59,7 @@
   let severity: Severity[] = [];
   let riskControlRating: RiskControlRating[] = [];
   let riskMonitoringRating: RiskMonitoringRating[] = [];
+  let isCalculatingRiskControlRating = false;
 
   let session: any = null;
   let profile: any = null;
@@ -66,7 +69,7 @@
   let successMessage: string | null = null;
   let errorMessage: string | null = null;
 
-  // Dialog box states
+  // Dialog state
   let showDialog = false;
   let selectedRisk: Risk | null = null;
   let newRiskAssessment: RiskAssessment = {
@@ -77,14 +80,13 @@
     riskMonitoringRating: null,
   };
 
-  // Fetch Functions
+  // Fetch functions
   const fetchClassification = async () => {
     try {
       const { data, error } = await supabase.from("classification").select("*");
       if (error) throw error;
       classification = data;
     } catch (error) {
-      console.error("Error fetching classification:", error);
       errorMessage = "Failed to fetch classification.";
     }
   };
@@ -97,7 +99,6 @@
       if (error) throw error;
       likelihoodRating = data;
     } catch (error) {
-      console.error("Error fetching likelihood rating:", error);
       errorMessage = "Failed to fetch likelihood rating.";
     }
   };
@@ -108,7 +109,6 @@
       if (error) throw error;
       severity = data;
     } catch (error) {
-      console.error("Error fetching severity:", error);
       errorMessage = "Failed to fetch severity.";
     }
   };
@@ -121,7 +121,6 @@
       if (error) throw error;
       riskControlRating = data;
     } catch (error) {
-      console.error("Error fetching risk control rating:", error);
       errorMessage = "Failed to fetch risk control rating.";
     }
   };
@@ -134,7 +133,6 @@
       if (error) throw error;
       riskMonitoringRating = data;
     } catch (error) {
-      console.error("Error fetching risk monitoring rating:", error);
       errorMessage = "Failed to fetch risk monitoring rating.";
     }
   };
@@ -146,29 +144,20 @@
         .select("*")
         .order("rrn", { ascending: true });
       if (error) throw error;
-
-      savedRisks = data.sort((a, b) => {
-        const getNumericPart = (rrn: string) => {
-          const match = rrn.match(/(\d+)$/);
-          return match ? parseInt(match[0], 10) : 0;
-        };
-
-        return getNumericPart(a.rrn) - getNumericPart(b.rrn);
-      });
+      savedRisks = data;
     } catch (error) {
-      console.error("Error fetching risks:", error);
       errorMessage = "Failed to fetch saved risks.";
     }
   };
 
   const fetchRiskAssessments = async () => {
     try {
-      const { data, error } = await supabase.from("risk_assessment").select("*");
+      const { data, error } = await supabase
+        .from("risk_assessment")
+        .select("*");
       if (error) throw error;
-
       riskAssessments = data;
     } catch (error) {
-      console.error("Error fetching risk assessments:", error);
       errorMessage = "Failed to fetch risk assessments.";
     }
   };
@@ -176,29 +165,23 @@
   const fetchUserProfile = async () => {
     isLoading = true;
     try {
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
-
+      const { data: sessionData } = await supabase.auth.getSession();
       session = sessionData.session;
+
       if (session) {
-        const { data: profileData, error: profileError } = await supabase
+        const { data: profileData } = await supabase
           .from("profiles")
           .select("id, department_id")
           .eq("id", session.user.id)
           .single();
-
-        if (profileError) throw profileError;
         profile = profileData;
 
-        const { data: departmentData, error: departmentError } = await supabase
+        const { data: departmentData } = await supabase
           .from("departments")
           .select("name")
           .eq("id", profile.department_id)
           .single();
-
-        if (departmentError) throw departmentError;
-        departmentName = departmentData.name;
+        departmentName = departmentData ? departmentData.name : "Unknown Department";
 
         await fetchRisks();
         await fetchRiskAssessments();
@@ -211,13 +194,84 @@
         errorMessage = "User is not logged in.";
       }
     } catch (error) {
-      console.error("Error fetching user profile or department:", error);
       errorMessage = "Failed to fetch profile or department details.";
     } finally {
       isLoading = false;
     }
   };
 
+  // Utility functions
+  function getRiskControlRating(
+    likelihoodSymbol: string,
+    severityValue: number
+  ): string {
+    const likelihoodMapping: { [key: string]: number } = {
+      A: 1,
+      B: 2,
+      C: 3,
+      D: 4,
+      E: 5,
+    };
+
+    const ratingMatrix: string[][] = [
+      ["M", "H", "H", "VH", "VH"],
+      ["L", "M", "H", "H", "VH"],
+      ["L", "L", "M", "H", "H"],
+      ["L", "L", "M", "M", "H"],
+      ["L", "L", "L", "M", "M"],
+    ];
+
+    const likelihoodIndex = likelihoodMapping[likelihoodSymbol] - 1;
+    const severityIndex = severityValue - 1;
+
+    if (
+      likelihoodIndex < 0 ||
+      likelihoodIndex > 4 ||
+      severityIndex < 0 ||
+      severityIndex > 4
+    ) {
+      throw new Error("Invalid likelihood symbol or severity value.");
+    }
+
+    return ratingMatrix[likelihoodIndex][severityIndex];
+  }
+
+  function calculateRiskControlRating() {
+    if (newRiskAssessment.likelihoodRating && newRiskAssessment.severity) {
+      const likelihood = likelihoodRating.find(
+        (rating) => rating.id === newRiskAssessment.likelihoodRating
+      )?.symbol;
+
+      const severityValue = severity.find(
+        (sev) => sev.id === newRiskAssessment.severity
+      )?.value;
+
+      if (likelihood && severityValue) {
+        const ratingSymbol = getRiskControlRating(likelihood, severityValue);
+        const matchingRating = riskControlRating.find(
+          (rating) => rating.symbol === ratingSymbol
+        );
+
+        newRiskAssessment.riskControlRating = matchingRating
+          ? matchingRating.id
+          : null;
+      } else {
+        newRiskAssessment.riskControlRating = null;
+      }
+    } else {
+      newRiskAssessment.riskControlRating = null;
+    }
+  }
+
+  // Watch for changes in inputs and trigger calculation
+  $: if (
+    newRiskAssessment.likelihoodRating !== null &&
+    newRiskAssessment.severity !== null
+  ) {
+    calculateRiskControlRating();
+  }
+
+  // Event Handlers
   const openRiskAssessmentDialog = (risk: Risk) => {
     selectedRisk = risk;
     showDialog = true;
@@ -226,55 +280,30 @@
   const closeRiskAssessmentDialog = () => {
     showDialog = false;
     selectedRisk = null;
-    newRiskAssessment = {
-      risk_id: "",
-      likelihoodRating: null,
-      severity: null,
-      riskControlRating: null,
-      riskMonitoringRating: null,
-    };
   };
 
   const saveRiskAssessment = async () => {
-    try {
-      if (!selectedRisk) {
-        errorMessage = "No risk selected for assessment.";
-        return;
-      }
+    if (!newRiskAssessment.riskControlRating) {
+      errorMessage = "Risk Control Rating is not calculated.";
+      return;
+    }
 
-      const { data, error } = await supabase.from("risk_assessment").insert({
-        risk_id: selectedRisk.id,
-        lr: newRiskAssessment.likelihoodRating,
-        s: newRiskAssessment.severity,
-        rcr: newRiskAssessment.riskControlRating,
-        rmr: newRiskAssessment.riskMonitoringRating,
-      });
+    const { error } = await supabase.from("risk_assessment").insert({
+      risk_id: selectedRisk?.id,
+      lr: newRiskAssessment.likelihoodRating,
+      s: newRiskAssessment.severity,
+      rcr: newRiskAssessment.riskControlRating,
+      rmr: newRiskAssessment.riskMonitoringRating,
+    });
 
-      if (error) throw error;
-
-      successMessage = "Risk assessment saved successfully!";
-      await fetchRiskAssessments(); // Refresh risk assessments
-      closeRiskAssessmentDialog();
-    } catch (error) {
-      console.error("Error saving risk assessment:", error);
+    if (error) {
       errorMessage = "Failed to save risk assessment.";
+    } else {
+      successMessage = "Risk assessment saved!";
+      fetchRiskAssessments();
     }
-  };
 
-  const deleteRisk = async (riskId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("risks")
-        .delete()
-        .eq("id", riskId);
-
-      if (error) throw error;
-      successMessage = "Risk deleted successfully!";
-      savedRisks = savedRisks.filter((risk) => risk.id !== riskId);
-    } catch (error) {
-      console.log("Error deleting risk: ", error);
-      errorMessage = "Failed to delete risk.";
-    }
+    closeRiskAssessmentDialog();
   };
 
   onMount(() => {
@@ -311,7 +340,8 @@
           <td>{risk.rrn}</td>
           <td>{risk.risk_statement}</td>
           <td>
-            {classification.find((cls) => cls.id === risk.classification)?.name || "N/A"}
+            {classification.find((cls) => cls.id === risk.classification)
+              ?.name || "N/A"}
           </td>
           <td>{risk.actions}</td>
           <td>{risk.key_persons}</td>
@@ -325,11 +355,6 @@
               Add Assessment
             </button>
           </td>
-          <td>
-            <button class="btn btn-sm btn-error" on:click={() => deleteRisk(risk.id)}>
-              Delete
-            </button>
-          </td>
         </tr>
       {/each}
     </tbody>
@@ -337,7 +362,7 @@
 
   {#if showDialog}
     <div class="modal modal-open">
-      <div class="modal-box ">
+      <div class="modal-box">
         <h3 class="font-bold text-lg">
           Add Risk Assessment for {selectedRisk?.rrn}
         </h3>
@@ -367,16 +392,23 @@
         </select>
 
         <label class="label mt-2" for="riskControlRating">Risk Control Rating</label>
-        <select
-          id="riskControlRating"
-          bind:value={newRiskAssessment.riskControlRating}
-          class="select select-bordered w-full max-w-xs"
-        >
-          <option value="" disabled>Select control rating</option>
-          {#each riskControlRating as rating}
-            <option value={rating.id}>{rating.symbol} - {rating.name}</option>
-          {/each}
-        </select>
+        <div>
+          {#if isCalculatingRiskControlRating}
+            <div class="flex items-center">
+              <p>Calculating Risk Control Rating...</p>
+              <div class="ml-2 spinner-border animate-spin inline-block w-4 h-4 border-2 rounded-full"></div>
+            </div>
+          {:else if newRiskAssessment.riskControlRating}
+            <p class="text-lg font-bold">
+              {#if riskControlRating.find(r => r.id === newRiskAssessment.riskControlRating)}
+                {riskControlRating.find(r => r.id === newRiskAssessment.riskControlRating)?.symbol || "N/A"} - 
+                {riskControlRating.find(r => r.id === newRiskAssessment.riskControlRating)?.name || "N/A"}
+              {/if}
+            </p>
+          {:else}
+            <p class="text-gray-500">No Risk Control Rating available</p>
+          {/if}
+        </div>
 
         <label class="label mt-2" for="riskMonitoringRating">Risk Monitoring Rating</label>
         <select
@@ -391,7 +423,6 @@
             {/if}
           {/each}
         </select>
-
 
         <div class="modal-action">
           <button class="btn btn-primary" on:click={saveRiskAssessment}>Save</button>

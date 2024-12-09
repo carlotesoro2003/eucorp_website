@@ -273,10 +273,10 @@ const approveRisk = async (id: string) => {
       const { error: monitoringError } = await supabase
         .from("risk_monitoring")
         .insert(riskMonitoringEntries);
-
       if (monitoringError) {
         console.error("Error inserting into risk_monitoring:", monitoringError);
       }
+      console.log("Risk Monitoring Entries:", riskMonitoringEntries);
     }
 
     // Refresh the list of risks
