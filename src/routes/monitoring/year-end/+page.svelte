@@ -77,7 +77,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6">
         <div class="flex flex-wrap gap-2 p-2">
           {#each tabs as tab}
-            <button onclick={() => (activeTab = tab.id)} class="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 {activeTab === tab.id ? 'bg-blue-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'}">
+            <button onclick={() => (activeTab = tab.id)} class="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 {activeTab === tab.id ? 'bg-primary hover:bg-primary/90 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'}">
               <svelte:component this={tab.icon} size={18} />
               <span>{tab.label}</span>
             </button>

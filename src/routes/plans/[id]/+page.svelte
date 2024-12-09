@@ -3,11 +3,14 @@
 	import { supabase } from "$lib/supabaseClient";
 	import { page } from "$app/stores";
 	import { goto } from "$app/navigation";
-	import { Search, FileDown, Edit2, Plus, ChevronLeft } from "lucide-svelte";
+	import { Search, FileDown, Pencil, Plus, ChevronLeft, ArrowUpDown } from "lucide-svelte";
 	import jsPDF from "jspdf";
 	import autoTable from "jspdf-autotable";
+	import EditObjectiveForm from "$lib/components/strategic-objectives/EditObjectiveForm.svelte";
+	import AddObjectiveForm from "$lib/components/strategic-objectives/AddObjectiveForm.svelte";
+	import {Eye} from "lucide-svelte";
 
-	/** Types */
+	/** Types definitions */
 	interface StrategicObjective {
 		id: number;
 		name: string;
@@ -27,17 +30,81 @@
 		lead: string;
 	}
 
-	/** State */
+	/** State variables */
 	let searchQuery: string = $state("");
+	let currentPage: number = $state(1);
+	let itemsPerPage: number = $state(5);
+	let sortField: keyof StrategicObjective = $state("name");
+	let sortDirection: "asc" | "desc" = $state("asc");
+	let goalId: number | null = $state(null);
 	let goal: StrategicGoal | null = $state(null);
 	let objectives: StrategicObjective[] = $state([]);
-	let isLoading: boolean = $state(false);
-	let goalId: number | null = $state(null);
+	let isLoading: boolean = $state(true);
+	let editingObjective: StrategicObjective | null = $state(null);
+	let showAddForm: boolean = $state(false);
+	let isSaving: boolean = $state(false);
 	let adminName: string | null = $state(null);
 	let vicePresidentName: string | null = $state(null);
 	let presidentName: string | null = $state(null);
-	let editingObjective: StrategicObjective | null = $state(null);
-	let updatedObjective: StrategicObjective = $state({} as StrategicObjective);
+
+	/** Derived values */
+	const filteredObjectives = $derived(
+		objectives
+			.filter((objective) => {
+				const searchFields = `${objective.name} ${objective.strategic_initiatives} ${objective.kpi} ${objective.persons_involved}`.toLowerCase();
+				return searchFields.includes(searchQuery.toLowerCase());
+			})
+			.sort((a, b) => {
+				const aValue = String(a[sortField]);
+				const bValue = String(b[sortField]);
+				return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+			})
+	);
+
+	const paginatedObjectives = $derived(filteredObjectives.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
+
+	const totalPages = $derived(Math.ceil(filteredObjectives.length / itemsPerPage));
+
+	/** Sort objectives */
+	const toggleSort = (field: keyof StrategicObjective) => {
+		if (sortField === field) {
+			sortDirection = sortDirection === "asc" ? "desc" : "asc";
+		} else {
+			sortField = field;
+			sortDirection = "asc";
+		}
+	};
+
+	/** Save objective */
+	const handleSave = async (data: Partial<StrategicObjective>) => {
+		isSaving = true;
+		try {
+			if (editingObjective) {
+				const { error } = await supabase.from("strategic_objectives").update(data).eq("id", editingObjective.id);
+
+				if (error) throw error;
+			} else {
+				const { error } = await supabase.from("strategic_objectives").insert({ ...data, strategic_goal_id: goalId });
+
+				if (error) throw error;
+			}
+
+			await fetchGoalDetails();
+			editingObjective = null;
+			showAddForm = false;
+		} catch (error) {
+			console.error("Error saving objective:", error);
+		} finally {
+			isSaving = false;
+		}
+	};
+
+	/** Handle objective click */
+	const handleObjectiveClick = (objectiveId: number) => {
+		if (goalId !== null) {
+			goto(`/plans/${goalId}/${objectiveId}`);
+		}
+	};
 
 	/** Fetch admin name */
 	const fetchAdminName = async () => {
@@ -80,7 +147,7 @@
 	};
 
 	/** Fetch goal details */
-	const fetchGoalDetails = async (): Promise<void> => {
+	const fetchGoalDetails = async () => {
 		if (goalId === null) return;
 		isLoading = true;
 
@@ -119,27 +186,6 @@
 			console.error(error);
 		} finally {
 			isLoading = false;
-		}
-	};
-
-	/** Update objective */
-	const updateObjective = async () => {
-		if (editingObjective) {
-			const { error } = await supabase.from("strategic_objectives").update(updatedObjective).eq("id", editingObjective.id);
-
-			if (error) {
-				console.error("Error updating objective:", error);
-			} else {
-				fetchGoalDetails();
-				editingObjective = null;
-			}
-		}
-	};
-
-	/** Handle objective click */
-	const handleObjectiveClick = (objectiveId: number) => {
-		if (goalId !== null) {
-			goto(`/plans/${goalId}/${objectiveId}`);
 		}
 	};
 
@@ -192,25 +238,17 @@
 
 	/** Initialize data */
 	onMount(() => {
-		$: goalId = $page.params.id ? parseInt($page.params.id) : null;
+		goalId = $page.params.id ? parseInt($page.params.id) : null;
 		fetchGoalDetails();
 		fetchAdminName();
 		fetchVPAndPresidentNames();
 	});
-
-	/** Filtered objectives */
-	const filteredObjectives = $derived(
-		objectives.filter((objective) => {
-			const searchFields = `${objective.name} ${objective.strategic_initiatives} ${objective.kpi} ${objective.persons_involved}`.toLowerCase();
-			return searchFields.includes(searchQuery.toLowerCase());
-		})
-	);
 </script>
 
 <div class="container mx-auto p-4">
 	{#if isLoading}
 		<div class="flex justify-center items-center min-h-[200px]">
-			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
 		</div>
 	{:else}
 		<div class="flex flex-col gap-6">
@@ -236,27 +274,42 @@
 					{/if}
 				</div>
 				<div class="flex flex-col sm:flex-row gap-2">
-					<a href="/plans/strategicPlans" class="btn btn-primary flex items-center gap-2">
+					<button onclick={() => (showAddForm = true)} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 justify-center whitespace-nowrap w-full md:w-auto">
 						<Plus size={20} />
 						Add Objectives
-					</a>
-					<button onclick={exportToPDF} class="btn btn-secondary flex items-center gap-2">
+					</button>
+					<button onclick={exportToPDF} class="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-secondary/80 justify-center flex-1 md:flex-initial whitespace-nowrap">
 						<FileDown size={20} />
 						Export PDF
 					</button>
 				</div>
 			</div>
 
-			{#if objectives.length > 0}
-				<!-- Search -->
-				<div class="relative">
-					<Search
-						class="absolute left
+			{#if showAddForm}
+				<div class="bg-card rounded-lg p-4 border border-border">
+					<AddObjectiveForm {isSaving} onSave={handleSave} onCancel={() => (showAddForm = false)} />
+				</div>
+			{/if}
 
--3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-						size={20}
-					/>
-					<input type="text" bind:value={searchQuery} placeholder="Search objectives..." class="pl-10 pr-4 py-2 bg-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring" />
+			{#if editingObjective}
+				<div class="bg-card rounded-lg p-4 border border-border">
+					<EditObjectiveForm objective={editingObjective} {isSaving} onSave={handleSave} onCancel={() => (editingObjective = null)} />
+				</div>
+			{/if}
+
+			{#if objectives.length > 0}
+				<!-- Search and filters -->
+				<div class="flex flex-col md:flex-row gap-4">
+					<div class="relative flex-3">
+						<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+						<input type="text" bind:value={searchQuery} placeholder="Search objectives..." class="pl-10 pr-4 py-2 bg-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring" />
+					</div>
+					<select bind:value={itemsPerPage} class="bg-secondary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring w-full md:w-[150px]">
+						<option value={5}>5 per page</option>
+						<option value={10}>10 per page</option>
+						<option value={25}>25 per page</option>
+						<option value={50}>50 per page</option>
+					</select>
 				</div>
 
 				<!-- Table -->
@@ -264,83 +317,61 @@
 					<table class="min-w-full table-auto">
 						<thead class="bg-muted/50">
 							<tr>
-								<th class="px-4 py-3 text-left">Strategic Objectives</th>
+								<th class="px-4 py-3 text-left">
+									<button onclick={() => toggleSort("name")} class="flex items-center gap-1 hover:text-primary">
+										Strategic Objectives
+										<ArrowUpDown size={16} class={sortField === "name" ? "text-primary" : ""} />
+									</button>
+								</th>
 								<th class="px-4 py-3 text-left">Strategic Initiatives</th>
 								<th class="px-4 py-3 text-left">KPI</th>
 								<th class="px-4 py-3 text-left">Persons Involved</th>
 								<th class="px-4 py-3 text-left">Target</th>
 								<th class="px-4 py-3 text-left">Evaluation Measures</th>
-								<th class="px-4 py-3 text-center">Actions</th>
+								<th class="px-4 py-3 text-center w-[200px]">Actions</th>
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-border">
-							{#each filteredObjectives as objective}
-								<tr>
-									{#if editingObjective?.id === objective.id}
-										<td class="px-4 py-3">
-											<textarea bind:value={updatedObjective.name} class="textarea textarea-bordered w-full" rows="3"></textarea>
-										</td>
-										<td class="px-4 py-3">
-											<textarea bind:value={updatedObjective.strategic_initiatives} class="textarea textarea-bordered w-full" rows="3"></textarea>
-										</td>
-										<td class="px-4 py-3">
-											<textarea bind:value={updatedObjective.kpi} class="textarea textarea-bordered w-full" rows="3"></textarea>
-										</td>
-										<td class="px-4 py-3">
-											<textarea bind:value={updatedObjective.persons_involved} class="textarea textarea-bordered w-full" rows="3"></textarea>
-										</td>
-										<td class="px-4 py-3">
-											<textarea bind:value={updatedObjective.target} class="textarea textarea-bordered w-full" rows="3"></textarea>
-										</td>
-										<td class="px-4 py-3">
-											<textarea bind:value={updatedObjective.eval_measures} class="textarea textarea-bordered w-full" rows="3"></textarea>
-										</td>
-										<td class="px-4 py-3">
-											<div class="flex flex-col gap-2">
-												<button onclick={updateObjective} class="btn btn-primary btn-sm">Save</button>
-												<button onclick={() => (editingObjective = null)} class="btn btn-ghost btn-sm">Cancel</button>
-											</div>
-										</td>
-									{:else}
-										<td class="px-4 py-3">{objective.name}</td>
-										<td class="px-4 py-3">{objective.strategic_initiatives}</td>
-										<td class="px-4 py-3">{objective.kpi}</td>
-										<td class="px-4 py-3">{objective.persons_involved}</td>
-										<td class="px-4 py-3">{objective.target}</td>
-										<td class="px-4 py-3">{objective.eval_measures}</td>
-										<td class="px-4 py-3">
-											<div class="flex justify-center gap-2">
-												<button onclick={() => handleObjectiveClick(objective.id)} class="btn btn-primary btn-sm">View Plans</button>
-												<button
-													onclick={() => {
-														editingObjective = objective;
-														updatedObjective = { ...objective };
-													}}
-													class="btn btn-ghost btn-sm"
-												>
-													<Edit2 size={18} />
-												</button>
-											</div>
-										</td>
-									{/if}
+							{#each paginatedObjectives as objective}
+								<tr class="hover:bg-muted/50">
+									<td class="px-4 py-3">{objective.name}</td>
+									<td class="px-4 py-3">{objective.strategic_initiatives}</td>
+									<td class="px-4 py-3">{objective.kpi}</td>
+									<td class="px-4 py-3">{objective.persons_involved}</td>
+									<td class="px-4 py-3">{objective.target}</td>
+									<td class="px-4 py-3">{objective.eval_measures}</td>
+									<td class="px-4 py-3">
+										<div class="flex justify-center gap-2">
+											<button onclick={() => handleObjectiveClick(objective.id)} class="btn btn-ghost" title="View plans">
+												<Eye size={18} />
+											</button>
+											<button onclick={() => (editingObjective = objective)} class="btn btn-ghost btn-sm">
+												<Pencil size={18} />
+											</button>
+										</div>
+									</td>
 								</tr>
 							{/each}
 						</tbody>
 					</table>
 				</div>
+
+				<!-- Pagination -->
+				<div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+					<div class="text-sm text-muted-foreground">
+						Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredObjectives.length)} of {filteredObjectives.length} results
+					</div>
+					<div class="flex gap-2">
+						<button disabled={currentPage === 1} onclick={() => (currentPage -= 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">Previous</button>
+						<button disabled={currentPage === totalPages} onclick={() => (currentPage += 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">Next</button>
+					</div>
+				</div>
 			{:else}
 				<div class="text-center py-12 bg-card rounded-lg border border-border">
 					<p class="text-muted-foreground mb-4">No objectives found for this goal.</p>
-					<a href="/plans/strategicPlans" class="btn btn-primary">Add Strategic Objectives</a>
+					<button onclick={() => (showAddForm = true)} class="btn btn-primary">Add Strategic Objectives</button>
 				</div>
 			{/if}
 		</div>
 	{/if}
 </div>
-
-<style>
-	.textarea {
-		resize: none;
-		overflow: hidden;
-	}
-</style>
