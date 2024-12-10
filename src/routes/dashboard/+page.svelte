@@ -36,7 +36,7 @@
         
     </script>
 
-<div class="min-h-screen  p-8">
+<div class="min-h-screen ">
     <div class="flex flex-col items-center justify-center w-full h-full">
       <div class="w-full ">
         {#if loading}
@@ -45,9 +45,7 @@
             <p>Loading...</p> <!-- Show loading state -->
           </div>
         {:else if session !== null && profile}
-          <h1 class="font-bold text-3xl mb-6">
-            Welcome, {profile.first_name} {profile.last_name}
-          </h1>
+       
           <div class="w-full">
             {#if profile.role === 'admin' || profile.role === 'vice_president' || profile.role === 'president'}
               <AdminDashboard />
