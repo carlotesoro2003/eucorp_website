@@ -1,10 +1,3 @@
-    
-/**
- * Calculate risk control rating based on likelihood and severity
- * @param {string} likelihoodSymbol - The likelihood symbol (A-E)
- * @param {number} severityValue - The severity value (1-5)
- * @returns {string} The risk control rating symbol
- */
 interface LikelihoodMapping {
     [key: string]: number;
 }
@@ -29,7 +22,17 @@ const likelihoodMapping: LikelihoodMapping = {
     E: 4,
 };
 
-export function calculateRiskControlRating(likelihoodSymbol: string, severityValue: number): string {
+const monitoringRatingMap: { [key: string]: string } = {
+    L: "Low",
+    M: "Medium",
+    H: "High",
+    VH: "Very High",
+};
+
+export function calculateRiskControlRating(
+    likelihoodSymbol: string,
+    severityValue: number
+): { controlRating: string; monitoringRating: string } {
     // Get likelihood index from mapping
     const likelihoodIndex = likelihoodMapping[likelihoodSymbol];
     // Adjust severity value to 0-based index
@@ -40,6 +43,11 @@ export function calculateRiskControlRating(likelihoodSymbol: string, severityVal
         throw new Error("Invalid likelihood symbol or severity value");
     }
 
-    // Return rating from matrix
-    return ratingMatrix[likelihoodIndex][severityIndex];
+    // Get the control rating from the matrix
+    const controlRating = ratingMatrix[likelihoodIndex][severityIndex];
+
+    // Map control rating to monitoring rating
+    const monitoringRating = monitoringRatingMap[controlRating] || "Undefined";
+
+    return { controlRating, monitoringRating };
 }

@@ -33,6 +33,8 @@ export const types = {
 		status: "string",
 	},
 	RiskAssessment: {
+        rrn: "string",
+        risk_statement: "string",
 		risk_id: "string",
 		likelihoodRating: "number | null",
 		severity: "number | null",
