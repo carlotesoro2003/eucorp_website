@@ -485,6 +485,7 @@ const approveRisk = async (id: string) => {
       <tbody>
         {#each displayedRisks as risk}
           <tr>
+            <td>{risk.rrn}</td>
             <td>{risk.risk_statement}</td>
             <td>
               {classification.find((cls) => cls.id === risk.classification)?.name || "N/A"}
