@@ -1,402 +1,345 @@
-  <script lang="ts">
-    import "tailwindcss/tailwind.css";
-    import { onMount } from "svelte";
-    import { supabase } from "$lib/supabaseClient";
-    import { writable, get } from "svelte/store";
+<script lang="ts">
+	import { onMount } from "svelte";
+	import { supabase } from "$lib/supabaseClient";
+	import { X, AlertCircle, CheckCircle2, Clock, Eye, RefreshCw } from "lucide-svelte";
 
-    interface MonitoringOpportunity {
-      opt_id: number;
-      opt_statement: string;
-      kpi: string;
-      planned_actions: string;
-      time_completed: string | null;
-      evaluation: string;
-      statement: string | null;
-    }
+	interface MonitoringOpportunity {
+		opt_id: number;
+		opt_statement: string;
+		kpi: string;
+		planned_actions: string;
+		time_completed: string | null;
+		evaluation: string;
+		statement: string | null;
+	}
 
-    let opportunities: MonitoringOpportunity[] = [];
-    let profileId: string | null = null;
-    let isLoading = false;
+	// State variables
+	let opportunities: MonitoringOpportunity[] = $state([]);
+	let profileId: string | null = $state(null);
+	let isLoading: boolean = $state(false);
+	let showDialog: boolean = $state(false);
+	let dialogStatement: string = $state("");
+	let goals: {
+		id: number;
+		statement: string;
+		goal: string;
+		evaluation: string;
+		achieved: string | null;
+		isLoading: boolean;
+		timeCompleted: string | null;
+		aiStatement: string | null;
+	}[] = $state([]);
 
-    let goals = writable<
-      {
-        id: number;
-        statement: string;
-        goal: string;
-        evaluation: string;
-        achieved: string | null;
-        isLoading: boolean;
-        timeCompleted: string | null;
-        aiStatement: string | null;
-      }[]
-    >([]);
+	/** Open dialog with statement */
+	function openDialog(statement: string) {
+		dialogStatement = statement;
+		showDialog = true;
+	}
 
-    let showDialog = false;
-    let dialogStatement = "";
+	/** Fetch user profile */
+	const fetchUserProfile = async () => {
+		const {
+			data: { session },
+			error,
+		} = await supabase.auth.getSession();
+		if (error || !session) {
+			console.error("Error fetching session:", error);
+			return;
+		}
 
-    function openDialog(statement: string) {
-      dialogStatement = statement;
-      showDialog = true;
-    }
+		const { user } = session;
+		const { data: profileData, error: profileError } = await supabase.from("profiles").select("id").eq("id", user.id).single();
 
-    const fetchUserProfile = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-      if (error || !session) {
-        console.error("Error fetching session:", error);
-        return;
-      }
+		if (profileError || !profileData) {
+			console.error("Error fetching profile:", profileError);
+			return;
+		}
 
-      const { user } = session;
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", user.id)
-        .single();
+		profileId = profileData.id;
+	};
 
-      if (profileError || !profileData) {
-        console.error("Error fetching profile:", profileError);
-        return;
-      }
+	/** Fetch opportunities */
+	const fetchOpportunities = async () => {
+		isLoading = true;
+		try {
+			const { data: userProfile, error: profileError } = await supabase.from("profiles").select("department_id").eq("id", profileId).single();
 
-      profileId = profileData.id;
-    };
+			if (profileError || !userProfile?.department_id) {
+				console.error("Error fetching user profile or department:", profileError);
+				return;
+			}
 
-    const fetchOpportunities = async () => {
-      isLoading = true;
-      try {
-        // Fetch the logged-in user's department
-        const { data: userProfile, error: profileError } = await supabase
-          .from("profiles")
-          .select("department_id")
-          .eq("id", profileId)
-          .single();
+			const deptId = userProfile.department_id;
 
-        if (profileError || !userProfile?.department_id) {
-          console.error(
-            "Error fetching user profile or department:",
-            profileError
-          );
-          return;
-        }
+			const { data: profileIds, error: profileIdsError } = await supabase.from("profiles").select("id").eq("department_id", deptId);
 
-        const deptId = userProfile.department_id;
+			if (profileIdsError) {
+				console.error("Error fetching profile IDs:", profileIdsError);
+				return;
+			}
 
-        // Fetch profile IDs in the same department
-        const { data: profileIds, error: profileIdsError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("department_id", deptId);
+			const profileIdList = profileIds.map((profile) => profile.id);
 
-        if (profileIdsError) {
-          console.error("Error fetching profile IDs:", profileIdsError);
-          return;
-        }
+			const { data, error } = await supabase
+				.from("opt_monitoring")
+				.select(
+					`
+                    opt_id,
+                    time_completed,
+                    evaluation,
+                    statement,
+                    opportunities (opt_statement, kpi, planned_actions)
+                `
+				)
+				.in("profile_id", profileIdList);
 
-        const profileIdList = profileIds.map((profile) => profile.id);
+			if (error) {
+				console.error("Error fetching opportunities:", error);
+				return;
+			}
 
-        // Fetch opportunities for profiles in the same department
-        const { data, error } = await supabase
-          .from("opt_monitoring")
-          .select(
-            `
-          opt_id,
-          time_completed,
-          evaluation,
-          statement,
-          opportunities (opt_statement, kpi, planned_actions)
-        `
-          )
-          .in("profile_id", profileIdList); // Filter by profiles in the same department
+			opportunities = data.map((monitoringItem: any) => ({
+				opt_id: monitoringItem.opt_id,
+				opt_statement: monitoringItem.opportunities?.opt_statement || "No Statement",
+				kpi: monitoringItem.opportunities?.kpi || "No KPI",
+				planned_actions: monitoringItem.opportunities?.planned_actions || "No Actions Taken",
+				time_completed: monitoringItem.time_completed,
+				evaluation: monitoringItem.evaluation || "",
+				statement: monitoringItem.statement || null,
+			}));
 
-        if (error) {
-          console.error("Error fetching opportunities:", error);
-          return;
-        }
+			goals = opportunities.map((opportunity) => ({
+				id: opportunity.opt_id,
+				statement: opportunity.opt_statement,
+				goal: opportunity.kpi,
+				evaluation: opportunity.evaluation || "",
+				achieved: opportunity.time_completed ? "Achieved" : null,
+				isLoading: false,
+				timeCompleted: opportunity.time_completed,
+				aiStatement: opportunity.statement || null,
+			}));
+		} catch (error) {
+			console.error("Error fetching opportunities:", error);
+		} finally {
+			isLoading = false;
+		}
+	};
 
-        // Map the opportunities data
-        opportunities = data.map((monitoringItem: any) => ({
-          opt_id: monitoringItem.opt_id,
-          opt_statement:
-            monitoringItem.opportunities?.opt_statement || "No Statement",
-          kpi: monitoringItem.opportunities?.kpi || "No KPI",
-          planned_actions:
-            monitoringItem.opportunities?.planned_actions || "No Actions Taken",
-          time_completed: monitoringItem.time_completed,
-          evaluation: monitoringItem.evaluation || "",
-          statement: monitoringItem.statement || null,
-        }));
+	/** Evaluate a single goal */
+	async function evaluateGoal(id: number, goal: string, evaluation: string) {
+		goals = goals.map((g) => (g.id === id ? { ...g, isLoading: true } : g));
 
-        const mappedOpportunities = opportunities.map((opportunity) => ({
-          id: opportunity.opt_id,
-          statement: opportunity.opt_statement,
-          goal: opportunity.kpi,
-          evaluation: opportunity.evaluation || "",
-          achieved: opportunity.time_completed ? "Achieved" : null,
-          isLoading: false,
-          timeCompleted: opportunity.time_completed,
-          aiStatement: opportunity.statement || null,
-        }));
+		try {
+			const response = await fetch("/api/evaluate-goal", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ target: goal, evaluation }),
+			});
 
-        goals.set(mappedOpportunities);
-      } catch (error) {
-        console.error("Error fetching opportunities:", error);
-      } finally {
-        isLoading = false;
-      }
-    };
+			const data = await response.json();
 
-    // Evaluate a single goal using the AI POST endpoint
-    async function evaluateGoal(id: number, goal: string, evaluation: string) {
-      // Update the isLoading state for this goal
-      goals.update((currentGoals) =>
-        currentGoals.map((g) => (g.id === id ? { ...g, isLoading: true } : g))
-      );
+			if (!response.ok || data.error) {
+				throw new Error(data.error || "Failed to evaluate goal.");
+			}
 
-      try {
-        // Send the request to the AI API
-        const response = await fetch("/api/evaluate-goal", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ target: goal, evaluation }),
-        });
+			const aiEvaluation = data.aiEvaluation;
 
-        const data = await response.json();
+			if (typeof aiEvaluation !== "string") {
+				throw new TypeError("AI evaluation response is not a valid string.");
+			}
 
-        // Handle errors from the server
-        if (!response.ok || data.error) {
-          throw new Error(data.error || "Failed to evaluate goal.");
-        }
+			const negativeKeywords = ["not achieved", "unsuccessful", "failed", "incomplete", "fell short", "below target", "did not meet", "not", "not been achieved"];
+			const isAchieved = !negativeKeywords.some((neg) => aiEvaluation.toLowerCase().includes(neg));
+			const timeCompleted = isAchieved ? new Date().toISOString() : null;
 
-        const aiEvaluation = data.aiEvaluation;
+			const { error } = await supabase
+				.from("opt_monitoring")
+				.update({
+					time_completed: timeCompleted,
+					evaluation,
+					statement: aiEvaluation,
+					is_accomplished: isAchieved,
+				})
+				.eq("opt_id", id);
 
-        // Log the AI evaluation for debugging
-        console.log("[DEBUG] AI Evaluation:", aiEvaluation);
+			if (error) {
+				console.error("[ERROR] Error updating opt_monitoring:", error);
+			} else {
+				goals = goals.map((g) =>
+					g.id === id
+						? {
+								...g,
+								achieved: isAchieved ? "Achieved" : "Not Achieved",
+								isLoading: false,
+								timeCompleted,
+								aiStatement: aiEvaluation,
+							}
+						: g
+				);
+			}
+		} catch (error) {
+			console.error("[ERROR] Error evaluating goal:", error);
+			goals = goals.map((g) => (g.id === id ? { ...g, isLoading: false } : g));
+		}
+	}
 
-        // Ensure aiEvaluation is a string
-        if (typeof aiEvaluation !== "string") {
-          throw new TypeError("AI evaluation response is not a valid string.");
-        }
+	/** Evaluate all goals */
+	async function evaluateAllGoals() {
+		const monitoringData = goals.map((goal) => ({
+			opt_statement: goal.statement,
+			kpi: goal.goal,
+			achieved: goal.achieved === "Achieved",
+			evaluation: goal.evaluation,
+		}));
 
-        // Check if the AI evaluation indicates the goal was achieved
-        const negativeKeywords = [
-          "not achieved",
-          "unsuccessful",
-          "failed",
-          "incomplete",
-          "fell short",
-          "below target",
-          "did not meet",
-          "not",
-          "not been achieved",
-        ];
-        const isAchieved = !negativeKeywords.some((neg) =>
-          aiEvaluation.toLowerCase().includes(neg)
-        );
+		try {
+			const response = await fetch("/api/generate-summary", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ monitoringData }),
+			});
 
-        const timeCompleted = isAchieved ? new Date().toISOString() : null;
+			const data = await response.json();
 
-        // Update the database with the result
-        const { error } = await supabase
-          .from("opt_monitoring")
-          .update({
-            time_completed: timeCompleted,
-            evaluation,
-            statement: aiEvaluation,
-            is_accomplished: isAchieved,
-          })
-          .eq("opt_id", id);
+			if (!response.ok || data.error) {
+				throw new Error(data.error || "Failed to generate summary.");
+			}
+		} catch (error) {
+			console.error("Error generating summary:", error);
+		}
+	}
 
-        if (error) {
-          console.error("[ERROR] Error updating opt_monitoring:", error);
-        } else {
-          // Update the local goals store
-          goals.update((currentGoals) =>
-            currentGoals.map((g) =>
-              g.id === id
-                ? {
-                    ...g,
-                    achieved: isAchieved ? "Achieved" : "Not Achieved",
-                    isLoading: false,
-                    timeCompleted,
-                    aiStatement: aiEvaluation,
-                  }
-                : g
-            )
-          );
-        }
-      } catch (error) {
-        console.error("[ERROR] Error evaluating goal:", error);
-        // Reset the isLoading state on error
-        goals.update((currentGoals) =>
-          currentGoals.map((g) => (g.id === id ? { ...g, isLoading: false } : g))
-        );
-      }
-    }
+	/** Handle input change */
+	function handleInput(id: number, field: "evaluation", value: string) {
+		goals = goals.map((g) => (g.id === id ? { ...g, [field]: value } : g));
+	}
 
-    // Evaluate all goals using the AI POST_SUMMARY endpoint
-    async function evaluateAllGoals() {
-      const allGoals = get(goals);
-      const monitoringData = allGoals.map((goal) => ({
-        opt_statement: goal.statement,
-        kpi: goal.goal,
-        achieved: goal.achieved === "Achieved",
-        evaluation: goal.evaluation,
-      }));
+	/** Auto resize textarea */
+	function autoResize(event: Event) {
+		const textarea = event.target as HTMLTextAreaElement;
+		textarea.style.height = "auto";
+		textarea.style.width = "auto";
+		textarea.style.height = `${textarea.scrollHeight}px`;
+		textarea.style.width = `${textarea.scrollWidth + 20}px`;
+	}
 
-      try {
-        const response = await fetch("/api/generate-summary", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ monitoringData }),
-        });
+	onMount(async () => {
+		await fetchUserProfile();
+		await fetchOpportunities();
+	});
+</script>
 
-        const data = await response.json();
+<div class="min-h-screen bg-gray-50">
+	<!-- Header -->
+	<header class="bg-white shadow-sm border-b">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+			<div class="flex justify-between items-center">
+				<h1 class="text-2xl font-semibold text-gray-900">Mid-Year Opportunity Monitoring</h1>
+				<button onclick={evaluateAllGoals} class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+					<RefreshCw class="w-4 h-4 mr-2" />
+					Evaluate All
+				</button>
+			</div>
+		</div>
+	</header>
 
-        if (!response.ok || data.error) {
-          throw new Error(data.error || "Failed to generate summary.");
-        }
+	<!-- Main Content -->
+	<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+		{#if isLoading}
+			<div class="flex items-center justify-center p-8">
+				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+				<span class="ml-3 text-gray-600">Loading opportunities...</span>
+			</div>
+		{:else if goals.length === 0}
+			<div class="text-center py-12 bg-white rounded-lg shadow">
+				<AlertCircle class="mx-auto h-12 w-12 text-gray-400" />
+				<h3 class="mt-2 text-lg font-medium text-gray-900">No opportunities found</h3>
+				<p class="mt-1 text-sm text-gray-500">No opportunities have been added to your monitoring list yet.</p>
+			</div>
+		{:else}
+			<div class="bg-white shadow-lg rounded-lg overflow-hidden">
+				<div class="overflow-x-auto">
+					<table class="min-w-full divide-y divide-gray-200">
+						<thead class="bg-gray-50">
+							<tr>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statement</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target (KPI)</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions Taken</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+							</tr>
+						</thead>
+						<tbody class="bg-white divide-y divide-gray-200">
+							{#each goals as { id, statement, goal, evaluation, achieved, isLoading: goalLoading, timeCompleted, aiStatement }}
+								<tr>
+									<td class="px-6 py-4 whitespace-normal text-sm text-gray-900">{statement}</td>
+									<td class="px-6 py-4 whitespace-normal text-sm text-gray-500">{goal}</td>
+									<td class="px-6 py-4">
+										<textarea class="w-full min-h-[80px] px-3 py-2 text-sm border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100" placeholder="Enter your evaluation..." value={evaluation} onchange={(e) => handleInput(id, "evaluation", (e.target as HTMLTextAreaElement).value)} oninput={autoResize} disabled={achieved === "Achieved"}></textarea>
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap">
+										<span
+											class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            ${achieved === "Achieved" ? "bg-green-100 text-green-800" : achieved === "Not Achieved" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}
+										>
+											{#if goalLoading}
+												<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+											{:else if achieved === "Achieved"}
+												<CheckCircle2 class="w-4 h-4 mr-1" />
+												Achieved
+											{:else if achieved === "Not Achieved"}
+												<X class="w-4 h-4 mr-1" />
+												Not Achieved
+											{:else}
+												<Clock class="w-4 h-4 mr-1" />
+												Pending
+											{/if}
+										</span>
+										{#if timeCompleted}
+											<div class="text-xs text-gray-500 mt-1">
+												{new Date(timeCompleted).toLocaleDateString()}
+											</div>
+										{/if}
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-sm">
+										<div class="flex space-x-2">
+											{#if !achieved}
+												<button onclick={() => evaluateGoal(id, goal, evaluation)} class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled={!evaluation || goalLoading}>Evaluate</button>
+											{/if}
+											{#if aiStatement}
+												<button onclick={() => openDialog(aiStatement)} class="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+													<Eye class="w-4 h-4 mr-1" />
+													View
+												</button>
+											{/if}
+										</div>
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		{/if}
+	</main>
 
-        console.log("Summary Report:", data.summaryReport);
-      } catch (error) {
-        console.error("Error generating summary:", error);
-      }
-    }
-
-    function handleInput(id: number, field: "evaluation", value: string) {
-      goals.update((currentGoals) =>
-        currentGoals.map((g) => (g.id === id ? { ...g, [field]: value } : g))
-      );
-    }
-
-    function autoResize(event: Event) {
-      const textarea = event.target as HTMLTextAreaElement;
-      textarea.style.height = "auto";
-      textarea.style.width = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
-      textarea.style.width = `${textarea.scrollWidth + 20}px`; // Adds padding
-    }
-
-    onMount(async () => {
-      await fetchUserProfile();
-      await fetchOpportunities();
-    });
-  </script>
-
-  <!-- Page Layout -->
-  <div class="min-h-screen p-8">
-    <h1 class="text-3xl font-bold mb-6">Mid-Year Opportunity Monitoring</h1>
-    <button
-      on:click={evaluateAllGoals}
-      class="btn bg-indigo-500 hover:bg-indigo-600 text-white font-medium mb-6"
-    >
-      Evaluate All Opportunities
-    </button>
-
-    {#if isLoading}
-      <div class="text-center text-xl">
-        <span class="loading loading-spinner text-primary"></span>
-        Loading Opportunities...
-      </div>
-    {:else}
-    {#if $goals.length === 0}
-      <p class="text-center text-lg">No opportunities found.</p>
-    {:else}
-      <div class="overflow-x-auto shadow-lg rounded-lg">
-        <table class="table-auto w-full text-left text-sm border-collapse">
-          <thead class="uppercase text-xs">
-            <tr>
-              <th class="px-4 py-3">Opportunity Statement</th>
-              <th class="px-4 py-3">Target (KPI)</th>
-              <th class="px-4 py-3">Actions Taken to Achieve Opportunities</th>
-              <th class="px-4 py-3">Achieved</th>
-              <th class="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each $goals as { id, statement, goal, evaluation, achieved, isLoading, timeCompleted, aiStatement }}
-              <tr class="hover border-b">
-                <td class="px-4 py-3">{statement}</td>
-                <td class="px-4 py-3">{goal}</td>
-                <td class="px-4 py-3">
-                  <textarea
-                    class="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring focus:ring-indigo-200"
-                    placeholder="Enter your evaluation"
-                    value={evaluation}
-                    on:input={(e) => {
-                      handleInput(
-                        id,
-                        "evaluation",
-                        (e.target as HTMLTextAreaElement).value
-                      );
-                      autoResize(e);
-                    }}
-                    style="overflow:hidden; resize:none; min-width: 200px;"
-                    disabled={achieved === "Achieved"}
-                  ></textarea>
-                </td>
-                <td class="px-4 py-3">
-                  {#if isLoading}
-                    <span class="loading loading-spinner text-primary"></span>
-                  {:else if achieved === "Achieved"}
-                    Achieved on {timeCompleted
-                      ? new Date(timeCompleted).toLocaleDateString()
-                      : "N/A"}
-                  {:else if achieved === "Not Achieved"}
-                    Not Achieved
-                  {:else}
-                    Pending
-                  {/if}
-                </td>
-                <td class="px-4 py-3">
-                  {#if isLoading}
-                    <span class="loading loading-spinner text-primary"></span>
-                  {:else if achieved === "Achieved"}
-                    <button class="btn btn-success btn-sm" disabled>
-                      Achieved
-                    </button>
-                  {:else}
-                    <button
-                      on:click={() => evaluateGoal(id, goal, evaluation)}
-                      class="btn btn-success btn-sm"
-                      disabled={!evaluation || isLoading}
-                    >
-                      Evaluate
-                    </button>
-                  {/if}
-                  {#if aiStatement}
-                    <button
-                      on:click={() => openDialog(aiStatement)}
-                      class="btn btn-primary btn-sm ml-2"
-                    >
-                      View Statement
-                    </button>
-                  {/if}
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-
-      {#if showDialog}
-        <div
-          class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50"
-        >
-          <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 class="text-lg font-bold mb-4">AI Evaluation Statement</h2>
-            <p class="mb-4">{dialogStatement}</p>
-            <button
-              on:click={() => (showDialog = false)}
-              class="btn bg-indigo-500 hover:bg-indigo-600 text-white w-full"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      {/if}
-    {/if}
-    {/if}
-  </div>
+	<!-- Dialog -->
+	{#if showDialog}
+		<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+			<div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
+				<div class="flex justify-between items-center mb-4">
+					<h3 class="text-lg font-medium text-gray-900">AI Evaluation Statement</h3>
+					<button onclick={() => (showDialog = false)} class="text-gray-400 hover:text-gray-500 focus:outline-none">
+						<X class="w-5 h-5" />
+					</button>
+				</div>
+				<div class="mt-2">
+					<p class="text-sm text-gray-500 whitespace-pre-wrap">{dialogStatement}</p>
+				</div>
+				<div class="mt-6">
+					<button onclick={() => (showDialog = false)} class="w-full inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Close</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+</div>
