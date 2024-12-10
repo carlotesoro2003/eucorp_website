@@ -325,6 +325,7 @@
   } catch (error) {
     console.error("Unexpected error while approving action plan:", error);
   } finally {
+    console.log("Action plan approved successfully.");
     isLoading = false;
   }
 };

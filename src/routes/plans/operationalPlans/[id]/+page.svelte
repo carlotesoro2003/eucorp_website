@@ -41,6 +41,8 @@
 	let showModal: boolean = $state(false);
 	let editIndex: number = $state(-1);
 
+	
+
 	/** On component mount */
 	onMount(() => {
 		const { params } = $page;
@@ -158,7 +160,7 @@
 		} finally {
 			isSubmitting = false;
 		}
-	};
+	};	
 
 	/** Show alert message */
 	const showAlert = (message: string, type: string) => {
@@ -168,6 +170,7 @@
 			alertMessage = "";
 		}, 5000);
 	};
+	
 </script>
 
 <div class="min-h-screen bg-gray-50 dark:bg-black p-4 md:p-8">

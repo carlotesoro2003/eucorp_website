@@ -18,7 +18,7 @@
   import { toggleMode } from "mode-watcher";
   import { Button } from "$lib/components/ui/button/index.js";
 
-  let currentPath = $page.url.pathname;
+  $: currentPath = $page.url.pathname;
   let loading = true;
 
   // Subscribe to userStore

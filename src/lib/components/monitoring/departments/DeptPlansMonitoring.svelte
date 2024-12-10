@@ -1,349 +1,364 @@
 <script lang="ts">
-  import "tailwindcss/tailwind.css";
-  import { supabase } from "$lib/supabaseClient";
-  import { onMount } from "svelte";
-  import { writable } from "svelte/store";
+	import { onMount } from "svelte";
+	import "tailwindcss/tailwind.css";
+	import { supabase } from "$lib/supabaseClient";
+	import { CheckCircle, XCircle, Loader2, Eye, ArrowUpDown } from "lucide-svelte";
+	import Filters from "./PlanComponent/Filters.svelte";
 
-  interface ActionPlan {
-    id: number;
-    actions_taken: string;
-    kpi: string;
-    objective_id: number;
-    strategic_goal_name: string;
-    objective_name: string;
-    is_accomplished: boolean;
-    evaluation: string | null;
-    statement: string | null;
-    time_completed: string | null;
-    isLoading: boolean;
-  }
+	interface ActionPlan {
+		id: number;
+		actions_taken: string;
+		kpi: string;
+		objective_id: number;
+		strategic_goal_name: string;
+		objective_name: string;
+		is_accomplished: boolean;
+		evaluation: string | null;
+		statement: string | null;
+		time_completed: string | null;
+		isLoading: boolean;
+	}
 
-  const actionPlans = writable<ActionPlan[]>([]);
-  let profileId: string | null = null;
-  let showDialog = false;
-  let dialogStatement = "";
-  let isLoadingPage = true;
+	// State variables
+	let actionPlans: ActionPlan[] = [];
+	let profileId: string | null = null;
+	let showDialog = false;
+	let dialogStatement = "";
+	let isLoadingPage = true;
+	let searchTerm = "";
+	let sortBy = "strategic_goal_name";
+	let sortAsc = true;
+	let showFilters = false;
+	let selectedStatus = "all";
+	let selectedGoal = "all";
 
-  function openDialog(statement: string) {
-    dialogStatement = statement;
-    showDialog = true;
-  }
+	// Get unique strategic goals for filter
+	$: uniqueGoals = ["all", ...new Set(actionPlans.map((plan) => plan.strategic_goal_name))];
 
-  // Fetch the logged-in user's profile
-  const fetchUserProfile = async () => {
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
+	// Computed properties with filters
+	$: filteredAndSortedPlans = actionPlans
+		.filter((plan) => {
+			const matchesSearch =
+				plan.strategic_goal_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				plan.objective_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				plan.actions_taken.toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (error || !session) {
-      console.error("Error fetching session:", error);
-      return;
-    }
+			const matchesStatus =
+				selectedStatus === "all"
+					? true
+					: selectedStatus === "achieved"
+					? plan.is_accomplished
+					: !plan.is_accomplished;
 
-    profileId = session.user.id;
-  };
+			const matchesGoal = selectedGoal === "all" || plan.strategic_goal_name === selectedGoal;
 
-  // Fetch action plans and related monitoring data based on department
+			return matchesSearch && matchesStatus && matchesGoal;
+		})
+		.sort((a, b) => {
+			const compareValue = sortAsc ? 1 : -1;
+			return a[sortBy] > b[sortBy] ? compareValue : -compareValue;
+		});
 
-  const fetchActionPlans = async () => {
-  try {
-    // Get the logged-in user's profile and department
-    const { data: userProfile, error: profileError } = await supabase
-      .from("profiles")
-      .select("department_id")
-      .eq("id", profileId)
-      .single();
+	/** Sort table data */
+	function toggleSort(column: string) {
+		if (sortBy === column) {
+			sortAsc = !sortAsc;
+		} else {
+			sortBy = column;
+			sortAsc = true;
+		}
+	}
 
-    if (profileError || !userProfile?.department_id) {
-      console.error("Error fetching user profile or department:", profileError);
-      return;
-    }
+	/** Open dialog with statement */
+	function openDialog(statement: string) {
+		dialogStatement = statement;
+		showDialog = true;
+	}
 
-    const deptId = userProfile.department_id;
+	/** Auto resize textarea */
+	const autoResize = (event: Event) => {
+		const textarea = event.target as HTMLTextAreaElement;
+		textarea.style.height = "auto";
+		textarea.style.height = `${textarea.scrollHeight}px`;
+	};
 
-    // Fetch action plans for users in the same department where is_approved is true
-    const { data: profileIds, error: profileIdsError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("department_id", deptId);
+	/** Fetch user profile */
+	const fetchUserProfile = async () => {
+		try {
+			const { data: { session }, error } = await supabase.auth.getSession();
+			if (error || !session) throw error;
+			profileId = session.user.id;
+		} catch (error) {
+			console.error("Error fetching session:", error);
+		}
+	};
 
-    if (profileIdsError) {
-      console.error("Error fetching profile IDs:", profileIdsError);
-      return;
-    }
+	/** Fetch plan monitoring data */
+	const fetchPlanMonitoringData = async (planIds: number[]) => {
+		try {
+			const { data, error } = await supabase
+				.from("plan_monitoring")
+				.select("action_plan_id, is_accomplished, evaluation, statement, time_completed")
+				.in("action_plan_id", planIds);
 
-    const profileIdList = profileIds.map((profile) => profile.id);
+			if (error) throw error;
+			return data;
+		} catch (error) {
+			console.error("Error fetching monitoring data:", error);
+			return [];
+		}
+	};
 
-    const { data, error } = await supabase
-      .from("action_plans")
-      .select(`
-        id,
-        actions_taken,
-        kpi,
-        objective_id,
-        strategic_objectives (
-          name,
-          strategic_goals (name)
-        ),
-        is_approved
-      `)
-      .in("profile_id", profileIdList)
-      .eq("is_approved", true); // Filter only approved action plans
+	/** Fetch action plans */
+	const fetchActionPlans = async () => {
+		try {
+			const { data: userProfile, error: profileError } = await supabase
+				.from("profiles")
+				.select("department_id")
+				.eq("id", profileId)
+				.single();
 
-    if (error) {
-      console.error("Error fetching action plans:", error);
-      return;
-    }
+			if (profileError || !userProfile?.department_id) throw profileError;
 
-    const plans = data.map((plan: any) => ({
-      id: plan.id,
-      actions_taken: plan.actions_taken,
-      kpi: plan.kpi,
-      objective_id: plan.objective_id,
-      strategic_goal_name: plan.strategic_objectives?.strategic_goals?.name || "No Goal Assigned",
-      objective_name: plan.strategic_objectives?.name || "No Objective Assigned",
-      is_accomplished: false,
-      evaluation: null,
-      statement: null,
-      time_completed: null,
-      isLoading: false,
-    }));
+			const { data: profileIds, error: profileIdsError } = await supabase
+				.from("profiles")
+				.select("id")
+				.eq("department_id", userProfile.department_id);
 
-    // Fetch related monitoring data
-    const monitoringData = await fetchPlanMonitoringData(plans.map((p) => p.id));
+			if (profileIdsError) throw profileIdsError;
 
-    actionPlans.set(
-      plans.map((plan) => {
-        const monitoring = monitoringData.find((m) => m.action_plan_id === plan.id);
-        return {
-          ...plan,
-          is_accomplished: monitoring?.is_accomplished || false,
-          evaluation: monitoring?.evaluation || null,
-          statement: monitoring?.statement || null,
-          time_completed: monitoring?.time_completed || null,
-        };
-      })
-    );
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  } finally {
-    isLoadingPage = false;
-  }
-  };
+			const profileIdList = profileIds.map((profile) => profile.id);
 
+			const { data, error } = await supabase
+				.from("action_plans")
+				.select(
+					`
+					id,
+					actions_taken,
+					kpi,
+					objective_id,
+					strategic_objectives (
+						name,
+						strategic_goals (name)
+					),
+					is_approved
+				`
+				)
+				.in("profile_id", profileIdList)
+				.eq("is_approved", true);
 
-  // Fetch monitoring data for action plans
-  const fetchPlanMonitoringData = async (planIds: number[]) => {
-    try {
-      const { data, error } = await supabase
-        .from("plan_monitoring")
-        .select("action_plan_id, is_accomplished, evaluation, statement, time_completed")
-        .in("action_plan_id", planIds);
+			if (error) throw error;
 
-      if (error) {
-        console.error("Error fetching monitoring data:", error);
-        return [];
-      }
+			const plans = data.map((plan: any) => ({
+				id: plan.id,
+				actions_taken: plan.actions_taken,
+				kpi: plan.kpi,
+				objective_id: plan.objective_id,
+				strategic_goal_name: plan.strategic_objectives?.strategic_goals?.name || "No Goal Assigned",
+				objective_name: plan.strategic_objectives?.name || "No Objective Assigned",
+				is_accomplished: false,
+				evaluation: null,
+				statement: null,
+				time_completed: null,
+				isLoading: false,
+			}));
 
-      return data;
-    } catch (error) {
-      console.error("Error fetching monitoring data:", error);
-      return [];
-    }
-  };
+			const monitoringData = await fetchPlanMonitoringData(plans.map((p) => p.id));
 
-  // Evaluate a single action plan using AI
-  const evaluateActionPlan = async (id: number, kpi: string, evaluation: string) => {
-    actionPlans.update((plans) =>
-      plans.map((plan) => (plan.id === id ? { ...plan, isLoading: true } : plan))
-    );
+			actionPlans = plans.map((plan) => {
+				const monitoring = monitoringData.find((m) => m.action_plan_id === plan.id);
+				return {
+					...plan,
+					is_accomplished: monitoring?.is_accomplished || false,
+					evaluation: monitoring?.evaluation || null,
+					statement: monitoring?.statement || null,
+					time_completed: monitoring?.time_completed || null,
+				};
+			});
+		} catch (error) {
+			console.error("Error fetching action plans:", error);
+		} finally {
+			isLoadingPage = false;
+		}
+	};
 
-    try {
-      const response = await fetch("/api/evaluate-goal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target: kpi, evaluation }),
-      });
+	/** Evaluate action plan using AI */
+	const evaluateActionPlan = async (id: number, kpi: string, evaluation: string) => {
+		actionPlans = actionPlans.map((plan) => (plan.id === id ? { ...plan, isLoading: true } : plan));
 
-      const data = await response.json();
+		try {
+			const response = await fetch("/api/evaluate-goal", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ target: kpi, evaluation }),
+			});
 
-      if (!response.ok || data.error) {
-        throw new Error(data.error || "Failed to evaluate action plan.");
-      }
+			const data = await response.json();
+			if (!response.ok || data.error) throw new Error(data.error || "Failed to evaluate action plan.");
 
-      const aiEvaluation = data.aiEvaluation;
+			const aiEvaluation = data.aiEvaluation;
+			if (typeof aiEvaluation !== "string") throw new TypeError("AI evaluation response is not valid.");
 
-      if (typeof aiEvaluation !== "string") {
-        throw new TypeError("AI evaluation response is not a valid string.");
-      }
+			const negativeKeywords = ["not achieved", "unsuccessful", "failed", "incomplete", "fell short", "below target", "did not meet", "not"];
+			const isAccomplished = !negativeKeywords.some((neg) => aiEvaluation.toLowerCase().includes(neg));
+			const timeCompleted = isAccomplished ? new Date().toISOString() : null;
 
-      const negativeKeywords = [
-        "not achieved",
-        "unsuccessful",
-        "failed",
-        "incomplete",
-        "fell short",
-        "below target",
-        "did not meet",
-        "not",
-      ];
+			const { error } = await supabase
+				.from("plan_monitoring")
+				.update({
+					evaluation,
+					statement: aiEvaluation,
+					is_accomplished: isAccomplished,
+					time_completed: timeCompleted,
+				})
+				.eq("action_plan_id", id);
 
-      const isAccomplished = !negativeKeywords.some((neg) =>
-        aiEvaluation.toLowerCase().includes(neg)
-      );
-      const timeCompleted = isAccomplished ? new Date().toISOString() : null;
+			if (error) throw error;
 
-      // Update the database with the AI result
-      const { error } = await supabase
-        .from("plan_monitoring")
-        .update({
-          evaluation,
-          statement: aiEvaluation,
-          is_accomplished: isAccomplished,
-          time_completed: timeCompleted,
-        })
-        .eq("action_plan_id", id);
+			actionPlans = actionPlans.map((plan) =>
+				plan.id === id
+					? {
+							...plan,
+							is_accomplished: isAccomplished,
+							evaluation,
+							statement: aiEvaluation,
+							time_completed: timeCompleted,
+							isLoading: false,
+						}
+					: plan
+			);
+		} catch (error) {
+			console.error("Error evaluating action plan:", error);
+			actionPlans = actionPlans.map((plan) => (plan.id === id ? { ...plan, isLoading: false } : plan));
+		}
+	};
 
-      if (error) {
-        console.error("[ERROR] Error updating plan monitoring:", error);
-      }
-
-      // Update the local state
-      actionPlans.update((plans) =>
-        plans.map((plan) =>
-          plan.id === id
-            ? {
-                ...plan,
-                is_accomplished: isAccomplished,
-                evaluation,
-                statement: aiEvaluation,
-                time_completed: timeCompleted,
-                isLoading: false,
-              }
-            : plan
-        )
-      );
-    } catch (error) {
-      console.error("[ERROR] Error evaluating action plan:", error);
-      actionPlans.update((plans) =>
-        plans.map((plan) => (plan.id === id ? { ...plan, isLoading: false } : plan))
-      );
-    }
-  };
-
-  const autoResize = (event: Event) => {
-    const textarea = event.target as HTMLTextAreaElement;
-    textarea.style.height = "auto";
-    textarea.style.height = `${textarea.scrollHeight}px`;
-  };
-
-  onMount(async () => {
-    await fetchUserProfile();
-    await fetchActionPlans();
-  });
+	onMount(async () => {
+		await fetchUserProfile();
+		await fetchActionPlans();
+	});
 </script>
 
-<!-- HTML Structure -->
-<div class="min-h-screen p-8">
-  <h1 class="text-3xl font-bold mb-6">Plans Monitoring</h1>
+<div class="h-screen flex flex-col bg-gray-100">
+	<!-- Fixed Header -->
+	<header class="bg-white border-b shadow-sm">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+			<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+				<h1 class="text-2xl font-medium text-gray-800">Plans Monitoring</h1>
+				<div class="flex items-center gap-2">
+					<div class="relative">
+						<input type="search" bind:value={searchTerm} placeholder="Search plans..." class="w-full md:w-48 pl-3 pr-8 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+						<span class="absolute right-2 top-2 text-gray-400">🔍</span>
+					</div>
+				</div>
+			</div>
+			<Filters {uniqueGoals} bind:selectedStatus bind:selectedGoal />
+		</div>
+	</header>
 
-  {#if isLoadingPage}
-    <div class="text-center text-xl">
-      <span class="loading loading-spinner loading-md"></span>
-    </div>
-  {:else if $actionPlans.length > 0 }
-    <div class="overflow-x-auto shadow-lg rounded-lg">
-      <table class="table-auto w-full text-left text-sm border-collapse">
-        <thead class="uppercase text-xs">
-          <tr>
-            <th class="px-4 py-3">Strategic Goal</th>
-            <th class="px-4 py-3">Objective Name</th>
-            <th class="px-4 py-3">Actions Taken</th>
-            <th class="px-4 py-3">KPI</th>
-            <th class="px-4 py-3">Actions Taken to Achieve Action Plan</th>
-            <th class="px-4 py-3">Status</th>
-            <th class="px-4 py-3">Remarks</th>
-            <th class="px-4 py-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each $actionPlans as plan}
-            <tr class="hover border-b">
-              <td class="px-4 py-3">{plan.strategic_goal_name}</td>
-              <td class="px-4 py-3">{plan.objective_name}</td>
-              <td class="px-4 py-3">{plan.actions_taken}</td>
-              <td class="px-4 py-3">{plan.kpi}</td>
-              <td class="px-4 py-3">
-                <textarea
-                  class="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring focus:ring-indigo-200"
-                  placeholder="Enter evaluation..."
-                  value={plan.evaluation}
-                  on:input={(e) => {
-                    actionPlans.update((plans) =>
-                      plans.map((p) =>
-                        p.id === plan.id
-                          ? { ...p, evaluation: (e.target as HTMLTextAreaElement).value }
-                          : p
-                      )
-                    );
-                    autoResize(e);
-                  }}
-                  disabled={plan.is_accomplished}
-                ></textarea>
-              </td>
-              <td class="px-4 py-3">
-                {#if plan.is_accomplished}
-                  Achieved on {plan.time_completed ? new Date(plan.time_completed).toLocaleString() : "N/A"}
-                {:else}
-                  Not Achieved
-                {/if}
-              </td>
-              <td class="px-4 py-3">
-                {#if plan.statement}
-                <button
-                  on:click={() => openDialog(plan.statement || "")}
-                  class="btn btn-primary btn-sm ml-2"
-                >
-                  View Statement
-                </button>
-              {/if}
-              </td>
-              <td class="px-4 py-3">
-                {#if plan.isLoading}
-                  <span class="loading loading-spinner text-primary"></span>
-                {:else if plan.is_accomplished}
-                  <button class="btn btn-success btn-sm" disabled>Achieved</button>
-                {:else}
-                  <button
-                    on:click={() => evaluateActionPlan(plan.id, plan.kpi, plan.evaluation || "")}
-                    class="btn btn-success btn-sm"
-                    disabled={!plan.evaluation || plan.isLoading}
-                  >
-                    Evaluate
-                  </button>
-                {/if}
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  {:else}
-    <div>No action plans found for this user.</div>
-  {/if}
+	<!-- Scrollable Content Area -->
+	<main class="flex-1 overflow-hidden">
+		<div class="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+			{#if isLoadingPage}
+				<div class="flex justify-center items-center h-full">
+					<Loader2 class="animate-spin h-10 w-10 text-indigo-500" />
+				</div>
+			{:else if filteredAndSortedPlans.length > 0}
+				<div class="bg-white rounded-lg shadow h-full flex flex-col">
+					<!-- Fixed Table Header -->
+					<div class="bg-gray-50 border-b">
+						<table class="min-w-full">
+							<thead>
+								<tr>
+									<th class="sticky top-0 px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider cursor-pointer" onclick={() => toggleSort("strategic_goal_name")}>
+										<div class="flex items-center gap-2">
+											Strategic Goal
+											<ArrowUpDown class="h-4 w-4" />
+										</div>
+									</th>
+									<th class="sticky top-0 px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Objective</th>
+									<th class="sticky top-0 px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Action Plans</th>
+									<th class="sticky top-0 px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">KPI</th>
+									<th class="sticky top-0 px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Actions Taken</th>
+									<th class="sticky top-0 px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Status</th>
+									<th class="sticky top-0 px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
 
-  {#if showDialog}
-    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 class="text-lg font-bold mb-4">Evaluation Statement</h2>
-        <p class="mb-4">{dialogStatement}</p>
-        <button on:click={() => (showDialog = false)} class="btn bg-indigo-500 hover:bg-indigo-600 text-white w-full">
-          Close
-        </button>
-      </div>
-    </div>
-  {/if}
+					<!-- Scrollable Table Body -->
+					<div class="flex-1 overflow-auto">
+						<table class="min-w-full">
+							<tbody class="bg-white divide-y divide-gray-200">
+								{#each filteredAndSortedPlans as plan}
+									<tr class="hover:bg-gray-50">
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{plan.strategic_goal_name}</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{plan.objective_name}</td>
+										<td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">{plan.actions_taken}</td>
+										<td class="px-6 py-4 text-sm text-gray-600">{plan.kpi}</td>
+										<td class="px-6 py-4 min-w-[300px]">
+											<textarea
+												class="w-full text-sm border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+												placeholder="Enter evaluation..."
+												value={plan.evaluation}
+												oninput={(e) => {
+													actionPlans = actionPlans.map((p) => (p.id === plan.id ? { ...p, evaluation: (e.target as HTMLTextAreaElement).value } : p));
+													autoResize(e);
+												}}
+												style="resize: vertical; min-height: 60px;"
+												rows="2"
+												disabled={plan.is_accomplished}
+											/>
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap">
+											<span class={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${plan.is_accomplished ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+												{#if plan.is_accomplished}
+													<CheckCircle class="w-4 h-4 mr-1" />
+													Achieved
+												{:else}
+													<XCircle class="w-4 h-4 mr-1" />
+													Pending
+												{/if}
+											</span>
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-center">
+											<div class="flex items-center justify-center gap-2">
+												{#if plan.statement}
+													<button onclick={() => openDialog(plan.statement || "")} class="inline-flex items-center px-3 py-1 text-sm text-indigo-600 bg-indigo-100 hover:bg-indigo-200 rounded-md">
+														<Eye class="w-4 h-4 mr-1" />
+														View
+													</button>
+												{/if}
+												{#if plan.isLoading}
+													<Loader2 class="animate-spin h-5 w-5 text-indigo-500" />
+												{:else if !plan.is_accomplished}
+													<button onclick={() => evaluateActionPlan(plan.id, plan.kpi, plan.evaluation || "")} class="inline-flex items-center px-4 py-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-md disabled:opacity-50" disabled={!plan.evaluation || plan.isLoading}>Evaluate</button>
+												{/if}
+											</div>
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			{:else}
+				<div class="text-center py-12 bg-white rounded-lg shadow">
+					<p class="text-gray-500">No action plans found.</p>
+				</div>
+			{/if}
+		</div>
+	</main>
+
+	<!-- Dialog -->
+	{#if showDialog}
+		<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+			<div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
+				<h2 class="text-lg font-semibold text-gray-900 mb-4">Evaluation Statement</h2>
+				<div class="bg-gray-50 rounded-lg p-4 text-gray-700 mb-6">{dialogStatement}</div>
+				<button onclick={() => (showDialog = false)} class="w-full inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">Close</button>
+			</div>
+		</div>
+	{/if}
 </div>
-
-
