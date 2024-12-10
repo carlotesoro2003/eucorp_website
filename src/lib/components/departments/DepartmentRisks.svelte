@@ -85,7 +85,7 @@
 	/** Function to fetch risks */
 	const fetchRisks = async () => {
 		try {
-			const { data, error } = await supabase.from("risks").select("*").eq("profile_id", profile?.id).order("rrn", { ascending: true });
+			const { data, error } = await supabase.from("risks").select("*").eq("department_id", profile?.department_id).order("rrn", { ascending: true });
 			if (error) throw error;
 
 			risks = data || [];

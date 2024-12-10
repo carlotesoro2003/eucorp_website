@@ -122,21 +122,40 @@
 	</div>
 
 	<!-- Filters section -->
-	<div class="flex flex-col md:flex-row gap-4 items-start">
-		<GoalsSelector {goals} bind:selectedGoalId onSelect={fetchObjectives} />
-
-		<div class="flex-1 flex flex-col md:flex-row gap-4">
-			<div class="relative flex-1">
-				<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
-				<input type="text" bind:value={searchQuery} placeholder="Search objectives..." class="pl-10 pr-4 py-2 bg-secondary border-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring" />
-			</div>
-
-			<button onclick={exportToCSV} class="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-secondary/80 justify-center md:w-auto">
-				<Download size={20} />
-				Export
-			</button>
+	<div class="flex flex-col md:flex-row items-center gap-4">
+		<!-- Goals Selector -->
+		<div class="flex-shrink-0 md:w-auto w-full">
+		  <GoalsSelector {goals} bind:selectedGoalId onSelect={fetchObjectives} />
 		</div>
-	</div>
+	  
+		<!-- Search and Export -->
+		<div class="flex flex-1 items-center gap-4">
+		  <!-- Search Input -->
+		  <div class="relative flex-1">
+			<Search
+			  class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+			  size={20}
+			/>
+			<input
+			  type="text"
+			  bind:value={searchQuery}
+			  placeholder="Search objectives..."
+			  class="pl-10 pr-4 py-2 bg-secondary border-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring"
+			/>
+		  </div>
+	  
+		  <!-- Export Button -->
+		  <button
+			onclick={exportToCSV}
+			class="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-secondary/80 md:w-auto"
+		  >
+			<Download size={20} />
+			Export
+		  </button>
+		</div>
+	  </div>
+	  
+	  
 
 	<!-- Loading state -->
 	{#if loading}

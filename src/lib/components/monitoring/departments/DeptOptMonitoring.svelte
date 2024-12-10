@@ -266,6 +266,7 @@
 								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target (KPI)</th>
 								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions Taken</th>
 								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
 								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
 							</tr>
 						</thead>
@@ -302,15 +303,19 @@
 										{/if}
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm">
+										{#if aiStatement}
+											<button onclick={() => openDialog(aiStatement)} class="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+												<Eye class="w-4 h-4 mr-1" />
+												View
+											</button>
+										{:else}
+											<span class="text-gray-500">-</span>
+										{/if}
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-sm">
 										<div class="flex space-x-2">
 											{#if !achieved}
 												<button onclick={() => evaluateGoal(id, goal, evaluation)} class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled={!evaluation || goalLoading}>Evaluate</button>
-											{/if}
-											{#if aiStatement}
-												<button onclick={() => openDialog(aiStatement)} class="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-													<Eye class="w-4 h-4 mr-1" />
-													View
-												</button>
 											{/if}
 										</div>
 									</td>
