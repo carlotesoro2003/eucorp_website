@@ -44,7 +44,7 @@
 
 			if (likelihood && severityValue) {
 				const ratingSymbol = calculateRiskControlRating(likelihood, severityValue);
-				const matchingRating = riskControlRating.find((r) => r.symbol === ratingSymbol);
+				const matchingRating = riskControlRating.find((r) => r.symbol === ratingSymbol.controlRating);
 				assessment.riskControlRating = matchingRating?.id || null;
 			}
 		}

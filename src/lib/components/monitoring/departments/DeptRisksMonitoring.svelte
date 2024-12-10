@@ -112,16 +112,66 @@
 		showDialog = true;
 	};
 
+		/** Update risk control and monitoring ratings explicitly */
+	const updateRatings = () => {
+		if (!assessment.likelihoodRating || !assessment.severity) {
+			return;
+		}
+
+		const likelihood = likelihoodRating.find((r) => r.id === assessment.likelihoodRating)?.symbol;
+		const severityValue = severity.find((s) => s.id === assessment.severity)?.value;
+
+		if (likelihood && severityValue) {
+			// Calculate control rating
+			const { controlRating } = calculateRiskControlRating(likelihood, severityValue);
+			const matchingControlRating = riskControlRating.find((r) => r.symbol === controlRating);
+			const newControlRatingId = matchingControlRating?.id || null;
+
+			// Update control rating only if necessary
+			if (newControlRatingId && assessment.riskControlRating !== newControlRatingId) {
+				assessment.riskControlRating = newControlRatingId;
+			}
+
+			// Determine new monitoring rating based on control rating
+			if (newControlRatingId) {
+				const newControlValue = matchingControlRating?.value || 0;
+				const currentMonitoring = riskMonitoringRating.find((r) => r.id === assessment.riskMonitoringRating);
+
+				if (currentMonitoring) {
+					const currentMonitoringValue = currentMonitoring.value;
+					let newMonitoringStatusId = null;
+
+					if (newControlValue > currentMonitoringValue) {
+						newMonitoringStatusId = riskMonitoringRating.find((r) => r.status === "Grading Increased")?.id;
+					} else if (newControlValue < currentMonitoringValue) {
+						newMonitoringStatusId = riskMonitoringRating.find((r) => r.status === "Grading Decreased")?.id;
+					} else {
+						newMonitoringStatusId = riskMonitoringRating.find((r) => r.status === "No Change to Grade")?.id;
+					}
+
+					if (newMonitoringStatusId && assessment.riskMonitoringRating !== newMonitoringStatusId) {
+						assessment.riskMonitoringRating = newMonitoringStatusId;
+					}
+				}
+			}
+		}
+	};
+
+	/** Trigger updates when dropdown values change */
+	const handleDropdownChange = () => {
+		updateRatings();
+	};
+
 	/** Save the updated assessment */
 	const handleSave = async () => {
 		try {
 			const { error } = await supabase
 				.from("risk_monitoring")
 				.update({
-					likelihood_rating: assessment.likelihoodRating,
-					severity: assessment.severity,
-					control_rating: assessment.riskControlRating,
-					monitoring_rating: assessment.riskMonitoringRating,
+					likelihood_rating_id: assessment.likelihoodRating,
+					severity_id: assessment.severity,
+					control_rating_id: assessment.riskControlRating,
+					monitoring_rating_id: assessment.riskMonitoringRating,
 				})
 				.eq("id", selectedRisk?.id);
 
@@ -135,6 +185,8 @@
 		}
 	};
 
+	
+
 	/** Close the dialog */
 	const handleCloseDialog = () => {
 		showDialog = false;
@@ -142,72 +194,8 @@
 		previousRiskControlRating = null;
 	};
 
-	// Calculate risk control rating and adjust risk monitoring rating
-	$effect(() => {
-		if (assessment.likelihoodRating && assessment.severity) {
-			const likelihood = likelihoodRating.find((r) => r.id === assessment.likelihoodRating)?.symbol;
-			const severityValue = severity.find((s) => s.id === assessment.severity)?.value;
+	
 
-			console.log("Likelihood Rating Symbol:", likelihood);
-			console.log("Severity Value:", severityValue);
-
-			if (likelihood && severityValue) {
-				// Calculate the control rating symbol
-				const { controlRating } = calculateRiskControlRating(likelihood, severityValue);
-
-				console.log("Calculated Control Rating Symbol:", controlRating);
-
-				// Find the matching control rating entry from the database
-				const matchingControlRating = riskControlRating.find((r) => r.symbol === controlRating);
-				assessment.riskControlRating = matchingControlRating?.id || null;
-
-				console.log("Matching Control Rating:", matchingControlRating);
-
-				if (assessment.riskControlRating !== null) {
-					const newControlValue = matchingControlRating?.value || 0;
-
-					// Find the current monitoring rating
-					const currentMonitoring = riskMonitoringRating.find((r) => r.id === assessment.riskMonitoringRating);
-
-					if (!currentMonitoring) {
-						console.warn(
-							"Current Monitoring Rating Not Found:",
-							assessment.riskMonitoringRating,
-							"Check if it exists in riskMonitoringRating."
-						);
-					} else {
-						const currentMonitoringValue = currentMonitoring.value;
-
-						console.log("Current Monitoring Value:", currentMonitoringValue);
-						console.log("New Control Value:", newControlValue);
-
-						// Determine the new monitoring rating based on comparison
-						let newMonitoringStatusId = null;
-						if (newControlValue > currentMonitoringValue) {
-							newMonitoringStatusId = riskMonitoringRating.find((r) => r.status === "Grading Increased")?.id;
-							console.log("New Monitoring Status: Grading Increased");
-						} else if (newControlValue < currentMonitoringValue) {
-							newMonitoringStatusId = riskMonitoringRating.find((r) => r.status === "Grading Decreased")?.id;
-							console.log("New Monitoring Status: Grading Decreased");
-						} else {
-							newMonitoringStatusId = riskMonitoringRating.find((r) => r.status === "No Change to Grade")?.id;
-							console.log("New Monitoring Status: No Change to Grade");
-						}
-
-						// Update the monitoring rating if it differs
-						if (newMonitoringStatusId && newMonitoringStatusId !== assessment.riskMonitoringRating) {
-							console.log(
-								`Updating Monitoring Rating: Old Value - ${assessment.riskMonitoringRating}, New Value - ${newMonitoringStatusId}`
-							);
-							assessment.riskMonitoringRating = newMonitoringStatusId;
-						} else {
-							console.log("No Update Needed for Monitoring Rating");
-						}
-					}
-				}
-			}
-		}
-	});
 
 
 
@@ -257,7 +245,7 @@
 							<td class="px-6 py-4">{risk.control_rating}</td>
 							<td class="px-6 py-4">{risk.monitoring_rating}</td>
 							<td class="px-6 py-4">
-								<button class="text-blue-600" onclick={() => handleEdit(risk)}>Edit</button>
+								<button class="text-blue-600 text-sm" onclick={() => handleEdit(risk)}>Add Re-Assessment</button>
 							</td>
 						</tr>
 					{/each}
@@ -284,10 +272,14 @@
 	
 				<div>
 					<label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Likelihood Rating</label>
-					<select bind:value={assessment.likelihoodRating} class="block w-full mt-1 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:text-gray-200">
+					<select
+						bind:value={assessment.likelihoodRating}
+						onchange={handleDropdownChange}
+						class="block w-full mt-1 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:text-gray-200"
+					>
 						<option value={null}>Select Likelihood</option>
 						{#each likelihoodRating as rating}
-							<option value={rating.id} selected={rating.id === assessment.likelihoodRating}>
+							<option value={rating.id}>
 								{rating.name}
 							</option>
 						{/each}
@@ -296,10 +288,14 @@
 	
 				<div>
 					<label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Severity</label>
-					<select bind:value={assessment.severity} class="block w-full mt-1 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:text-gray-200">
+					<select
+						bind:value={assessment.severity}
+						onchange={handleDropdownChange}
+						class="block w-full mt-1 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:text-gray-200"
+					>
 						<option value={null}>Select Severity</option>
 						{#each severity as sev}
-							<option value={sev.id} selected={sev.id === assessment.severity}>
+							<option value={sev.id}>
 								{sev.name}
 							</option>
 						{/each}
