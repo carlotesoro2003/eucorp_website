@@ -1,34 +1,6 @@
-import { P as spread_props, Q as slot, R as sanitize_props, L as escape_html, F as attr, C as pop, A as push } from "../../../chunks/index.js";
+import { L as escape_html, F as attr, C as pop, A as push } from "../../../chunks/index.js";
 import "../../../chunks/supabaseClient.js";
-import { I as Icon } from "../../../chunks/Icon.js";
-function Eye($$payload, $$props) {
-  const $$sanitized_props = sanitize_props($$props);
-  const iconNode = [
-    [
-      "path",
-      {
-        "d": "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
-      }
-    ],
-    [
-      "circle",
-      { "cx": "12", "cy": "12", "r": "3" }
-    ]
-  ];
-  Icon($$payload, spread_props([
-    { name: "eye" },
-    $$sanitized_props,
-    {
-      iconNode,
-      children: ($$payload2) => {
-        $$payload2.out += `<!---->`;
-        slot($$payload2, $$props, "default", {});
-        $$payload2.out += `<!---->`;
-      },
-      $$slots: { default: true }
-    }
-  ]));
-}
+import { E as Eye } from "../../../chunks/eye.js";
 function Login($$payload, $$props) {
   push();
   let email = "";

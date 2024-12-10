@@ -84,7 +84,7 @@ export const updateStrategicGoalsCount = async (): Promise<void> => {
         if (error) throw error;
 
         const strategicGoalsCount = data.length;
-        dashboardData.cards[0].value = `${strategicGoalsCount}`;
+        dashboardData.cards[0].value = `${strategicGoalsCount} goals`;
     } catch (error) {
         console.error('Error updating strategic goals count:', error);
         dashboardData.cards[0].value = '0 Goals';
@@ -104,7 +104,7 @@ export const updateUnmitigatedRisksCount = async (): Promise<void> => {
         if (error) throw error;
 
         const unmitigatedRisksCount = data.length;
-        dashboardData.cards[1].value = `${unmitigatedRisksCount}`;
+        dashboardData.cards[1].value = `${unmitigatedRisksCount} risks`;
     } catch (error) {
         console.error('Error updating unmitigated risks count:', error);
         dashboardData.cards[1].value = '0 Risks';
@@ -120,7 +120,7 @@ export const updateOpportunitiesCount = async (): Promise<void> => {
         if (error) throw error;
 
         const opportunitiesCount = data.length;
-        dashboardData.cards[2].value = `${opportunitiesCount}`;
+        dashboardData.cards[2].value = `${opportunitiesCount} opts`;
     } catch (error) {
         console.error('Error updating opportunities count:', error);
         dashboardData.cards[2].value = '0 Opportunities';
@@ -136,7 +136,7 @@ export const updateUsersCount = async (): Promise<void> => {
         if (error) throw error;
 
         const usersCount = data.length;
-        dashboardData.cards[3].value = `${usersCount}`;
+        dashboardData.cards[3].value = `${usersCount} users`;
     } catch (error) {
         console.error('Error updating users count:', error);
         dashboardData.cards[3].value = '0 Users';

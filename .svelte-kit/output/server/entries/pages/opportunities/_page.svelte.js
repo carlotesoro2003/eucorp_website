@@ -1,4 +1,4 @@
-import { A as push, L as escape_html, F as attr, C as pop, N as ensure_array_like, O as stringify, G as bind_props } from "../../../chunks/index.js";
+import { P as spread_props, Q as slot, R as sanitize_props, A as push, L as escape_html, F as attr, C as pop, N as ensure_array_like, O as stringify, G as bind_props } from "../../../chunks/index.js";
 import { s as supabase } from "../../../chunks/supabaseClient.js";
 import { P as Pencil } from "../../../chunks/pencil.js";
 import { T as Trash_2 } from "../../../chunks/trash-2.js";
@@ -8,6 +8,33 @@ import { A as Arrow_up_down } from "../../../chunks/arrow-up-down.js";
 import { S as Search } from "../../../chunks/search.js";
 import { D as Download } from "../../../chunks/download.js";
 import { X } from "../../../chunks/x.js";
+import { S as Save } from "../../../chunks/save.js";
+import { P as Plus } from "../../../chunks/plus.js";
+import { I as Icon } from "../../../chunks/Icon.js";
+function Circle_plus($$payload, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  const iconNode = [
+    [
+      "circle",
+      { "cx": "12", "cy": "12", "r": "10" }
+    ],
+    ["path", { "d": "M8 12h8" }],
+    ["path", { "d": "M12 8v8" }]
+  ];
+  Icon($$payload, spread_props([
+    { name: "circle-plus" },
+    $$sanitized_props,
+    {
+      iconNode,
+      children: ($$payload2) => {
+        $$payload2.out += `<!---->`;
+        slot($$payload2, $$props, "default", {});
+        $$payload2.out += `<!---->`;
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
 function TableRow($$payload, $$props) {
   push();
   let {
@@ -37,17 +64,32 @@ function OpportunityForm($$payload, $$props) {
     target_output: "",
     budget: 0
   };
-  $$payload.out += `<form class="space-y-4"><h3 class="text-lg font-semibold mb-4">Edit Opportunity</h3> <div class="space-y-2"><label for="opt_statement">Statement</label> <textarea id="opt_statement" class="w-full p-2 border rounded-lg bg-background" rows="3">`;
+  $$payload.out += `<form class="h-full max-h-screen flex flex-col gap-4 p-4"><h3 class="text-lg font-semibold">Edit Opportunity</h3> <div class="flex-1 overflow-y-auto pr-2"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-4"><div class="space-y-2"><label for="opt_statement">Statement</label> <textarea id="opt_statement" class="w-full p-2 border rounded-lg bg-background min-h-[100px] overflow-hidden">`;
   const $$body = escape_html(formData.opt_statement);
   if ($$body) {
     $$payload.out += `${$$body}`;
   }
-  $$payload.out += `</textarea></div> <div class="space-y-2"><label for="planned_actions">Planned Actions</label> <textarea id="planned_actions" class="w-full p-2 border rounded-lg bg-background" rows="3">`;
+  $$payload.out += `</textarea></div> <div class="space-y-2"><label for="planned_actions">Planned Actions</label> <textarea id="planned_actions" class="w-full p-2 border rounded-lg bg-background min-h-[100px] overflow-hidden">`;
   const $$body_1 = escape_html(formData.planned_actions);
   if ($$body_1) {
     $$payload.out += `${$$body_1}`;
   }
-  $$payload.out += `</textarea></div> <div class="space-y-2"><label for="kpi">KPI</label> <input type="text" id="kpi"${attr("value", formData.kpi)} class="w-full p-2 border rounded-lg bg-background"></div> <div class="space-y-2"><label for="key_persons">Key Persons</label> <input type="text" id="key_persons"${attr("value", formData.key_persons)} class="w-full p-2 border rounded-lg bg-background"></div> <div class="space-y-2"><label for="target_output">Target Output</label> <input type="text" id="target_output"${attr("value", formData.target_output)} class="w-full p-2 border rounded-lg bg-background"></div> <div class="space-y-2"><label for="budget">Budget</label> <input type="number" id="budget"${attr("value", formData.budget)} class="w-full p-2 border rounded-lg bg-background" min="0" step="0.01"></div> <div class="flex justify-end gap-2 mt-6"><button type="submit"${attr("disabled", saving, true)} class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50">${escape_html(saving ? "Saving..." : "Save Changes")}</button></div></form>`;
+  $$payload.out += `</textarea></div></div> <div class="space-y-4"><div class="space-y-2"><label for="kpi">KPI</label> <textarea id="kpi" class="w-full p-2 border rounded-lg bg-background min-h-[42px] overflow-hidden">`;
+  const $$body_2 = escape_html(formData.kpi);
+  if ($$body_2) {
+    $$payload.out += `${$$body_2}`;
+  }
+  $$payload.out += `</textarea></div> <div class="space-y-2"><label for="key_persons">Key Persons</label> <textarea id="key_persons" class="w-full p-2 border rounded-lg bg-background min-h-[42px] overflow-hidden">`;
+  const $$body_3 = escape_html(formData.key_persons);
+  if ($$body_3) {
+    $$payload.out += `${$$body_3}`;
+  }
+  $$payload.out += `</textarea></div> <div class="space-y-2"><label for="target_output">Target Output</label> <textarea id="target_output" class="w-full p-2 border rounded-lg bg-background min-h-[42px] overflow-hidden">`;
+  const $$body_4 = escape_html(formData.target_output);
+  if ($$body_4) {
+    $$payload.out += `${$$body_4}`;
+  }
+  $$payload.out += `</textarea></div> <div class="space-y-2"><label for="budget">Budget</label> <input type="number" id="budget"${attr("value", formData.budget)} class="w-full p-2 border rounded-lg bg-background" min="0" step="0.01"></div></div></div></div> <div class="sticky bottom-0 flex justify-end gap-2 pt-4 border-t bg-background"><button type="submit"${attr("disabled", saving, true)} class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50">${escape_html(saving ? "Saving..." : "Save Changes")}</button></div></form>`;
   pop();
 }
 function AdminOpportunities($$payload, $$props) {
@@ -310,9 +352,41 @@ function AdminOpportunities($$payload, $$props) {
   $$payload.out += `<!--]--></div>`;
   pop();
 }
+function OpportunityCard($$payload, $$props) {
+  push();
+  let { data, index, onDelete } = $$props;
+  $$payload.out += `<div class="bg-gray-50 rounded-lg p-6 border border-gray-200"><div class="flex justify-between items-start mb-4"><h3 class="text-lg font-semibold text-gray-700">Opportunity ${escape_html(index + 1)}</h3> <button class="text-red-500 hover:text-red-700 transition-colors p-2">`;
+  Trash_2($$payload, { class: "w-5 h-5" });
+  $$payload.out += `<!----></button></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Opportunity Statement</label> <textarea placeholder="Describe the opportunity..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3">`;
+  const $$body = escape_html(data.opt_statement);
+  if ($$body) {
+    $$payload.out += `${$$body}`;
+  }
+  $$payload.out += `</textarea></div> <div><label class="block text-sm font-medium text-gray-700 mb-1">Planned Actions</label> <textarea placeholder="List planned actions..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3">`;
+  const $$body_1 = escape_html(data.planned_actions);
+  if ($$body_1) {
+    $$payload.out += `${$$body_1}`;
+  }
+  $$payload.out += `</textarea></div> <div><label class="block text-sm font-medium text-gray-700 mb-1">KPI</label> <textarea placeholder="Key Performance Indicators..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="2">`;
+  const $$body_2 = escape_html(data.kpi);
+  if ($$body_2) {
+    $$payload.out += `${$$body_2}`;
+  }
+  $$payload.out += `</textarea></div></div> <div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Key Persons</label> <textarea placeholder="List key persons involved..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="2">`;
+  const $$body_3 = escape_html(data.key_persons);
+  if ($$body_3) {
+    $$payload.out += `${$$body_3}`;
+  }
+  $$payload.out += `</textarea></div> <div><label class="block text-sm font-medium text-gray-700 mb-1">Target Output</label> <textarea placeholder="Expected outcomes..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="2">`;
+  const $$body_4 = escape_html(data.target_output);
+  if ($$body_4) {
+    $$payload.out += `${$$body_4}`;
+  }
+  $$payload.out += `</textarea></div> <div><label class="block text-sm font-medium text-gray-700 mb-1">Budget</label> <input type="number"${attr("value", data.budget)} placeholder="Enter budget amount..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></div></div></div></div>`;
+  pop();
+}
 function DepartmentOpportunities($$payload, $$props) {
   push();
-  let isLoading = false;
   let isSaving = false;
   let formData = [
     {
@@ -326,38 +400,32 @@ function DepartmentOpportunities($$payload, $$props) {
       department_id: ""
     }
   ];
+  const deleteCard = (index) => {
+    formData.splice(index, 1);
+    formData = [...formData];
+  };
   const each_array = ensure_array_like(formData);
-  $$payload.out += `<div class="container mx-auto p-6"><div class="p-6 rounded-lg shadow-lg mb-6"><div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-semibold">${escape_html("Create Opportunity")}</h2> <button class="btn btn-success"${attr("disabled", isSaving, true)}>Save Progress</button></div> <div class="overflow-x-auto"><table class="table-auto table table-zebra w-full"><thead><tr class="text-sm"><th class="px-4 py-2 text-left">Opportunity Statement</th><th class="px-4 py-2 text-left">Planned Actions</th><th class="px-4 py-2 text-left">KPI</th><th class="px-4 py-2 text-left">Key Persons</th><th class="px-4 py-2 text-left">Target Output</th><th class="px-4 py-2 text-left">Budget</th><th class="px-4 py-2 text-left">Actions</th></tr></thead><tbody><!--[-->`;
+  $$payload.out += `<div class="container mx-auto px-4 py-8"><div class="bg-white rounded-xl shadow-lg p-6 mb-8"><div class="flex justify-between items-center mb-6"><h1 class="text-2xl font-bold text-gray-800">${escape_html("Create Opportunity")}</h1> <button class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"${attr("disabled", isSaving, true)}>`;
+  Save($$payload, { class: "w-4 h-4 mr-2" });
+  $$payload.out += `<!----> Save Progress</button></div> <div class="grid grid-cols-1 gap-6 mb-6"><!--[-->`;
   for (let index = 0, $$length = each_array.length; index < $$length; index++) {
-    let row = each_array[index];
-    $$payload.out += `<tr><td class="px-4 py-2"><textarea placeholder="Opportunity Statement" class="textarea textarea-bordered w-full" style="overflow: hidden">`;
-    const $$body = escape_html(row.opt_statement);
-    if ($$body) {
-      $$payload.out += `${$$body}`;
-    }
-    $$payload.out += `</textarea></td><td class="px-4 py-2"><textarea placeholder="Planned Actions" class="textarea textarea-bordered w-full" style="overflow: hidden">`;
-    const $$body_1 = escape_html(row.planned_actions);
-    if ($$body_1) {
-      $$payload.out += `${$$body_1}`;
-    }
-    $$payload.out += `</textarea></td><td class="px-4 py-2"><textarea placeholder="KPI" class="textarea textarea-bordered w-full" style="overflow: hidden">`;
-    const $$body_2 = escape_html(row.kpi);
-    if ($$body_2) {
-      $$payload.out += `${$$body_2}`;
-    }
-    $$payload.out += `</textarea></td><td class="px-4 py-2"><textarea placeholder="Key Persons" class="textarea textarea-bordered w-full" style="overflow: hidden">`;
-    const $$body_3 = escape_html(row.key_persons);
-    if ($$body_3) {
-      $$payload.out += `${$$body_3}`;
-    }
-    $$payload.out += `</textarea></td><td class="px-4 py-2"><textarea placeholder="Target Output" class="textarea textarea-bordered w-full" style="overflow: hidden">`;
-    const $$body_4 = escape_html(row.target_output);
-    if ($$body_4) {
-      $$payload.out += `${$$body_4}`;
-    }
-    $$payload.out += `</textarea></td><td class="px-4 py-2"><input type="number"${attr("value", row.budget)} placeholder="Budget" class="input input-bordered w-full"></td><td class="px-4 py-2"><button class="btn btn-sm btn-error">Delete</button></td></tr>`;
+    let data = each_array[index];
+    OpportunityCard($$payload, {
+      data,
+      index,
+      onDelete: () => deleteCard(index)
+    });
   }
-  $$payload.out += `<!--]--></tbody></table></div> <button class="btn btn-secondary mt-4">Add Row</button> <button class="btn btn-primary mt-4"${attr("disabled", isLoading, true)}>${escape_html("Submit Opportunities")}</button></div></div>`;
+  $$payload.out += `<!--]--></div> <div class="flex flex-wrap gap-4"><button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">`;
+  Plus($$payload, { class: "w-4 h-4 mr-2" });
+  $$payload.out += `<!----> Add New Opportunity</button> <button class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"${attr("disabled", isSaving, true)}>`;
+  Circle_plus($$payload, { class: "w-4 h-4 mr-2" });
+  $$payload.out += `<!----> `;
+  {
+    $$payload.out += "<!--[!-->";
+    $$payload.out += `${escape_html("Submit Opportunities")}`;
+  }
+  $$payload.out += `<!--]--></button></div></div></div>`;
   pop();
 }
 function _page($$payload, $$props) {

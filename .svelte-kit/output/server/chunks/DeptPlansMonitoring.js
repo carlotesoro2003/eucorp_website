@@ -1,10 +1,9 @@
-import { P as spread_props, Q as slot, R as sanitize_props, L as escape_html, F as attr, C as pop, A as push, N as ensure_array_like, O as stringify } from "./index.js";
+import { P as spread_props, Q as slot, R as sanitize_props, L as escape_html, F as attr, C as pop, A as push, N as ensure_array_like, O as stringify, G as bind_props, S as copy_payload, T as assign_payload } from "./index.js";
 import { I as Icon } from "./Icon.js";
 import { s as supabase } from "./supabaseClient.js";
 import "jspdf";
 import "jspdf-autotable";
 import { D as Download } from "./download.js";
-import { C as Chevron_left } from "./chevron-left.js";
 import { C as Chevron_right } from "./chevron-right.js";
 /* empty css         */
 function Chevron_down($$payload, $$props) {
@@ -12,6 +11,23 @@ function Chevron_down($$payload, $$props) {
   const iconNode = [["path", { "d": "m6 9 6 6 6-6" }]];
   Icon($$payload, spread_props([
     { name: "chevron-down" },
+    $$sanitized_props,
+    {
+      iconNode,
+      children: ($$payload2) => {
+        $$payload2.out += `<!---->`;
+        slot($$payload2, $$props, "default", {});
+        $$payload2.out += `<!---->`;
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
+function Chevron_left($$payload, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  const iconNode = [["path", { "d": "m15 18-6-6 6-6" }]];
+  Icon($$payload, spread_props([
+    { name: "chevron-left" },
     $$sanitized_props,
     {
       iconNode,
@@ -299,7 +315,7 @@ function AdminPlansMonitoring($$payload, $$props) {
     if (filteredPlans.length > 0) {
       $$payload.out += "<!--[-->";
       const each_array_1 = ensure_array_like(paginatedPlans);
-      $$payload.out += `<div class="overflow-x-auto"><table class="w-full border-collapse"><thead><tr class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600"><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions Taken</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">KPI</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Evaluation</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Statement</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Completed</th></tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700"><!--[-->`;
+      $$payload.out += `<div class="overflow-x-auto"><table class="w-full border-collapse"><thead><tr class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600"><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action Plans</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">KPI</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions Taken to Achieve Action Plan</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Statement</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Completed</th></tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700"><!--[-->`;
       for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
         let plan = each_array_1[$$index_1];
         $$payload.out += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-200">${escape_html(plan.actions_taken)}</td><td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-200">${escape_html(plan.kpi)}</td><td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-200">${escape_html(plan.evaluation || "Pending")}</td><td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-200">${escape_html(plan.statement || "Pending")}</td><td class="px-6 py-4"><span${attr("class", `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stringify(plan.is_accomplished ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200" : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200")}`)}>${escape_html(plan.is_accomplished ? "Achieved" : "Not Achieved")}</span></td><td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">${escape_html(plan.time_completed ? new Date(plan.time_completed).toLocaleString() : "N/A")}</td></tr>`;
@@ -318,18 +334,95 @@ function AdminPlansMonitoring($$payload, $$props) {
   $$payload.out += `<!--]--></div></div></div>`;
   pop();
 }
+function Filters($$payload, $$props) {
+  let {
+    uniqueGoals,
+    selectedStatus = "all",
+    selectedGoal = "all"
+  } = $$props;
+  const statusOptions = [
+    { value: "all", label: "All Status" },
+    { value: "achieved", label: "Achieved" },
+    { value: "pending", label: "Pending" }
+  ];
+  const each_array = ensure_array_like(statusOptions);
+  const each_array_1 = ensure_array_like(uniqueGoals);
+  $$payload.out += `<div class="mt-4 p-4 bg-gray-50 rounded-lg"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="flex flex-col"><label for="status" class="text-sm font-medium text-gray-700 mb-1">Status</label> <select id="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"><!--[-->`;
+  for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
+    let option = each_array[$$index];
+    $$payload.out += `<option${attr("value", option.value)}>${escape_html(option.label)}</option>`;
+  }
+  $$payload.out += `<!--]--></select></div> <div class="flex flex-col"><label for="goal" class="text-sm font-medium text-gray-700 mb-1">Strategic Goal</label> <select id="goal" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"><!--[-->`;
+  for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
+    let goal = each_array_1[$$index_1];
+    $$payload.out += `<option${attr("value", goal)}>${escape_html(goal === "all" ? "All Goals" : goal)}</option>`;
+  }
+  $$payload.out += `<!--]--></select></div></div></div>`;
+  bind_props($$props, { selectedStatus, selectedGoal });
+}
 function DeptPlansMonitoring($$payload, $$props) {
   push();
-  $$payload.out += `<div class="min-h-screen p-8"><h1 class="text-3xl font-bold mb-6">Plans Monitoring</h1> `;
-  {
-    $$payload.out += "<!--[-->";
-    $$payload.out += `<div class="text-center text-xl"><span class="loading loading-spinner loading-md"></span></div>`;
+  let uniqueGoals;
+  let actionPlans = [];
+  let searchTerm = "";
+  let sortBy = "strategic_goal_name";
+  let selectedStatus = "all";
+  let selectedGoal = "all";
+  uniqueGoals = [
+    "all",
+    ...new Set(actionPlans.map((plan) => plan.strategic_goal_name))
+  ];
+  actionPlans.filter((plan) => {
+    const matchesSearch = plan.strategic_goal_name.toLowerCase().includes(searchTerm.toLowerCase()) || plan.objective_name.toLowerCase().includes(searchTerm.toLowerCase()) || plan.actions_taken.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = selectedStatus === "all" ? true : selectedStatus === "achieved" ? plan.is_accomplished : !plan.is_accomplished;
+    const matchesGoal = selectedGoal === "all" || plan.strategic_goal_name === selectedGoal;
+    return matchesSearch && matchesStatus && matchesGoal;
+  }).sort((a, b) => {
+    const compareValue = 1;
+    return a[sortBy] > b[sortBy] ? compareValue : -compareValue;
+  });
+  let $$settled = true;
+  let $$inner_payload;
+  function $$render_inner($$payload2) {
+    $$payload2.out += `<div class="min-h-screen flex flex-col bg-gray-100"><header class="sticky top-0 z-40 bg-white border-b shadow-sm"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"><div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><h1 class="text-2xl font-medium text-gray-800">Plans Monitoring</h1> <div class="flex items-center gap-2"><div class="relative flex-1 sm:flex-none"><input type="search"${attr("value", searchTerm)} placeholder="Search plans..." class="w-full sm:w-64 pl-3 pr-8 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"> <span class="absolute right-2 top-2.5 text-gray-400">🔍</span></div></div></div> <div class="mt-4">`;
+    Filters($$payload2, {
+      uniqueGoals,
+      get selectedStatus() {
+        return selectedStatus;
+      },
+      set selectedStatus($$value) {
+        selectedStatus = $$value;
+        $$settled = false;
+      },
+      get selectedGoal() {
+        return selectedGoal;
+      },
+      set selectedGoal($$value) {
+        selectedGoal = $$value;
+        $$settled = false;
+      }
+    });
+    $$payload2.out += `<!----></div></div></header> <main class="flex-1"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">`;
+    {
+      $$payload2.out += "<!--[-->";
+      $$payload2.out += `<div class="flex justify-center items-center h-64">`;
+      Loader_circle($$payload2, {
+        class: "animate-spin h-10 w-10 text-indigo-500"
+      });
+      $$payload2.out += `<!----></div>`;
+    }
+    $$payload2.out += `<!--]--></div></main> `;
+    {
+      $$payload2.out += "<!--[!-->";
+    }
+    $$payload2.out += `<!--]--></div>`;
   }
-  $$payload.out += `<!--]--> `;
-  {
-    $$payload.out += "<!--[!-->";
-  }
-  $$payload.out += `<!--]--></div>`;
+  do {
+    $$settled = true;
+    $$inner_payload = copy_payload($$payload);
+    $$render_inner($$inner_payload);
+  } while (!$$settled);
+  assign_payload($$payload, $$inner_payload);
   pop();
 }
 export {

@@ -2,7 +2,6 @@
 	import { supabase } from "$lib/supabaseClient";
 	import { onMount } from "svelte";
 	import { Plus, Target, AlertCircle, CheckCircle2 } from "lucide-svelte";
-	import ObjectiveForm from "$lib/components/strategic-objectives/ObjectiveForm.svelte";
 
 	interface StrategicGoal {
 		id: number;

@@ -4,7 +4,7 @@
 	import "tailwindcss/tailwind.css";
 	import { supabase } from "$lib/supabaseClient";
 	import { CheckCircle, XCircle, Loader2, Eye, ArrowUpDown } from "lucide-svelte";
-	import Filters from "./PlanComponent/Filters.svelte";
+	import Filters from "../departments/PlanComponent/Filters.svelte";
 
 	interface ActionPlan {
 		id: number;
@@ -188,11 +188,12 @@
 		actionPlans = actionPlans.map((plan) => (plan.id === id ? { ...plan, isLoading: true } : plan));
 
 		try {
-			const response = await fetch("/api/evaluate-goal", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ target: kpi, evaluation }),
+						const response = await fetch('/api/evaluate-goal', {
+				method: 'POST', // Use POST instead of GET
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ target: kpi, evaluation })
 			});
+
 
 			const data = await response.json();
 			if (!response.ok || data.error) throw new Error(data.error || "Failed to evaluate action plan.");
@@ -203,7 +204,6 @@
 			const negativeKeywords = ["not achieved", "unsuccessful", "failed", "incomplete", "fell short", "below target", "did not meet", "not"];
 			const isAccomplished = !negativeKeywords.some((neg) => aiEvaluation.toLowerCase().includes(neg));
 			const timeCompleted = isAccomplished ? new Date().toISOString() : null;
-
 			const { error } = await supabase
 				.from("plan_monitoring")
 				.update({

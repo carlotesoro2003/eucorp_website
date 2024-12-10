@@ -1,30 +1,41 @@
-import { N as ensure_array_like, L as escape_html, F as attr, C as pop, A as push } from "../../../../chunks/index.js";
+import { L as escape_html, C as pop, A as push } from "../../../../chunks/index.js";
 import "../../../../chunks/supabaseClient.js";
-function _page($$payload, $$props) {
-  push();
-  let savedRisks = [];
-  let riskAssessments = [];
-  let classification = [];
-  let departmentName = "";
-  const each_array = ensure_array_like(savedRisks);
-  $$payload.out += `<div><h1 class="text-3xl font-bold">${escape_html(departmentName)} Risks Register</h1> `;
-  {
+function Notifications($$payload, $$props) {
+  let { successMessage, errorMessage } = $$props;
+  if (successMessage) {
+    $$payload.out += "<!--[-->";
+    $$payload.out += `<div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded"><p>${escape_html(successMessage)}</p></div>`;
+  } else {
     $$payload.out += "<!--[!-->";
   }
   $$payload.out += `<!--]--> `;
-  {
+  if (errorMessage) {
+    $$payload.out += "<!--[-->";
+    $$payload.out += `<div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded"><p>${escape_html(errorMessage)}</p></div>`;
+  } else {
     $$payload.out += "<!--[!-->";
   }
-  $$payload.out += `<!--]--> <h2 class="text-2xl font-bold mt-8">All Saved Risks</h2> <table class="table table-zebra w-full mt-4"><thead><tr><th>RRN</th><th>Risk Statement</th><th>Classification</th><th>Actions</th><th>Key Persons</th><th>Budget</th><th></th></tr></thead><tbody><!--[-->`;
-  for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
-    let risk = each_array[$$index];
-    $$payload.out += `<tr><td>${escape_html(risk.rrn)}</td><td>${escape_html(risk.risk_statement)}</td><td>${escape_html(classification.find((cls) => cls.id === risk.classification)?.name || "N/A")}</td><td>${escape_html(risk.actions)}</td><td>${escape_html(risk.key_persons)}</td><td>${escape_html(risk.budget)}</td><td><button class="btn btn-sm btn-primary"${attr("disabled", riskAssessments.some((ra) => ra.risk_id === risk.id), true)}>Add Assessment</button></td><td><button class="btn btn-sm btn-error">Delete</button></td></tr>`;
-  }
-  $$payload.out += `<!--]--></tbody></table> `;
+  $$payload.out += `<!--]-->`;
+}
+function Header($$payload, $$props) {
+  let { departmentName } = $$props;
+  $$payload.out += `<header class="bg-white dark:bg-gray-800 shadow-sm"><div class="container mx-auto px-4 py-6"><h1 class="text-3xl font-bold text-gray-900 dark:text-white">${escape_html(departmentName)} Risk Register</h1> <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Manage and assess department risks</p></div></header>`;
+}
+function _page($$payload, $$props) {
+  push();
+  let departmentName = "";
+  let successMessage = null;
+  let errorMessage = null;
+  $$payload.out += `<div class="min-h-screen bg-gray-50 dark:bg-gray-900">`;
+  Header($$payload, { departmentName });
+  $$payload.out += `<!----> <main class="container mx-auto px-4 py-8">`;
+  Notifications($$payload, { successMessage, errorMessage });
+  $$payload.out += `<!----> `;
   {
-    $$payload.out += "<!--[!-->";
+    $$payload.out += "<!--[-->";
+    $$payload.out += `<div class="flex justify-center items-center min-h-[400px]"><div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>`;
   }
-  $$payload.out += `<!--]--></div>`;
+  $$payload.out += `<!--]--></main></div>`;
   pop();
 }
 export {

@@ -1,5 +1,5 @@
-import { S as once, A as push, T as spread_attributes, G as bind_props, C as pop, U as copy_payload, V as assign_payload, P as spread_props, O as stringify, Q as slot, R as sanitize_props, F as attr, N as ensure_array_like, L as escape_html, J as store_get, K as unsubscribe_stores } from "../../../chunks/index.js";
-import { A as ARROW_LEFT, a as ARROW_RIGHT, b as ARROW_DOWN, c as ARROW_UP, d as box, H as HOME, E as END, i as isBrowser, e as createContext, f as useRefById, g as useId, m as mergeProps, h as getDataOpenClosed, j as getDataDisabled, S as SPACE, k as ENTER, l as getAriaExpanded, n as noop, P as Presence_layer, o as getAriaOrientation, p as getAriaHidden, q as getDataOrientation, r as PAGE_DOWN, s as PAGE_UP, t as isHTMLElement, T as TAB, v as focusFirst, w as isElement, x as afterTick, y as isElementOrSVGElement, z as getAriaDisabled, B as tick, C as useDialogRoot, F as Floating_layer, D as Popper_layer_force_mount, G as Popper_layer, I as getFloatingContentCSSVars, J as Floating_layer_anchor, K as cn, L as setSidebar, M as Provider, N as SIDEBAR_COOKIE_NAME, O as SIDEBAR_COOKIE_MAX_AGE, Q as SIDEBAR_WIDTH, R as SIDEBAR_WIDTH_ICON, U as useSidebar, V as Button, W as Sheet_content, X as SIDEBAR_WIDTH_MOBILE, Y as Sidebar_menu_button, Z as Portal, u as userStore } from "../../../chunks/sheet-content.js";
+import { U as once, A as push, V as spread_attributes, G as bind_props, C as pop, S as copy_payload, T as assign_payload, P as spread_props, O as stringify, Q as slot, R as sanitize_props, F as attr, N as ensure_array_like, L as escape_html, J as store_get, K as unsubscribe_stores } from "../../../chunks/index.js";
+import { A as ARROW_LEFT, a as ARROW_RIGHT, b as ARROW_DOWN, c as ARROW_UP, d as box, H as HOME, E as END, i as isBrowser, e as createContext, f as useRefById, g as useId, m as mergeProps, h as getDataOpenClosed, j as getDataDisabled, S as SPACE, k as ENTER, l as getAriaExpanded, n as noop, P as Presence_layer, o as getAriaOrientation, p as getAriaHidden, q as getDataOrientation, r as PAGE_DOWN, s as PAGE_UP, t as isHTMLElement, T as TAB, v as focusFirst, w as isElement, x as afterTick, y as isElementOrSVGElement, z as getAriaDisabled, B as useDialogRoot, F as Floating_layer, C as Popper_layer_force_mount, D as Popper_layer, G as getFloatingContentCSSVars, I as Floating_layer_anchor, J as cn, K as setSidebar, L as Provider, M as SIDEBAR_COOKIE_NAME, N as SIDEBAR_COOKIE_MAX_AGE, O as SIDEBAR_WIDTH, Q as SIDEBAR_WIDTH_ICON, R as useSidebar, U as Button, V as Sheet_content, W as SIDEBAR_WIDTH_MOBILE, X as Sidebar_menu_button, Y as Portal, u as userStore } from "../../../chunks/sheet-content.js";
 import "style-to-object";
 import "clsx";
 import { C as Chevron_right } from "../../../chunks/chevron-right.js";
@@ -190,9 +190,10 @@ class AvatarRootState {
     this.loadingStatus = props.loadingStatus;
     this.#ref = props.ref;
     this.#id = props.id;
+    this.loadImage = this.loadImage.bind(this);
     useRefById({ id: this.#id, ref: this.#ref });
   }
-  loadImage = (src, crossorigin, referrerPolicy) => {
+  loadImage(src, crossorigin, referrerPolicy) {
     let imageTimerId;
     const image = new Image();
     image.src = src;
@@ -213,7 +214,7 @@ class AvatarRootState {
     return () => {
       window.clearTimeout(imageTimerId);
     };
-  };
+  }
   #props = once(() => ({
     id: this.#id.current,
     [AVATAR_ROOT_ATTR]: "",
@@ -419,6 +420,7 @@ class CollapsibleRootState {
     this.disabled = props.disabled;
     this.#id = props.id;
     this.#ref = props.ref;
+    this.toggleOpen = this.toggleOpen.bind(this);
     useRefById({ id: this.#id, ref: this.#ref });
   }
   toggleOpen() {
@@ -492,26 +494,29 @@ class CollapsibleTriggerState {
     this.#id = props.id;
     this.#ref = props.ref;
     this.#disabled = props.disabled;
+    this.onpointerdown = this.onpointerdown.bind(this);
+    this.onpointerup = this.onpointerup.bind(this);
+    this.onkeydown = this.onkeydown.bind(this);
     useRefById({ id: this.#id, ref: this.#ref });
   }
-  #onpointerdown = (e) => {
+  onpointerdown(e) {
     if (this.#isDisabled()) return;
     if (e.pointerType === "touch" || e.button !== 0) return e.preventDefault();
     this.#root.toggleOpen();
-  };
-  #onpointerup = (e) => {
+  }
+  onpointerup(e) {
     if (this.#isDisabled()) return;
     if (e.pointerType === "touch") {
       e.preventDefault();
       this.#root.toggleOpen();
     }
-  };
-  #onkeydown = (e) => {
+  }
+  onkeydown(e) {
     if (this.#isDisabled()) return;
     if (e.key === SPACE || e.key === ENTER) {
       this.#root.toggleOpen();
     }
-  };
+  }
   #props = once(() => ({
     id: this.#id.current,
     type: "button",
@@ -522,9 +527,9 @@ class CollapsibleTriggerState {
     "data-disabled": getDataDisabled(this.#isDisabled()),
     [COLLAPSIBLE_TRIGGER_ATTR]: "",
     //
-    onpointerdown: this.#onpointerdown,
-    onpointerup: this.#onpointerup,
-    onkeydown: this.#onkeydown
+    onpointerdown: this.onpointerdown,
+    onpointerup: this.onpointerup,
+    onkeydown: this.onkeydown
   }));
   get props() {
     return this.#props();
@@ -819,9 +824,9 @@ class MenuRootState {
     this.dir = props.dir;
     this.variant = props.variant;
   }
-  getAttr = (name) => {
+  getAttr(name) {
     return `data-${this.variant.current}-${name}`;
-  };
+  }
 }
 class MenuMenuState {
   root;
@@ -835,15 +840,15 @@ class MenuMenuState {
     this.open = props.open;
     this.parentMenu = parentMenu;
   }
-  toggleOpen = () => {
+  toggleOpen() {
     this.open.current = !this.open.current;
-  };
-  onOpen = () => {
+  }
+  onOpen() {
     this.open.current = true;
-  };
-  onClose = () => {
+  }
+  onClose() {
     this.open.current = false;
-  };
+  }
 }
 class MenuContentState {
   #id;
@@ -867,6 +872,11 @@ class MenuContentState {
     this.parentMenu.contentId = props.id;
     this.contentRef = props.ref;
     this.isMounted = props.isMounted;
+    this.onkeydown = this.onkeydown.bind(this);
+    this.onblur = this.onblur.bind(this);
+    this.onpointermove = this.onpointermove.bind(this);
+    this.onfocus = this.onfocus.bind(this);
+    this.handleInteractOutside = this.handleInteractOutside.bind(this);
     useRefById({
       id: this.#id,
       ref: this.contentRef,
@@ -885,20 +895,20 @@ class MenuContentState {
       orientation: box.with(() => "vertical")
     });
   }
-  getCandidateNodes = () => {
+  #getCandidateNodes() {
     const node = this.parentMenu.contentNode;
     if (!node) return [];
     const candidates = Array.from(node.querySelectorAll(`[${this.parentMenu.root.getAttr("item")}]:not([data-disabled])`));
     return candidates;
-  };
-  isPointerMovingToSubmenu = (e) => {
+  }
+  #isPointerMovingToSubmenu(e) {
     const isMovingTowards = this.#pointerDir === this.#pointerGraceIntent?.side;
     return isMovingTowards && isPointerInGraceArea(e, this.#pointerGraceIntent?.area);
-  };
-  onPointerGraceIntentChange = (intent) => {
+  }
+  onPointerGraceIntentChange(intent) {
     this.#pointerGraceIntent = intent;
-  };
-  #onkeydown = (e) => {
+  }
+  onkeydown(e) {
     if (e.defaultPrevented) return;
     const target = e.target;
     const currentTarget = e.currentTarget;
@@ -909,7 +919,7 @@ class MenuContentState {
     const kbdFocusedEl = this.rovingFocusGroup.handleKeydown(target, e);
     if (kbdFocusedEl) return;
     if (e.code === "Space") return;
-    const candidateNodes = this.getCandidateNodes();
+    const candidateNodes = this.#getCandidateNodes();
     if (isKeydownInside) {
       if (e.key === TAB) e.preventDefault();
       if (!isModifierKey && isCharacterKey) {
@@ -923,20 +933,20 @@ class MenuContentState {
       candidateNodes.reverse();
     }
     focusFirst(candidateNodes);
-  };
-  #onblur = (e) => {
+  }
+  onblur(e) {
     if (!isElement(e.currentTarget)) return;
     if (!isElement(e.target)) return;
     if (!e.currentTarget.contains?.(e.target)) {
       window.clearTimeout(this.#timer);
       this.search = "";
     }
-  };
-  #onfocus = () => {
+  }
+  onfocus(_) {
     if (!this.parentMenu.root.isUsingKeyboard.current) return;
     afterTick(() => this.rovingFocusGroup.focusFirstCandidate());
-  };
-  #onpointermove = (e) => {
+  }
+  onpointermove(e) {
     if (!isMouseEvent(e)) return;
     const target = e.target;
     if (!isElement(target)) return;
@@ -948,28 +958,28 @@ class MenuContentState {
       this.#pointerDir = newDir;
       this.#lastPointerX = e.clientX;
     }
-  };
-  onItemEnter = (e) => {
-    if (this.isPointerMovingToSubmenu(e)) return true;
+  }
+  onItemEnter(e) {
+    if (this.#isPointerMovingToSubmenu(e)) return true;
     return false;
-  };
-  onItemLeave = (e) => {
-    if (this.isPointerMovingToSubmenu(e)) return;
+  }
+  onItemLeave(e) {
+    if (this.#isPointerMovingToSubmenu(e)) return;
     const contentNode = this.parentMenu.contentNode;
     contentNode?.focus();
     this.rovingFocusGroup.setCurrentTabStopId("");
-  };
-  onTriggerLeave = (e) => {
-    if (this.isPointerMovingToSubmenu(e)) return true;
+  }
+  onTriggerLeave(e) {
+    if (this.#isPointerMovingToSubmenu(e)) return true;
     return false;
-  };
+  }
   onOpenAutoFocus = (e) => {
     if (e.defaultPrevented) return;
     e.preventDefault();
     const contentNode = this.parentMenu.contentNode;
     contentNode?.focus();
   };
-  handleInteractOutside = (e) => {
+  handleInteractOutside(e) {
     if (!isElementOrSVGElement(e.target)) return;
     const triggerId = this.parentMenu.triggerNode?.id;
     if (e.target.id === triggerId) {
@@ -979,7 +989,7 @@ class MenuContentState {
     if (e.target.closest(`#${triggerId}`)) {
       e.preventDefault();
     }
-  };
+  }
   #snippetProps = once(() => ({ open: this.parentMenu.open.current }));
   get snippetProps() {
     return this.#snippetProps();
@@ -990,10 +1000,10 @@ class MenuContentState {
     "aria-orientation": getAriaOrientation("vertical"),
     [this.parentMenu.root.getAttr("content")]: "",
     "data-state": getDataOpenClosed(this.parentMenu.open.current),
-    onkeydown: this.#onkeydown,
-    onblur: this.#onblur,
-    onpointermove: this.#onpointermove,
-    onfocus: this.#onfocus,
+    onkeydown: this.onkeydown,
+    onblur: this.onblur,
+    onpointermove: this.onpointermove,
+    onfocus: this.onfocus,
     dir: this.parentMenu.root.dir.current,
     style: { pointerEvents: "auto" }
   }));
@@ -1012,13 +1022,17 @@ class MenuItemSharedState {
     this.id = props.id;
     this.disabled = props.disabled;
     this.ref = props.ref;
+    this.onpointermove = this.onpointermove.bind(this);
+    this.onpointerleave = this.onpointerleave.bind(this);
+    this.onfocus = this.onfocus.bind(this);
+    this.onblur = this.onblur.bind(this);
     useRefById({
       id: this.id,
       ref: this.ref,
       deps: () => this.content.isMounted.current
     });
   }
-  #onpointermove = (e) => {
+  onpointermove(e) {
     if (e.defaultPrevented) return;
     if (!isMouseEvent(e)) return;
     if (this.disabled.current) {
@@ -1030,26 +1044,26 @@ class MenuItemSharedState {
       if (!isHTMLElement(item)) return;
       item.focus();
     }
-  };
-  #onpointerleave = async (e) => {
+  }
+  onpointerleave(e) {
     afterTick(() => {
       if (e.defaultPrevented) return;
       if (!isMouseEvent(e)) return;
       this.content.onItemLeave(e);
     });
-  };
-  #onfocus = async (e) => {
+  }
+  onfocus(e) {
     afterTick(() => {
       if (e.defaultPrevented || this.disabled.current) return;
       this.#isFocused = true;
     });
-  };
-  #onblur = async (e) => {
+  }
+  onblur(e) {
     afterTick(() => {
       if (e.defaultPrevented) return;
       this.#isFocused = false;
     });
-  };
+  }
   #props = once(() => ({
     id: this.id.current,
     tabindex: -1,
@@ -1059,10 +1073,10 @@ class MenuItemSharedState {
     "data-highlighted": this.#isFocused ? "" : void 0,
     [this.content.parentMenu.root.getAttr("item")]: "",
     //
-    onpointermove: this.#onpointermove,
-    onpointerleave: this.#onpointerleave,
-    onfocus: this.#onfocus,
-    onblur: this.#onblur
+    onpointermove: this.onpointermove,
+    onpointerleave: this.onpointerleave,
+    onfocus: this.onfocus,
+    onblur: this.onblur
   }));
   get props() {
     return this.#props();
@@ -1079,8 +1093,26 @@ class MenuItemState {
     this.root = item.content.parentMenu.root;
     this.#onSelect = props.onSelect;
     this.#closeOnSelect = props.closeOnSelect;
+    this.onkeydown = this.onkeydown.bind(this);
+    this.onclick = this.onclick.bind(this);
+    this.onpointerdown = this.onpointerdown.bind(this);
+    this.onpointerup = this.onpointerup.bind(this);
   }
-  #onkeydown = (e) => {
+  #handleSelect() {
+    if (this.#item.disabled.current) return;
+    const selectEvent = new CustomEvent("menuitemselect", { bubbles: true, cancelable: true });
+    this.#onSelect.current(selectEvent);
+    afterTick(() => {
+      if (selectEvent.defaultPrevented) {
+        this.#item.content.parentMenu.root.isUsingKeyboard.current = false;
+        return;
+      }
+      if (this.#closeOnSelect.current) {
+        this.#item.content.parentMenu.root.onClose();
+      }
+    });
+  }
+  onkeydown(e) {
     const isTypingAhead = this.#item.content.search !== "";
     if (this.#item.disabled.current || isTypingAhead && e.key === SPACE) return;
     if (SELECTION_KEYS.includes(e.key)) {
@@ -1088,39 +1120,26 @@ class MenuItemState {
       e.currentTarget.click();
       e.preventDefault();
     }
-  };
-  #handleSelect = async () => {
-    if (this.#item.disabled.current) return;
-    const selectEvent = new CustomEvent("menuitemselect", { bubbles: true, cancelable: true });
-    this.#onSelect.current(selectEvent);
-    await tick();
-    if (selectEvent.defaultPrevented) {
-      this.#item.content.parentMenu.root.isUsingKeyboard.current = false;
-      return;
-    }
-    if (this.#closeOnSelect.current) {
-      this.#item.content.parentMenu.root.onClose();
-    }
-  };
-  #onclick = () => {
+  }
+  onclick(_) {
     if (this.#item.disabled.current) return;
     this.#handleSelect();
-  };
-  #onpointerup = async (e) => {
+  }
+  onpointerup(e) {
     if (e.defaultPrevented) return;
     if (!this.#isPointerDown) {
       if (!isHTMLElement(e.currentTarget)) return;
       e.currentTarget?.click();
     }
-  };
-  #onpointerdown = () => {
+  }
+  onpointerdown(_) {
     this.#isPointerDown = true;
-  };
+  }
   #props = once(() => mergeProps(this.#item.props, {
-    onclick: this.#onclick,
-    onpointerdown: this.#onpointerdown,
-    onpointerup: this.#onpointerup,
-    onkeydown: this.#onkeydown
+    onclick: this.onclick,
+    onpointerdown: this.onpointerdown,
+    onpointerup: this.onpointerup,
+    onkeydown: this.onkeydown
   }));
   get props() {
     return this.#props();
@@ -1176,6 +1195,9 @@ class DropdownMenuTriggerState {
     this.#id = props.id;
     this.#parentMenu = parentMenu;
     this.#disabled = props.disabled;
+    this.onpointerdown = this.onpointerdown.bind(this);
+    this.onpointerup = this.onpointerup.bind(this);
+    this.onkeydown = this.onkeydown.bind(this);
     useRefById({
       id: this.#id,
       ref: this.#ref,
@@ -1184,22 +1206,22 @@ class DropdownMenuTriggerState {
       }
     });
   }
-  #onpointerdown = (e) => {
+  onpointerdown(e) {
     if (this.#disabled.current) return;
     if (e.pointerType === "touch") return e.preventDefault();
     if (e.button === 0 && e.ctrlKey === false) {
       this.#parentMenu.toggleOpen();
       if (!this.#parentMenu.open.current) e.preventDefault();
     }
-  };
-  #onpointerup = (e) => {
+  }
+  onpointerup(e) {
     if (this.#disabled.current) return;
     if (e.pointerType === "touch") {
       e.preventDefault();
       this.#parentMenu.toggleOpen();
     }
-  };
-  #onkeydown = (e) => {
+  }
+  onkeydown(e) {
     if (this.#disabled.current) return;
     if (e.key === SPACE || e.key === ENTER) {
       this.#parentMenu.toggleOpen();
@@ -1210,7 +1232,7 @@ class DropdownMenuTriggerState {
       this.#parentMenu.onOpen();
       e.preventDefault();
     }
-  };
+  }
   #ariaControls = once(() => {
     if (this.#parentMenu.open.current && this.#parentMenu.contentId.current) return this.#parentMenu.contentId.current;
     return void 0;
@@ -1225,9 +1247,9 @@ class DropdownMenuTriggerState {
     "data-state": getDataOpenClosed(this.#parentMenu.open.current),
     [this.#parentMenu.root.getAttr("trigger")]: "",
     //
-    onpointerdown: this.#onpointerdown,
-    onpointerup: this.#onpointerup,
-    onkeydown: this.#onkeydown
+    onpointerdown: this.onpointerdown,
+    onpointerup: this.onpointerup,
+    onkeydown: this.onkeydown
   }));
   get props() {
     return this.#props();
@@ -1778,7 +1800,7 @@ function Sidebar_menu_sub_button($$payload, $$props) {
     ...restProps
   } = $$props;
   const mergedProps = {
-    class: cn("text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0", "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground", size === "sm" && "text-xs", size === "md" && "text-sm", "group-data-[collapsible=icon]:hidden", className),
+    class: cn("text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0", "data-[active=true]:bg-sidebar-accent data-[active=true]:text-primary", size === "sm" && "text-xs", size === "md" && "text-sm", "group-data-[collapsible=icon]:hidden", className),
     "data-sidebar": "menu-sub-button",
     "data-size": size,
     "data-active": isActive,
@@ -2016,7 +2038,7 @@ function Sidebar_trigger($$payload, $$props) {
     restProps,
     {
       children: ($$payload2) => {
-        Panel_left($$payload2, {});
+        Panel_left($$payload2, { color: "#e21d48" });
         $$payload2.out += `<!----> <span class="sr-only">Toggle Sidebar</span>`;
       },
       $$slots: { default: true }

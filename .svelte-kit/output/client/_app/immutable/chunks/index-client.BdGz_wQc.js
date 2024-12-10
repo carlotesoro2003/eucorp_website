@@ -1,0 +1,1 @@
+import{F as e,G as o,H as u,u as c}from"./utils.CRNn4dtP.js";function l(t){e===null&&o(),e.l!==null?a(e).m.push(t):u(()=>{const n=c(t);if(typeof n=="function")return n})}function a(t){var n=t.l;return n.u??(n.u={a:[],b:[],m:[]})}export{l as o};

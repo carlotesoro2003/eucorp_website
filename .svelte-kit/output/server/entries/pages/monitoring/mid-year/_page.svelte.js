@@ -3,7 +3,6 @@ import { s as supabase } from "../../../../chunks/supabaseClient.js";
 import { A as AdminPlansMonitoring, D as DeptPlansMonitoring, C as Circle_alert, a as Clipboard_list, T as Triangle_alert, L as Lightbulb } from "../../../../chunks/DeptPlansMonitoring.js";
 import "jspdf";
 import "jspdf-autotable";
-/* empty css                          */
 function _page($$payload, $$props) {
   push();
   let data = fallback($$props["data"], null);
@@ -54,7 +53,7 @@ function _page($$payload, $$props) {
   $$payload.out += `<div class="min-h-screen bg-gray-50 dark:bg-gray-900"><div class="container mx-auto px-4 py-8"><div class="mb-8"><h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Mid-year Monitoring Dashboard</h1> <p class="text-gray-600 dark:text-gray-400">Track and manage your organization's plans, risks, and opportunities</p></div> <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6"><div class="flex flex-wrap gap-2 p-2"><!--[-->`;
   for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
     let tab = each_array[$$index];
-    $$payload.out += `<button${attr("class", `flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 ${stringify(activeTab === tab.id ? "bg-blue-500 text-white" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300")}`)}><!---->`;
+    $$payload.out += `<button${attr("class", `flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 ${stringify(activeTab === tab.id ? "bg-primary hover:bg-primary/90 text-white" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300")}`)}><!---->`;
     tab.icon?.($$payload, { size: 18 });
     $$payload.out += `<!----> <span>${escape_html(tab.label)}</span></button>`;
   }

@@ -1,5 +1,5 @@
 import { w as writable } from "./index3.js";
-import { B as setContext$1, W as hasContext, M as getContext$1, A as push, C as pop, S as once, X as getAllContexts, G as bind_props, T as spread_attributes, P as spread_props, U as copy_payload, V as assign_payload } from "./index.js";
+import { B as setContext$1, W as hasContext, M as getContext$1, A as push, C as pop, U as once, X as getAllContexts, G as bind_props, V as spread_attributes, P as spread_props, S as copy_payload, T as assign_payload } from "./index.js";
 import { clsx } from "clsx";
 import parse from "style-to-object";
 import { computePosition, offset, shift, limitShift, flip, size, arrow, hide, autoUpdate } from "@floating-ui/dom";
@@ -528,15 +528,17 @@ class DialogRootState {
   constructor(props) {
     this.open = props.open;
     this.variant = props.variant;
+    this.handleOpen = this.handleOpen.bind(this);
+    this.handleClose = this.handleClose.bind(this);
   }
-  handleOpen = () => {
+  handleOpen() {
     if (this.open.current) return;
     this.open.current = true;
-  };
-  handleClose = () => {
+  }
+  handleClose() {
     if (!this.open.current) return;
     this.open.current = false;
-  };
+  }
   #sharedProps = once(() => ({
     "data-state": getDataOpenClosed(this.open.current)
   }));
@@ -557,37 +559,40 @@ class DialogCloseState {
     this.#id = props.id;
     this.#variant = props.variant;
     this.#disabled = props.disabled;
+    this.onclick = this.onclick.bind(this);
+    this.onpointerdown = this.onpointerdown.bind(this);
+    this.onkeydown = this.onkeydown.bind(this);
     useRefById({
       id: this.#id,
       ref: this.#ref,
       deps: () => this.#root.open.current
     });
   }
-  #onclick = (e) => {
+  onclick(e) {
     if (this.#disabled.current) return;
     if (e.button > 0) return;
     this.#root.handleClose();
-  };
-  #onpointerdown = (e) => {
+  }
+  onpointerdown(e) {
     if (this.#disabled.current) return;
     if (e.pointerType === "touch") return e.preventDefault();
     if (e.button > 0) return;
     e.preventDefault();
     this.#root.handleClose();
-  };
-  #onkeydown = (e) => {
+  }
+  onkeydown(e) {
     if (this.#disabled.current) return;
     if (e.key === SPACE || e.key === ENTER) {
       e.preventDefault();
       this.#root.handleClose();
     }
-  };
+  }
   #props = once(() => ({
     id: this.#id.current,
     [this.#attr()]: "",
-    onpointerdown: this.#onpointerdown,
-    onclick: this.#onclick,
-    onkeydown: this.#onkeydown,
+    onpointerdown: this.onpointerdown,
+    onclick: this.onclick,
+    onkeydown: this.onkeydown,
     ...this.#root.sharedProps
   }));
   get props() {
@@ -1440,13 +1445,13 @@ class FloatingContentState {
       mainAxis: this.#sideOffset.current + this.#arrowHeight(),
       alignmentAxis: this.#alignOffset.current
     }),
-    this.#avoidCollisions && shift({
+    this.#avoidCollisions.current && shift({
       mainAxis: true,
       crossAxis: false,
       limiter: this.#sticky.current === "partial" ? limitShift() : void 0,
       ...this.detectOverflowOptions
     }),
-    this.#avoidCollisions && flip({ ...this.detectOverflowOptions }),
+    this.#avoidCollisions.current && flip({ ...this.detectOverflowOptions }),
     size({
       ...this.detectOverflowOptions,
       apply: ({ rects, availableWidth, availableHeight }) => {
@@ -2879,7 +2884,7 @@ const Root = Tooltip;
 const Trigger = Tooltip_trigger;
 const Provider = Tooltip_provider;
 const sidebarMenuButtonVariants = tv({
-  base: "peer/menu-button ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none transition-[width,height,padding] focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:font-medium group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  base: "peer/menu-button ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none transition-[width,height,padding] focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:font-medium group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   variants: {
     variant: {
       default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
@@ -3141,31 +3146,30 @@ function Sheet_content($$payload, $$props) {
 }
 export {
   ARROW_LEFT as A,
-  tick as B,
-  useDialogRoot as C,
-  Popper_layer_force_mount as D,
+  useDialogRoot as B,
+  Popper_layer_force_mount as C,
+  Popper_layer as D,
   END as E,
   Floating_layer as F,
-  Popper_layer as G,
+  getFloatingContentCSSVars as G,
   HOME as H,
-  getFloatingContentCSSVars as I,
-  Floating_layer_anchor as J,
-  cn as K,
-  setSidebar as L,
-  Provider as M,
-  SIDEBAR_COOKIE_NAME as N,
-  SIDEBAR_COOKIE_MAX_AGE as O,
+  Floating_layer_anchor as I,
+  cn as J,
+  setSidebar as K,
+  Provider as L,
+  SIDEBAR_COOKIE_NAME as M,
+  SIDEBAR_COOKIE_MAX_AGE as N,
+  SIDEBAR_WIDTH as O,
   Presence_layer as P,
-  SIDEBAR_WIDTH as Q,
-  SIDEBAR_WIDTH_ICON as R,
+  SIDEBAR_WIDTH_ICON as Q,
+  useSidebar as R,
   SPACE as S,
   TAB as T,
-  useSidebar as U,
-  Button as V,
-  Sheet_content as W,
-  SIDEBAR_WIDTH_MOBILE as X,
-  Sidebar_menu_button as Y,
-  Portal as Z,
+  Button as U,
+  Sheet_content as V,
+  SIDEBAR_WIDTH_MOBILE as W,
+  Sidebar_menu_button as X,
+  Portal as Y,
   ARROW_RIGHT as a,
   ARROW_DOWN as b,
   ARROW_UP as c,

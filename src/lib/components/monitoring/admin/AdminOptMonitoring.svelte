@@ -105,25 +105,56 @@
 		currentPage = 1; // Reset to first page when filtering
 	};
 
-	/** Export to Excel */
-	const exportToExcel = () => {
-		const headers = ["Statement", "KPI", "Actions", "Evaluation", "Status", "Completed"];
-		const data = filteredOpportunities.map((o) => [o.opt_statement, o.kpi, o.planned_actions, o.evaluation || "Pending", o.achieved ? "Achieved" : "Not Achieved", o.time_completed ? new Date(o.time_completed).toLocaleString() : "N/A"]);
+	const exportToPDF = () => {
+		const doc = new jsPDF("landscape");
+		const title = "Opportunities Monitoring Report";
 
-		let csvContent = "data:text/csv;charset=utf-8,";
-		csvContent += headers.join(",") + "\n";
-		data.forEach((row) => {
-			csvContent += row.map((cell) => `"${cell}"`).join(",") + "\n";
+		// University Header
+		doc.setFontSize(12);
+		doc.text("MANUEL S. ENVERGA UNIVERSITY FOUNDATION", 14, 10);
+		doc.setFontSize(10);
+		doc.text("SY 2024-2025", 14, 20);
+
+		// Report Title
+		doc.setFontSize(14);
+		doc.text(title, 14, 30);
+
+		// Define columns
+		const columns = [
+			"Opportunity Statement",
+			"KPI",
+			"Planned Actions",
+			"Evaluation",
+			"Status",
+			"Achieved On",
+		];
+
+		// Map data for rows
+		const rows = filteredOpportunities.map((opportunity) => [
+			opportunity.opt_statement,
+			opportunity.kpi,
+			opportunity.planned_actions,
+			opportunity.evaluation || "Pending Evaluation",
+			opportunity.achieved ? "Achieved" : "Not Achieved",
+			opportunity.time_completed
+			? new Date(opportunity.time_completed).toLocaleString()
+			: "N/A",
+		]);
+
+		// Generate the table
+		autoTable(doc, {
+			head: [columns],
+			body: rows,
+			startY: 40,
+			theme: "grid",
+			styles: { fontSize: 10 },
+			headStyles: { fillColor: [41, 128, 185] }, // Blue header background
 		});
 
-		const encodedUri = encodeURI(csvContent);
-		const link = document.createElement("a");
-		link.setAttribute("href", encodedUri);
-		link.setAttribute("download", "opportunities.csv");
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
+		// Save the PDF
+		doc.save("OpportunitiesMonitoring.pdf");
 	};
+
 
 	/** Generate PDF report */
 	const generateSummaryPDF = async () => {
@@ -220,7 +251,7 @@
 			</div>
 
 			<div class="flex gap-2 justify-end">
-				<button class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2" onclick={exportToExcel}>
+				<button class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2" onclick={exportToPDF}>
 					<Download class="w-4 h-4" />
 					Export
 				</button>
