@@ -314,7 +314,7 @@
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm">
 										<div class="flex space-x-2">
-											{#if !achieved}
+											{#if achieved !== "Achieved"}
 												<button onclick={() => evaluateGoal(id, goal, evaluation)} class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled={!evaluation || goalLoading}>Evaluate</button>
 											{/if}
 										</div>

@@ -369,7 +369,6 @@
 			{:else}
 				<div class="text-center py-12 bg-card rounded-lg border border-border">
 					<p class="text-muted-foreground mb-4">No objectives found for this goal.</p>
-					<button onclick={() => (showAddForm = true)} class="btn btn-primary">Add Strategic Objectives</button>
 				</div>
 			{/if}
 		</div>

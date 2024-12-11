@@ -11,6 +11,7 @@
 		kpi: string;
 		planned_actions: string;
 		evaluation: string | null;
+		statement: string | null;
 		achieved: boolean;
 		time_completed: string | null;
 	}
@@ -54,6 +55,7 @@
                     kpi,
                     planned_actions
                 ),
+				statement,
                 evaluation,
                 is_accomplished,
                 time_completed
@@ -71,6 +73,7 @@
 					kpi: item.opportunities?.kpi || "No KPI Available",
 					planned_actions: item.opportunities?.planned_actions || "No Actions Available",
 					evaluation: item.evaluation || "Pending Evaluation",
+					statement: item.statement || "No Statement Available",
 					achieved: item.is_accomplished || false,
 					time_completed: item.time_completed || null,
 				}));
@@ -282,8 +285,9 @@
 								<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Statement</th>
 								<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">KPI</th>
 								<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-								<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Evaluation</th>
+								<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions Taken to Achieve Opportunity</th>
 								<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+								<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Remarks</th>
 								<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Completed</th>
 							</tr>
 						</thead>
@@ -298,6 +302,9 @@
 										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {o.achieved ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'}">
 											{o.achieved ? "Achieved" : "Not Achieved"}
 										</span>
+									</td>
+									<td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+										{o.statement}
 									</td>
 									<td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
 										{o.time_completed ? new Date(o.time_completed).toLocaleString() : "N/A"}

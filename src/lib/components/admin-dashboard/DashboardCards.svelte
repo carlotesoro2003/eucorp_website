@@ -38,10 +38,7 @@
                 </div>
             </div>
             <div class="mt-4">
-                <span class={`inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium ${getChangeColor(card.change)}`}>
-                    {card.change >= 0 ? "↑" : "↓"} {Math.abs(card.change)}%
-                </span>
-                <span class="ml-2 text-sm text-gray-500">from last month</span>
+               
             </div>
         </div>
     {/each}

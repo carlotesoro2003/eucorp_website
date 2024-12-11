@@ -9,25 +9,25 @@ export const dashboardData = {
             title: 'Strategic Goals',
             value: '0 Goals', // Placeholder for dynamic value
             change: 12.5,
-            icon: '💰',
+            icon: '🎯',
         },
         {
             title: 'Unmitigated Risks',
             value: '0 Risks', // Placeholder for dynamic value
             change: -2.4,
-            icon: '📊',
+            icon: '⚠️',
         },
         {
             title: 'Opportunities',
             value: '0 Opportunities', // Placeholder for dynamic value
             change: 8.2,
-            icon: '👥',
+            icon: '💡',
         },
         {
             title: 'Users',
             value: '0 Users', // Placeholder for dynamic value
             change: 5.1,
-            icon: '✅',
+            icon: '👥',
         },
     ],
     barChart: {
@@ -84,7 +84,7 @@ export const updateStrategicGoalsCount = async (): Promise<void> => {
         if (error) throw error;
 
         const strategicGoalsCount = data.length;
-        dashboardData.cards[0].value = `${strategicGoalsCount} goals`;
+        dashboardData.cards[0].value = `${strategicGoalsCount}`;
     } catch (error) {
         console.error('Error updating strategic goals count:', error);
         dashboardData.cards[0].value = '0 Goals';
@@ -104,7 +104,7 @@ export const updateUnmitigatedRisksCount = async (): Promise<void> => {
         if (error) throw error;
 
         const unmitigatedRisksCount = data.length;
-        dashboardData.cards[1].value = `${unmitigatedRisksCount} risks`;
+        dashboardData.cards[1].value = `${unmitigatedRisksCount}`;
     } catch (error) {
         console.error('Error updating unmitigated risks count:', error);
         dashboardData.cards[1].value = '0 Risks';
@@ -120,7 +120,7 @@ export const updateOpportunitiesCount = async (): Promise<void> => {
         if (error) throw error;
 
         const opportunitiesCount = data.length;
-        dashboardData.cards[2].value = `${opportunitiesCount} opts`;
+        dashboardData.cards[2].value = `${opportunitiesCount}`;
     } catch (error) {
         console.error('Error updating opportunities count:', error);
         dashboardData.cards[2].value = '0 Opportunities';
@@ -136,7 +136,7 @@ export const updateUsersCount = async (): Promise<void> => {
         if (error) throw error;
 
         const usersCount = data.length;
-        dashboardData.cards[3].value = `${usersCount} users`;
+        dashboardData.cards[3].value = `${usersCount}`;
     } catch (error) {
         console.error('Error updating users count:', error);
         dashboardData.cards[3].value = '0 Users';
