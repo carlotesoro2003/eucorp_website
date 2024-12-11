@@ -72,6 +72,9 @@
 	"/risks/riskAssessment": [
 		"src/routes/+layout.ts"
 	],
+	"/school-year": [
+		"src/routes/+layout.ts"
+	],
 	"/test-sidebar": [
 		"src/routes/+layout.ts"
 	],

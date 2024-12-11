@@ -38,6 +38,7 @@
         url: "/users",
         icon: Bot,
         items: [
+          {title:"School Years", url: "/school-year"},
           { title: "Users", url: "/users" },
           { title: "Departments", url: "/departments" },
           { title: "Leads", url: "/leads" },

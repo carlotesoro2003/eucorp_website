@@ -12,7 +12,7 @@ type EnsureDefined<T> = T extends null | undefined ? {} : T;
 type OptionalUnion<U extends Record<string, any>, A extends keyof U = U extends U ? keyof U : never> = U extends unknown ? { [P in Exclude<A, keyof U>]?: never } & U : never;
 export type Snapshot<T = any> = Kit.Snapshot<T>;
 type PageParentData = EnsureDefined<LayoutData>;
-type LayoutRouteId = RouteId | "/" | "/classification" | "/dashboard" | "/departments" | "/leads" | "/login" | "/monitoring" | "/monitoring/mid-year" | "/monitoring/year-end" | "/opportunities" | "/plans" | "/plans/operationalPlans" | "/plans/operationalPlans/[id]" | "/plans/strategicPlans" | "/plans/[id]" | "/plans/[id]/[id]" | "/profile" | "/riskManagement" | "/risks" | "/risks/riskAssessment" | "/test-sidebar" | "/users" | null
+type LayoutRouteId = RouteId | "/" | "/classification" | "/dashboard" | "/departments" | "/leads" | "/login" | "/monitoring" | "/monitoring/mid-year" | "/monitoring/year-end" | "/opportunities" | "/plans" | "/plans/operationalPlans" | "/plans/operationalPlans/[id]" | "/plans/strategicPlans" | "/plans/[id]" | "/plans/[id]/[id]" | "/profile" | "/riskManagement" | "/risks" | "/risks/riskAssessment" | "/school-year" | "/test-sidebar" | "/users" | null
 type LayoutParams = RouteParams & { id?: string }
 type LayoutParentData = EnsureDefined<{}>;
 
