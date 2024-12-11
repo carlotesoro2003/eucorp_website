@@ -43,8 +43,9 @@
   });
 
 
-const ensureSession = async () => {
+  const refreshAndEnsureSession = async () => {
   try {
+    // Check if session exists
     if (!user.session) {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData?.session) {
@@ -57,6 +58,23 @@ const ensureSession = async () => {
     }
 
     const { session } = user;
+
+    // Check if session is about to expire and refresh if needed
+    const expiresIn = session.expires_at - Math.floor(Date.now() / 1000);
+    if (expiresIn < 300) { // Refresh if less than 5 minutes remaining
+      console.log("Token is expiring soon. Refreshing session...");
+      const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        console.error("Error refreshing session:", refreshError.message);
+        goto("/login");
+        return;
+      } else {
+        console.log("Session refreshed successfully.");
+        userStore.update((u) => ({ ...u, session: refreshedData.session }));
+      }
+    }
+
+    // Fetch user profile
     const { data: profileData, error: fetchError } = await supabase
       .from("profiles")
       .select("id, role, is_verified, profile_pic, department_id, email, first_name, last_name")
@@ -87,6 +105,7 @@ const ensureSession = async () => {
       }
     }
 
+    // Update user store with profile data
     if (profileData) {
       userStore.set({
         session,
@@ -108,14 +127,14 @@ const ensureSession = async () => {
         lastName: profileData.last_name || "User",
       });
 
-      // Only redirect if the user is on the root path
+      // Redirect if user is verified and on the root path
       if (profileData.is_verified && currentPath === "/") {
         console.log("Redirecting to /dashboard.");
         goto("/dashboard");
       }
     }
   } catch (err) {
-    console.error("Error during session check:", err);
+    console.error("Error during session refresh and check:", err);
     goto("/login");
   } finally {
     loading = false;
@@ -126,7 +145,7 @@ const ensureSession = async () => {
 
 
 onMount(() => {
-  ensureSession(); // Ensure session on load
+  refreshAndEnsureSession(); // Ensure session on load
 
   const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
     if (event === "SIGNED_OUT") {
@@ -145,7 +164,7 @@ onMount(() => {
     } else if (newSession) {
       console.log("User signed in or session updated.");
       userStore.update((u) => ({ ...u, session: newSession }));
-      ensureSession(); // Re-validate session and fetch profile
+      refreshAndEnsureSession(); // Re-validate session and fetch profile
     }
   });
 

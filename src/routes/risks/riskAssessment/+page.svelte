@@ -156,8 +156,10 @@
 	// Message handlers
 	const handleSuccess = (message: string) => {
 		successMessage = message;
+
 		setTimeout(() => (successMessage = null), 3000);
 	};
+
 
 	const handleError = (message: string) => {
 		errorMessage = message;
@@ -183,7 +185,16 @@
 			<RiskTable {savedRisks} {classification} {riskAssessments} onAssess={handleOpenDialog} />
 
 			{#if showDialog}
-				<AssessmentDialog {selectedRisk} {likelihoodRating} {severity} {riskControlRating} {riskMonitoringRating} onClose={handleCloseDialog} onSuccess={handleSuccess} onError={handleError} />
+			<AssessmentDialog
+				{selectedRisk}
+				{likelihoodRating}
+				{severity}
+				{riskControlRating}
+				{riskMonitoringRating}
+				onClose={handleCloseDialog}
+				onSuccess={handleSuccess}
+				onError={handleError}
+			/>
 			{/if}
 		{/if}
 	</main>

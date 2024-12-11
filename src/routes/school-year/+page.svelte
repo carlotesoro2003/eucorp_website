@@ -10,6 +10,7 @@
 		school_year: string;
 		start_date: string;
 		end_date: string;
+		mid_year?: string;
 	}
 
 	/** State variables */
@@ -21,9 +22,7 @@
 	let searchQuery: string = $state("");
 
 	/** Derived filtered school years based on search query */
-	const filteredSchoolYears = $derived(
-		schoolYears.filter((year) => year.school_year.toLowerCase().includes(searchQuery.toLowerCase()))
-	);
+	const filteredSchoolYears = $derived(schoolYears.filter((year) => year.school_year.toLowerCase().includes(searchQuery.toLowerCase())));
 
 	/** Fetch school years */
 	const fetchSchoolYears = async () => {
@@ -41,6 +40,14 @@
 		}
 	};
 
+	/** Calculate mid-year */
+	const calculateMidYear = (startDate: string, endDate: string): string => {
+		const start = new Date(startDate);
+		const end = new Date(endDate);
+		const midYear = new Date((start.getTime() + end.getTime()) / 2);
+		return midYear.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+	};
+
 	/** Handle save */
 	const handleSave = async (e: SubmitEvent) => {
 		e.preventDefault();
@@ -50,10 +57,12 @@
 			isLoading = true;
 			errorMessage = null;
 
+			const mid_year = calculateMidYear(editingItem.start_date, editingItem.end_date);
 			const formData = {
 				school_year: editingItem.school_year,
 				start_date: editingItem.start_date,
 				end_date: editingItem.end_date,
+				mid_year,
 			};
 
 			if (editingItem.id) {
@@ -176,6 +185,7 @@
 							<th class="px-6 py-4 text-left font-medium">School Year</th>
 							<th class="px-6 py-4 text-left font-medium">Start Date</th>
 							<th class="px-6 py-4 text-left font-medium">End Date</th>
+							<th class="px-6 py-4 text-left font-medium">Mid Year</th>
 							<th class="px-6 py-4 text-left font-medium">Actions</th>
 						</tr>
 					</thead>
@@ -185,6 +195,7 @@
 								<td class="px-6 py-4 font-medium">{item.school_year}</td>
 								<td class="px-6 py-4">{formatDate(item.start_date)}</td>
 								<td class="px-6 py-4">{formatDate(item.end_date)}</td>
+								<td class="px-6 py-4">{item.mid_year ? formatDate(item.mid_year) : "-"}</td>
 								<td class="px-6 py-4">
 									<div class="flex items-center gap-4">
 										<button onclick={() => editItem(item)} class="p-1 hover:text-primary rounded-md transition-colors" title="Edit">

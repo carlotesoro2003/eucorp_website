@@ -436,6 +436,64 @@
 			sortDirection = "asc";
 		}
 	};
+
+  const approveAllActionPlans = async () => {
+    isLoading = true;
+
+    try {
+      // Determine the field to update based on the user role
+      let updateField = {};
+      if (currentUserRole === "admin") {
+        updateField = { is_approved: true };
+      } else if (currentUserRole === "vice_president") {
+        updateField = { is_approved_vp: true };
+      } else if (currentUserRole === "president") {
+        updateField = { is_approved_president: true };
+      } else {
+        isLoading = false;
+        return; // Exit if the user does not have a valid role
+      }
+
+      // Update all action plans that match the current filters
+      const { error } = await supabase
+        .from("action_plans")
+        .update(updateField)
+        .in(
+          "id",
+          displayedActionPlans.map((plan) => plan.id) // Only update displayed plans
+        );
+
+      if (error) {
+        console.error("Error approving all action plans:", error);
+        return;
+      }
+
+      // If the president approves, insert into plan_monitoring
+      if (currentUserRole === "president") {
+        const monitoringEntries = displayedActionPlans.map((plan) => ({
+          action_plan_id: plan.id,
+          profile_id: plan.profile_id,
+        }));
+
+        const { error: monitoringError } = await supabase
+          .from("plan_monitoring")
+          .insert(monitoringEntries);
+
+        if (monitoringError) {
+          console.error("Error inserting into plan_monitoring:", monitoringError);
+        }
+      }
+
+      // Refresh the action plans list
+      await fetchActionPlans();
+      console.log("All action plans approved successfully.");
+    } catch (error) {
+      console.error("Unexpected error while approving all action plans:", error);
+    } finally {
+      isLoading = false;
+    }
+  };
+
       
 
 </script>
@@ -466,7 +524,7 @@
 				<option value="notApproved">Not Approved</option>
 			</select>
 
-			<!-- Items per page -->
+			<!-- Items per page --> 
 			<select bind:value={itemsPerPage} class="select select-bordered w-full md:w-48">
 				<option value={5}>5 per page</option>
 				<option value={10}>10 per page</option>
@@ -479,6 +537,21 @@
 		{#if displayedActionPlans.length > 0}
 			<button class="btn btn-secondary whitespace-nowrap" onclick={exportToPDF}>Export to PDF</button>
 		{/if}
+    <!-- Approve All Button -->
+  {#if displayedActionPlans.length > 0}
+  <button
+    class="btn btn-primary"
+    onclick={approveAllActionPlans}
+    disabled={isLoading || displayedActionPlans.every(
+      (plan) =>
+        (currentUserRole === "admin" && plan.is_approved) ||
+        (currentUserRole === "vice_president" && plan.is_approved_vp) ||
+        (currentUserRole === "president" && plan.is_approved_president)
+    )}
+  >
+    {isLoading ? "Processing..." : "Approve All"}
+  </button>
+  {/if}
 	</div>
   <!-- Table for Action Plans -->
   {#if isLoading}

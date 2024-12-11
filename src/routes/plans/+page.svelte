@@ -4,6 +4,7 @@
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import StrategicGoalForm from "$lib/components/StrategicGoal/StrategicGoalForm.svelte";
+	import { fade } from "svelte/transition";
 
 	/** Types */
 	type StrategicGoal = {
@@ -13,6 +14,7 @@
 		description: string;
 		kpi: string;
 		lead_id: number | null;
+		school_year: number | null;
 	};
 
 	type Lead = {
@@ -20,10 +22,17 @@
 		name: string;
 	};
 
+	type SchoolYear = {
+		id: number;
+		school_year: string;
+		start_date: string;
+		end_date: string;
+	};
+
 	type SortField = "goal_no" | "name" | "description" | "kpi";
 	type SortDirection = "asc" | "desc";
 
-	/** State */
+	/** State Variables */
 	let searchQuery: string = $state("");
 	let currentPage: number = $state(1);
 	let itemsPerPage: number = $state(5);
@@ -31,28 +40,58 @@
 	let sortField: SortField = $state("goal_no");
 	let sortDirection: SortDirection = $state("asc");
 	let leadFilter: number | "all" = $state("all");
+	let schoolYearFilter: number | "all" = $state("all");
 	let loading: boolean = $state(true);
 	let editingGoal: StrategicGoal | null = $state(null);
 	let showAlert: boolean = $state(false);
 	let alertMessage: string = $state("");
 	let alertType: "success" | "error" = $state("success");
 
-	/** Data state */
+	/** Data Variables */
 	let strategicGoals: StrategicGoal[] = $state([]);
 	let leads: Lead[] = $state([]);
+	let schoolYears: SchoolYear[] = $state([]);
+	let currentSchoolYearId: number | null = null;
 
-	/** Initialize data on component mount */
+	/** Initialize Data on Mount */
 	onMount(() => {
 		init();
 	});
 
 	const init = async () => {
+		await fetchCurrentSchoolYear();
 		await fetchLeads();
+		await fetchSchoolYears();
 		await fetchStrategicGoals();
 		loading = false;
 	};
 
-	/** Fetch leads from database */
+	/** Fetch Current School Year */
+	const fetchCurrentSchoolYear = async () => {
+		const today = new Date().toISOString().split("T")[0];
+		const { data, error } = await supabase.from("school_years").select("id").lte("start_date", today).gte("end_date", today).maybeSingle();
+
+		if (error) {
+			console.error("Error fetching current school year:", error);
+			currentSchoolYearId = null;
+		} else {
+			currentSchoolYearId = data?.id || null;
+			schoolYearFilter = currentSchoolYearId || "all";
+		}
+	};
+
+	/** Fetch School Years */
+	const fetchSchoolYears = async () => {
+		const { data, error } = await supabase.from("school_years").select("*").order("start_date", { ascending: false });
+
+		if (error) {
+			displayAlert("Error fetching school years", "error");
+		} else {
+			schoolYears = data as SchoolYear[];
+		}
+	};
+
+	/** Fetch Leads */
 	const fetchLeads = async () => {
 		const { data, error } = await supabase.from("leads").select("id, name");
 		if (error) {
@@ -62,9 +101,13 @@
 		}
 	};
 
-	/** Fetch strategic goals from database */
+	/** Fetch Strategic Goals */
 	const fetchStrategicGoals = async () => {
-		const { data, error } = await supabase.from("strategic_goals").select("*").order("goal_no", { ascending: true });
+		const { data, error } = await supabase
+			.from("strategic_goals")
+			.select("*")
+			.order("goal_no", { ascending: sortDirection === "asc" });
+
 		if (error) {
 			displayAlert("Error fetching strategic goals", "error");
 		} else {
@@ -72,12 +115,13 @@
 		}
 	};
 
-	/** Calculate next goal number */
+
+	/** Calculate Next Goal Number */
 	const getNextGoalNumber = (): number => {
 		return strategicGoals.length > 0 ? Math.max(...strategicGoals.map((goal) => goal.goal_no)) + 1 : 1;
 	};
 
-	/** Display alert message */
+	/** Display Alert */
 	const displayAlert = (message: string, type: "success" | "error") => {
 		alertMessage = message;
 		alertType = type;
@@ -87,17 +131,32 @@
 		}, 3000);
 	};
 
-	/** Get lead name by ID */
+	/** Get Lead Name by ID */
 	const getLeadNameById = (leadId: number | null): string => {
 		const lead = leads.find((l) => l.id === leadId);
 		return lead ? lead.name : "No Lead Assigned";
 	};
 
-	/** Handle saving goal */
-	const handleSave = async (formData: Partial<StrategicGoal>) => {
-		if (editingGoal) {
-			const { error } = await supabase.from("strategic_goals").update(formData).match({ id: editingGoal.id });
+	/** Get School Year by ID */
+	const getSchoolYearById = (yearId: number | null): string => {
+		const year = schoolYears.find((y) => y.id === yearId);
+		return year ? year.school_year : "No School Year";
+	};
 
+	/** Handle Save */
+	const handleSave = async (formData: Partial<StrategicGoal>) => {
+		if (!currentSchoolYearId) {
+			displayAlert("No current school year found. Cannot save goal.", "error");
+			return;
+		}
+
+		const goalData = {
+			...formData,
+			school_year: currentSchoolYearId,
+		};
+
+		if (editingGoal) {
+			const { error } = await supabase.from("strategic_goals").update(goalData).match({ id: editingGoal.id });
 			if (error) {
 				displayAlert("Error updating goal", "error");
 			} else {
@@ -107,7 +166,7 @@
 			}
 		} else {
 			const newGoal = {
-				...formData,
+				...goalData,
 				goal_no: getNextGoalNumber(),
 			};
 			const { error } = await supabase.from("strategic_goals").insert([newGoal]);
@@ -121,7 +180,7 @@
 		}
 	};
 
-	/** Delete goal and reorder remaining goals */
+	/** Delete Goal */
 	const deleteGoal = async (id: number) => {
 		if (confirm("Are you sure you want to delete this goal?")) {
 			loading = true;
@@ -133,7 +192,6 @@
 				return;
 			}
 
-			// Fetch remaining goals for reordering
 			const { data: remainingGoals, error: fetchError } = await supabase.from("strategic_goals").select("*").order("goal_no", { ascending: true });
 
 			if (fetchError) {
@@ -142,7 +200,6 @@
 				return;
 			}
 
-			// Reorder remaining goals
 			for (let i = 0; i < remainingGoals.length; i++) {
 				await supabase
 					.from("strategic_goals")
@@ -156,13 +213,13 @@
 		}
 	};
 
-	/** Close form */
+	/** Close Form */
 	const closeForm = () => {
 		showForm = false;
 		editingGoal = null;
 	};
 
-	/** Toggle sort */
+	/** Toggle Sort */
 	const toggleSort = (field: SortField) => {
 		if (sortField === field) {
 			sortDirection = sortDirection === "asc" ? "desc" : "asc";
@@ -170,16 +227,37 @@
 			sortField = field;
 			sortDirection = "asc";
 		}
+
+		// Sort numerically if sorting `goal_no`
+		if (field === "goal_no") {
+			strategicGoals.sort((a, b) =>
+				sortDirection === "asc"
+					? Number(a.goal_no) - Number(b.goal_no)
+					: Number(b.goal_no) - Number(a.goal_no)
+			);
+		} else {
+			// Default lexicographical sorting for other fields
+			strategicGoals.sort((a, b) => {
+				const aValue = String(a[field]);
+				const bValue = String(b[field]);
+				return sortDirection === "asc"
+					? aValue.localeCompare(bValue)
+					: bValue.localeCompare(aValue);
+			});
+		}
 	};
 
-	/** Derived values */
+
+
+	/** Derived Values */
 	const filteredItems = $derived(
 		strategicGoals
 			.filter((goal) => {
 				const searchFields = `${goal.name} ${goal.description} ${goal.kpi}`.toLowerCase();
 				const matchesSearch = searchFields.includes(searchQuery.toLowerCase());
 				const matchesLead = leadFilter === "all" || goal.lead_id === leadFilter;
-				return matchesSearch && matchesLead;
+				const matchesSchoolYear = schoolYearFilter === "all" || goal.school_year === schoolYearFilter;
+				return matchesSearch && matchesLead && matchesSchoolYear;
 			})
 			.sort((a, b) => {
 				const aValue = String(a[sortField]);
@@ -188,13 +266,17 @@
 			})
 	);
 
-	const paginatedItems = $derived(filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
+	/** Derived paginated items */
+	const paginatedItems = $derived(
+		filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+	);
+
 	const totalPages = $derived(Math.ceil(filteredItems.length / itemsPerPage));
 </script>
 
 <div class="flex flex-col gap-4 p-4 container mx-auto">
 	{#if showAlert}
-		<div class="alert alert-{alertType} shadow-lg mb-4">
+		<div transition:fade class="flex items-center p-4 rounded-lg {alertType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
 			<span>{alertMessage}</span>
 		</div>
 	{/if}
@@ -215,8 +297,14 @@
 					<option value={lead.id}>{lead.name}</option>
 				{/each}
 			</select>
+			<select bind:value={schoolYearFilter} class="bg-secondary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring w-full md:w-[200px]">
+				<option value="all">All School Years</option>
+				{#each schoolYears as year}
+					<option value={year.id}>{year.school_year}</option>
+				{/each}
+			</select>
 		</div>
-		<button onclick={() => (showForm = true)} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 justify-center whitespace-nowrap w-full md:w-auto">
+		<button onclick={() => (showForm = true)} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
 			<Plus size={20} />
 			Add Goal
 		</button>
@@ -246,20 +334,22 @@
 						<th class="px-4 py-3 text-left hidden md:table-cell">Description</th>
 						<th class="px-4 py-3 text-left hidden lg:table-cell">KPI</th>
 						<th class="px-4 py-3 text-left">Lead</th>
+						<th class="px-4 py-3 text-left">School Year</th>
 						<th class="px-4 py-3 text-center">Actions</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-border">
 					{#each paginatedItems as goal (goal.id)}
-						<tr>
+						<tr class="hover:bg-muted/50">
 							<td class="px-4 py-3">{goal.goal_no}</td>
 							<td class="px-4 py-3">{goal.name}</td>
 							<td class="px-4 py-3 hidden md:table-cell">{goal.description}</td>
 							<td class="px-4 py-3 hidden lg:table-cell">{goal.kpi}</td>
 							<td class="px-4 py-3">{getLeadNameById(goal.lead_id)}</td>
+							<td class="px-4 py-3">{getSchoolYearById(goal.school_year)}</td>
 							<td class="px-4 py-3">
 								<div class="flex justify-center gap-2">
-									<button onclick={() => goto(`/plans/${goal.id}`)} class="btn btn-ghost btn-sm" title="View objectives">
+									<button onclick={() => goto(`/plans/${goal.id}`)} class="p-1.5 hover:bg-primary/10 rounded-md transition-colors" title="View objectives">
 										<Eye size={18} />
 									</button>
 									<button
@@ -267,12 +357,12 @@
 											editingGoal = goal;
 											showForm = true;
 										}}
-										class="btn btn-ghost btn-sm"
+										class="p-1.5 hover:bg-primary/10 rounded-md transition-colors"
 										title="Edit goal"
 									>
 										<Edit size={18} />
 									</button>
-									<button onclick={() => deleteGoal(goal.id)} class="btn btn-ghost btn-sm text-error" title="Delete goal">
+									<button onclick={() => deleteGoal(goal.id)} class="p-1.5 hover:bg-red-100 rounded-md transition-colors text-red-600" title="Delete goal">
 										<Trash2 size={18} />
 									</button>
 								</div>
@@ -294,8 +384,8 @@
 					<option value={25}>25 per page</option>
 				</select>
 				<div class="flex gap-2">
-					<button disabled={currentPage === 1} onclick={() => currentPage--} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">Previous</button>
-					<button disabled={currentPage === totalPages} onclick={() => currentPage++} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">Next</button>
+					<button disabled={currentPage === 1} onclick={() => currentPage--} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50 transition-colors">Previous</button>
+					<button disabled={currentPage === totalPages} onclick={() => currentPage++} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50 transition-colors">Next</button>
 				</div>
 			</div>
 		</div>

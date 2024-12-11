@@ -49,6 +49,8 @@
 	let approvingId: number | null = $state(null);
 	let deletingId: number | null = $state(null);
 
+	let isLoading = false;
+
 	// Data state
 	let opportunities: Opportunity[] = $state([]);
 	let departments: Department[] = $state([]);
@@ -346,6 +348,66 @@
 		editingOpportunity = null;
 	};
 
+	/** Approve all opportunities */
+const approveAllOpportunities = async () => {
+	isLoading = true;
+
+	let updateField = {};
+
+	// Determine the field to update based on the user role
+	if (userRole === "admin") {
+		updateField = { is_approved: true };
+	} else if (userRole === "vice_president") {
+		updateField = { is_approved_vp: true };
+	} else if (userRole === "president") {
+		updateField = { is_approved_president: true };
+	} else {
+		isLoading = false;
+		return; // Exit if the user does not have a valid role
+	}
+
+	try {
+		// Update all displayed opportunities
+		const { error } = await supabase
+			.from("opportunities")
+			.update(updateField)
+			.in(
+				"id",
+				paginatedItems.map((opportunity) => opportunity.id) // Approve only visible opportunities
+			);
+
+		if (error) {
+			displayAlert("Error approving opportunities: " + error.message, "error");
+		} else {
+			// If the president is approving, add to monitoring
+			if (userRole === "president") {
+				const monitoringEntries = paginatedItems.map((opportunity) => ({
+					opt_id: opportunity.id,
+					profile_id: opportunity.profile_id,
+				}));
+
+				const { error: monitoringError } = await supabase
+					.from("opt_monitoring")
+					.insert(monitoringEntries);
+
+				if (monitoringError) {
+					displayAlert("Error adding to monitoring: " + monitoringError.message, "error");
+				}
+			}
+
+			// Refresh opportunities list
+			await fetchOpportunities();
+			displayAlert("All displayed opportunities approved successfully!", "success");
+		}
+	} catch (error) {
+		console.error("Unexpected error approving all opportunities:", error);
+		displayAlert("An unexpected error occurred.", "error");
+	} finally {
+		isLoading = false;
+	}
+};
+
+
 	// Initialize data
 	init();
 </script>
@@ -381,6 +443,21 @@
 				{/each}
 			</select>
 		</div>
+		<!-- Approve All Button -->
+		{#if paginatedItems.length > 0}
+			<button
+				class="btn btn-primary flex items-center gap-2"
+				onclick={approveAllOpportunities}
+				disabled={isLoading || paginatedItems.every(
+					(opportunity) =>
+						(userRole === "admin" && opportunity.is_approved) ||
+						(userRole === "vice_president" && opportunity.is_approved_vp) ||
+						(userRole === "president" && opportunity.is_approved_president)
+				)}
+			>
+				{isLoading ? "Processing..." : "Approve All"}
+			</button>
+		{/if}
 		<div class="flex gap-2 w-full md:w-auto">
 			<button onclick={exportToPDF} class="flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg hover:bg-secondary/80 flex-1 md:flex-initial">
 				<Download size={20} />
