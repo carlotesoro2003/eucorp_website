@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { supabase } from "$lib/supabaseClient";
-	import { FileText, Loader2, Download, ChevronDown, ChevronLeft, ChevronRight, Building2, Target, Search } from "lucide-svelte";
+	import { FileText, Loader2, Download, ChevronDown, ChevronLeft, ChevronRight, Building2, Target, Search, NotepadText } from "lucide-svelte";
 	import DoughnutChart from "$lib/components/monitoring/admin/DoughnutChart.svelte";
 	import { fade } from "svelte/transition";
 	import jsPDF from "jspdf";
@@ -252,8 +252,8 @@
 
 	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 		<div class="flex items-center gap-2">
-			<Target class="w-8 h-8 text-primary" />
-			<h1 class="text-2xl font-bold">Plan Monitoring</h1>
+			<NotepadText class="w-8 h-8 text-primary" />
+			<h1 class="text-2xl font-bold">Plans Monitoring</h1>
 		</div>
 	</div>
 

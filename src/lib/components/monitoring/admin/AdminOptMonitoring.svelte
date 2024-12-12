@@ -274,10 +274,10 @@
 						<option value={50}>50 per page</option>
 					</select>
 					<button disabled={currentPage === 1} onclick={() => (currentPage -= 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">
-						<ChevronLeft size={20} />
+						Previous
 					</button>
 					<button disabled={currentPage === totalPages} onclick={() => (currentPage += 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">
-						<ChevronRight size={20} />
+						Next
 					</button>
 				</div>
 			</div>
