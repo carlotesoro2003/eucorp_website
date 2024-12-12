@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { Plus, Trash2, Save, ClipboardCheck } from "lucide-svelte";
+	import { Plus, Save, Target } from "lucide-svelte";
 	import RiskCard from "$lib/components/dept-risks-table/RiskCard.svelte";
 	import Loading from "$lib/components/dept-risks-table/Loading.svelte";
 	import Alerts from "$lib/components/dept-risks-table/Alerts.svelte";
 	import { supabase } from "$lib/supabaseClient";
+	import { fade } from "svelte/transition";
 
 	interface Risk {
 		id?: string;
@@ -177,40 +178,47 @@
 	});
 </script>
 
-<div class="min-h-screen bg-gray-50/50">
-	<div class="container mx-auto px-4 py-8">
-		<!-- Header section -->
-		<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-			<div class="flex justify-between items-center mb-6">
-				<h1 class="text-2xl font-bold text-gray-800">
-					{departmentName} Risk Register
-				</h1>
-				<div class="flex gap-4">
-					<button onclick={addRow} class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-						<Plus class="w-4 h-4 mr-2" />
-						Add Risk
-					</button>
-					<button onclick={saveRisks} disabled={isSaving} class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50">
-						<Save class="w-4 h-4 mr-2" />
-						{isSaving ? "Saving..." : "Save All"}
-					</button>
-				</div>
-			</div>
-			{#if successMessage || errorMessage}
-				<Alerts {successMessage} {errorMessage} />
-			{/if}
+<div class="flex flex-col gap-4 p-4 container mx-auto">
+	<!-- Alerts -->
+	{#if successMessage}
+		<div transition:fade class="flex items-center p-4 rounded-lg bg-green-100 text-green-800">
+			<span>{successMessage}</span>
 		</div>
+	{/if}
+	{#if errorMessage}
+		<div transition:fade class="flex items-center p-4 rounded-lg bg-red-100 text-red-800">
+			<span>{errorMessage}</span>
+		</div>
+	{/if}
 
-		<!-- Show loading state -->
-		{#if isLoading}
-			<Loading />
-		{:else}
-			<!-- Risks cards -->
-			<div class="grid grid-cols-1 gap-6 mb-8">
-				{#each risks as risk, index}
-					<RiskCard {risk} {classification} {index} {removeRow} />
-				{/each}
-			</div>
-		{/if}
+	<!-- Header -->
+	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+		<div class="flex items-center gap-2">
+			<Target class="w-8 h-8 text-primary" />
+			<h1 class="text-2xl font-bold">{departmentName} Risk Register</h1>
+		</div>
+		<div class="flex gap-2">
+			<button onclick={addRow} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+				<Plus size={20} />
+				Add Risk
+			</button>
+			<button onclick={saveRisks} disabled={isSaving} class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50">
+				<Save size={20} />
+				{isSaving ? "Saving..." : "Save All"}
+			</button>
+		</div>
 	</div>
+
+	<!-- Content -->
+	{#if isLoading}
+		<div class="flex justify-center p-8">
+			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+		</div>
+	{:else}
+		<div class="grid grid-cols-1 gap-4">
+			{#each risks as risk, index}
+				<RiskCard {risk} {classification} {index} {removeRow} />
+			{/each}
+		</div>
+	{/if}
 </div>
