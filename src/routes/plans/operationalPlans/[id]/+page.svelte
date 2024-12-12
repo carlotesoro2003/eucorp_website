@@ -6,6 +6,7 @@
 	import Alert from "$lib/components/operational-plans/add-action-plans/Alert.svelte";
 	import Modal from "$lib/components/operational-plans/add-action-plans/Modal.svelte";
 	import type { ActionPlan } from "$lib/types/ActionPlan";
+	import { fade } from "svelte/transition";
 
 	/** Interface for strategic objective */
 	interface StrategicObjective {
@@ -40,8 +41,7 @@
 	let profile_id: string = $state("");
 	let showModal: boolean = $state(false);
 	let editIndex: number = $state(-1);
-
-	
+	let showAlert: boolean = $state(false);
 
 	/** On component mount */
 	onMount(() => {
@@ -53,7 +53,7 @@
 			fetchStrategicObjectiveAndGoal(objective_id);
 			fetchUserProfileId();
 		} else {
-			showAlert("Objective ID is missing.", "error");
+			displayAlert("Objective ID is missing.", "error");
 		}
 	});
 
@@ -66,7 +66,7 @@
 			const { data: profileData, error } = await supabase.from("profiles").select("id, department_id").eq("id", user.id).single();
 
 			if (error || !profileData) {
-				showAlert("Failed to fetch user profile details.", "error");
+				displayAlert("Failed to fetch user profile details.", "error");
 				return;
 			}
 
@@ -74,7 +74,7 @@
 			currentPlan.profile_id = profile_id;
 			currentPlan.department_id = profileData.department_id;
 		} else {
-			showAlert("User not logged in.", "error");
+			displayAlert("User not logged in.", "error");
 		}
 	};
 
@@ -84,7 +84,7 @@
 			const { data: objectiveData, error: objectiveError } = await supabase.from("strategic_objectives").select("name, strategic_goal_id").eq("id", objective_id).single();
 
 			if (objectiveError || !objectiveData) {
-				showAlert("Failed to fetch strategic objective.", "error");
+				displayAlert("Failed to fetch strategic objective.", "error");
 				return;
 			}
 
@@ -93,13 +93,13 @@
 			const { data: goalData, error: goalError } = await supabase.from("strategic_goals").select("name, goal_no").eq("id", objectiveData.strategic_goal_id).single();
 
 			if (goalError || !goalData) {
-				showAlert("Failed to fetch strategic goal.", "error");
+				displayAlert("Failed to fetch strategic goal.", "error");
 				return;
 			}
 
 			strategicGoal = goalData;
 		} catch (err) {
-			showAlert("An error occurred while fetching strategic data.", "error");
+			displayAlert("An error occurred while fetching strategic data.", "error");
 		}
 	};
 
@@ -135,13 +135,15 @@
 
 	/** Delete plan */
 	const deletePlan = (index: number) => {
-		actionPlans = actionPlans.filter((_, i) => i !== index);
+		if (confirm("Are you sure you want to delete this plan?")) {
+			actionPlans = actionPlans.filter((_, i) => i !== index);
+		}
 	};
 
 	/** Submit action plans */
 	const submitActionPlans = async () => {
 		if (actionPlans.length === 0) {
-			showAlert("Please add at least one action plan.", "warning");
+			displayAlert("Please add at least one action plan.", "warning");
 			return;
 		}
 
@@ -150,145 +152,144 @@
 			const { error } = await supabase.from("action_plans").insert(actionPlans);
 
 			if (error) {
-				showAlert("Failed to submit action plans.", "error");
+				displayAlert("Failed to submit action plans.", "error");
 			} else {
-				showAlert("Action plans submitted successfully.", "success");
+				displayAlert("Action plans submitted successfully.", "success");
 				actionPlans = [];
 			}
 		} catch (err) {
-			showAlert("An error occurred while submitting action plans.", "error");
+			displayAlert("An error occurred while submitting action plans.", "error");
 		} finally {
 			isSubmitting = false;
 		}
-	};	
+	};
 
-	/** Show alert message */
-	const showAlert = (message: string, type: string) => {
+	/** Display Alert */
+	const displayAlert = (message: string, type: "success" | "error" | "warning") => {
 		alertMessage = message;
 		alertType = type;
+		showAlert = true;
 		setTimeout(() => {
-			alertMessage = "";
-		}, 5000);
+			showAlert = false;
+		}, 3000);
 	};
-	
 </script>
 
-<div class="min-h-screen bg-gray-50 dark:bg-black p-4 md:p-8">
-	<div class="max-w-7xl mx-auto space-y-6">
-		<!-- Header -->
-		<div class="bg-white dark:bg-black rounded-lg p-6 shadow-sm">
-			<h1 class="text-2xl font-bold text-gray-900 dark:text-white">Action Plans</h1>
-			{#if strategicGoal && strategicObjective}
-				<div class="mt-4 space-y-2">
-					<h5 class="text-md text-gray-700 dark:text-gray-300">
-						<span class="font-medium">Strategic Goal:</span>
-						<span class="ml-2">{strategicGoal.goal_no} - {strategicGoal.name}</span>
-					</h5>
-					<h5 class="text-md text-gray-700 dark:text-gray-300">
-						<span class="font-medium">Strategic Objective:</span>
-						<span class="ml-2">{strategicObjective.name}</span>
-					</h5>
-				</div>
-			{/if}
+<div class="flex flex-col gap-4 p-4 container mx-auto">
+	{#if showAlert}
+		<div transition:fade class="flex items-center p-4 rounded-lg {alertType === 'success' ? 'bg-green-100 text-green-800' : alertType === 'error' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">
+			<span>{alertMessage}</span>
 		</div>
+	{/if}
 
-		<!-- Alert Messages -->
-		{#if alertMessage}
-			<Alert message={alertMessage} type={alertType} />
+	<!-- Header -->
+	<div class="bg-card border border-border rounded-lg shadow p-6">
+		<h1 class="text-2xl font-bold">Action Plans</h1>
+		{#if strategicGoal && strategicObjective}
+			<div class="mt-4 space-y-2">
+				<h5 class="text-md font-medium">
+					Strategic Goal:
+					<span class="ml-2 text-muted-foreground">{strategicGoal.goal_no} - {strategicGoal.name}</span>
+				</h5>
+				<h5 class="text-md font-medium">
+					Strategic Objective:
+					<span class="ml-2 text-muted-foreground">{strategicObjective.name}</span>
+				</h5>
+			</div>
 		{/if}
+	</div>
 
-		<!-- Action Plans List -->
-		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-			<div class="flex justify-between items-center mb-6">
-				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Action Plans List</h2>
-				<button onclick={() => openModal()} class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">
-					<Plus class="w-5 h-5 mr-2" />
-					Add Plan
-				</button>
-			</div>
-
-			<div class="space-y-4">
-				{#each actionPlans as plan, index}
-					<div class="border dark:border-gray-700 rounded-lg p-4 relative hover:bg-gray-50 dark:hover:bg-gray-700">
-						<div class="grid md:grid-cols-2 gap-4">
-							<div>
-								<h4 class="font-medium text-gray-900 dark:text-white">Actions Taken</h4>
-								<p class="text-gray-600 dark:text-gray-400 mt-1">{plan.actions_taken}</p>
-							</div>
-							<div>
-								<h4 class="font-medium text-gray-900 dark:text-white">KPI</h4>
-								<p class="text-gray-600 dark:text-gray-400 mt-1">{plan.kpi}</p>
-							</div>
-							<div>
-								<h4 class="font-medium text-gray-900 dark:text-white">Target Output</h4>
-								<p class="text-gray-600 dark:text-gray-400 mt-1">{plan.target_output}</p>
-							</div>
-							<div>
-								<h4 class="font-medium text-gray-900 dark:text-white">Key Person Responsible</h4>
-								<p class="text-gray-600 dark:text-gray-400 mt-1">{plan.key_person_responsible}</p>
-							</div>
-						</div>
-						<div class="absolute top-4 right-4 flex gap-2">
-							<button onclick={() => openModal(index)} class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full">
-								<Save class="w-5 h-5" />
-							</button>
-							<button onclick={() => deletePlan(index)} class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full">
-								<Trash2 class="w-5 h-5" />
-							</button>
-						</div>
-					</div>
-				{/each}
-			</div>
-
-			{#if actionPlans.length === 0}
-				<div class="text-center py-8 text-gray-500 dark:text-gray-400">No action plans added yet. Click "Add Plan" to create one.</div>
-			{/if}
-		</div>
-
-		<!-- Submit Button -->
-		<div class="flex justify-end">
-			<button onclick={submitActionPlans} disabled={isSubmitting} class="inline-flex items-center px-6 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 disabled:opacity-50">
-				{#if isSubmitting}
-					<Loader2 class="w-5 h-5 mr-2 animate-spin" />
-					Submitting...
-				{:else}
-					<Save class="w-5 h-5 mr-2" />
-					Submit All
-				{/if}
+	<!-- Action Plans List -->
+	<div class="bg-card rounded-lg shadow border border-border p-6">
+		<div class="flex justify-between items-center mb-6">
+			<h2 class="text-xl font-semibold">Action Plans List</h2>
+			<button onclick={() => openModal()} class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+				<Plus size={20} />
+				Add Plan
 			</button>
 		</div>
+
+		<div class="space-y-4">
+			{#each actionPlans as plan, index}
+				<div class="border border-border rounded-lg p-4 relative hover:bg-muted/50 transition-colors">
+					<div class="grid md:grid-cols-2 gap-4">
+						<div>
+							<h4 class="font-medium">Actions Taken</h4>
+							<p class="text-muted-foreground mt-1">{plan.actions_taken}</p>
+						</div>
+						<div>
+							<h4 class="font-medium">KPI</h4>
+							<p class="text-muted-foreground mt-1">{plan.kpi}</p>
+						</div>
+						<div>
+							<h4 class="font-medium">Target Output</h4>
+							<p class="text-muted-foreground mt-1">{plan.target_output}</p>
+						</div>
+						<div>
+							<h4 class="font-medium">Key Person Responsible</h4>
+							<p class="text-muted-foreground mt-1">{plan.key_person_responsible}</p>
+						</div>
+					</div>
+					<div class="absolute top-4 right-4 flex gap-2">
+						<button onclick={() => openModal(index)} class="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
+							<Save size={18} />
+						</button>
+						<button onclick={() => deletePlan(index)} class="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors">
+							<Trash2 size={18} />
+						</button>
+					</div>
+				</div>
+			{/each}
+		</div>
+
+		{#if actionPlans.length === 0}
+			<div class="text-center py-8 text-muted-foreground">No action plans added yet. Click "Add Plan" to create one.</div>
+		{/if}
+	</div>
+
+	<!-- Submit Button -->
+	<div class="flex justify-end">
+		<button onclick={submitActionPlans} disabled={isSubmitting} class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50">
+			{#if isSubmitting}
+				<Loader2 class="animate-spin" size={20} />
+				Submitting...
+			{:else}
+				<Save size={20} />
+				Submit All
+			{/if}
+		</button>
 	</div>
 </div>
 
 <!-- Modal -->
 <Modal bind:show={showModal}>
-	<div class="p-6 dark:bg-gray-800">
+	<div class="p-6">
 		<div class="flex justify-between items-center mb-6">
-			<h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+			<h3 class="text-xl font-semibold">
 				{editIndex >= 0 ? "Edit" : "Add"} Action Plan
 			</h3>
-			<button onclick={() => (showModal = false)} class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-				<X class="w-6 h-6" />
+			<button onclick={() => (showModal = false)} class="text-muted-foreground hover:text-foreground transition-colors">
+				<X size={24} />
 			</button>
 		</div>
 
 		<div class="space-y-4">
 			{#each ["actions_taken", "kpi", "target_output", "key_person_responsible"] as field}
 				<div class="space-y-2">
-					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+					<label class="block text-sm font-medium">
 						{field
 							.split("_")
 							.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
 							.join(" ")}
 					</label>
-					<textarea class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400" value={currentPlan[field]} oninput={(e) => (currentPlan[field] = e.target.value)}></textarea>
+					<textarea class="w-full px-3 py-2 rounded-lg bg-secondary border border-border focus:ring-2 focus:ring-ring" value={currentPlan[field]} oninput={(e) => (currentPlan[field] = e.target.value)}></textarea>
 				</div>
 			{/each}
 		</div>
 
 		<div class="mt-6 flex justify-end gap-4">
-			<button onclick={() => (showModal = false)} class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
-			<button onclick={savePlan} class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+			<button onclick={() => (showModal = false)} class="px-4 py-2 border border-border rounded-lg text-muted-foreground hover:bg-muted transition-colors">Cancel</button>
+			<button onclick={savePlan} class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
 				{editIndex >= 0 ? "Update" : "Add"} Plan
 			</button>
 		</div>
