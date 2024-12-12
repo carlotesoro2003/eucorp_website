@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Trash2, Plus, Save, Loader2, X } from "lucide-svelte";
+	import { Trash2, Plus, Save, Loader2, X, ChevronLeft } from "lucide-svelte";
 	import { supabase } from "$lib/supabaseClient";
 	import { onMount } from "svelte";
 	import { page } from "$app/stores";
@@ -181,6 +181,10 @@
 			<span>{alertMessage}</span>
 		</div>
 	{/if}
+	<a href="/plans/operationalPlans" class="flex items-center gap-2 text-muted-foreground mb-2 hover:text-foreground">
+		<ChevronLeft size={20} />
+		Back to Operational Plans
+	</a>
 
 	<!-- Header -->
 	<div class="bg-card border border-border rounded-lg shadow p-6">
