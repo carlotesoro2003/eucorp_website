@@ -6,6 +6,7 @@
 	import Notifications from "$lib/components/dept-risks-table/risk-assessment-table/Notifications.svelte";
 	import Header from "$lib/components/dept-risks-table/risk-assessment-table/Header.svelte";
 	import type { Risk, Classification, LikelihoodRating, Severity, RiskControlRating, RiskMonitoringRating, RiskAssessment } from "$lib/types/RiskTypes";
+    import { ChevronLeft } from "lucide-svelte";
   
 	// State variables
 	let risks: Risk[] = $state([]);
@@ -170,7 +171,10 @@
 		fetchUserProfile();
 	});
 </script>
-
+<a href="/risks" class="flex items-center gap-2 text-muted-foreground mb-2 hover:text-foreground">
+	<ChevronLeft size={20} />
+	Back
+</a>	
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	<Header {departmentName} />
 

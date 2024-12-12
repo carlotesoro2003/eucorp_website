@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { supabase } from "$lib/supabaseClient";
-	import { ArrowUpDown, Download, Plus, Search } from "lucide-svelte";
+	import { ArrowUpDown, Download, Notebook, Plus, Search } from "lucide-svelte";
 	import ObjectivesTable from "$lib/components/operational-plans/ObjectivesTable.svelte";
 	import GoalsSelector from "$lib/components/operational-plans/GoalSelector.svelte";
 
@@ -152,9 +152,11 @@
 
 <div class="flex flex-col gap-4 container mx-auto p-4">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-		
-        <h2 class="text-2xl font-bold">Operational Plans Management</h2>
-    </div>
+		<div class="flex items-center gap-2">
+			<Notebook class="w-8 h-8 text-primary" />
+			<h1 class="text-2xl font-bold">Operational Plans Management</h1>
+		</div>
+	</div>
 
     <!-- Filters section -->
     <div class="flex flex-col md:flex-row justify-between items-center gap-4">

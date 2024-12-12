@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { supabase } from "$lib/supabaseClient";
-	import { Plus, Trash2, Save, Target, PlusCircle } from "lucide-svelte";
+	import { Plus, Trash2, Save, Target, PlusCircle, Lightbulb } from "lucide-svelte";
 	import OpportunityCard from "$lib/components/dept-opts/OpportunityCard.svelte";
 	import { fade } from "svelte/transition";
 
@@ -188,8 +188,8 @@
 
 	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 		<div class="flex items-center gap-2">
-			<Target class="w-8 h-8 text-primary" />
-			<h1 class="text-2xl font-bold">Department Opportunities</h1>
+			<Lightbulb class="w-8 h-8 text-primary" />
+			<h1 class="text-2xl font-bold">Opportunities Register</h1>
 		</div>
 	</div>
 

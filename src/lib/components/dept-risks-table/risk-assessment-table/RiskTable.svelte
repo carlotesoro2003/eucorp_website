@@ -19,44 +19,48 @@
 	let filteredRisks = $derived(savedRisks.filter((risk) => risk.rrn.toLowerCase().includes(searchTerm.toLowerCase()) || risk.risk_statement.toLowerCase().includes(searchTerm.toLowerCase())));
 </script>
 
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
-	<div class="p-4 border-b dark:border-gray-700">
-		<div class="flex items-center gap-2">
-			<div class="relative flex-1">
-				<Search class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-				<input type="text" bind:value={searchTerm} placeholder="Search risks..." class="pl-10 w-full h-10 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500" />
+<div class="flex flex-col gap-4 p-4 container mx-auto">
+	<!-- Search Section -->
+	<div class="flex flex-col md:flex-row gap-4 mb-2 items-center justify-between">
+		<div class="flex flex-col md:flex-row gap-4 flex-1">
+			<div class="relative flex-1 w-full md:max-w-[300px]">
+				<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+				<input type="text" bind:value={searchTerm} placeholder="Search risks..." class="pl-10 pr-4 py-2 bg-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring" />
 			</div>
 		</div>
 	</div>
 
-	<div class="overflow-x-auto">
-		<table class="w-full text-sm text-left">
-			<thead class="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+	<!-- Table Section -->
+	<div class="overflow-x-auto bg-card rounded-lg shadow border border-border">
+		<table class="min-w-full table-auto">
+			<thead class="bg-muted/50">
 				<tr>
-					<th class="px-6 py-3">RRN</th>
-					<th class="px-6 py-3">Risk Statement</th>
-					<th class="px-6 py-3">Classification</th>
-					<th class="px-6 py-3">Actions</th>
-					<th class="px-6 py-3">Key Persons</th>
-					<th class="px-6 py-3">Budget</th>
-					<th class="px-6 py-3">Assessment</th>
+					<th class="px-4 py-3 text-left">RRN</th>
+					<th class="px-4 py-3 text-left">Risk Statement</th>
+					<th class="px-4 py-3 text-left">Classification</th>
+					<th class="px-4 py-3 text-left">Actions</th>
+					<th class="px-4 py-3 text-left">Key Persons</th>
+					<th class="px-4 py-3 text-left">Budget</th>
+					<th class="px-4 py-3 text-center">Assessment</th>
 				</tr>
 			</thead>
-			<tbody>
-				{#each filteredRisks as risk}
-					<tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-						<td class="px-6 py-4 font-medium">{risk.rrn}</td>
-						<td class="px-6 py-4">{risk.risk_statement}</td>
-						<td class="px-6 py-4">
+			<tbody class="divide-y divide-border">
+				{#each filteredRisks as risk (risk.id)}
+					<tr class="hover:bg-muted/50">
+						<td class="px-4 py-3 font-medium">{risk.rrn}</td>
+						<td class="px-4 py-3">{risk.risk_statement}</td>
+						<td class="px-4 py-3">
 							{classification.find((cls) => cls.id === risk.classification)?.name || "N/A"}
 						</td>
-						<td class="px-6 py-4">{risk.actions}</td>
-						<td class="px-6 py-4">{risk.key_persons}</td>
-						<td class="px-6 py-4">${risk.budget}</td>
-						<td class="px-6 py-4">
-							<button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" on:click={() => onAssess(risk)} disabled={riskAssessments.some((ra) => ra.risk_id === risk.id)}>
-								{riskAssessments.some((ra) => ra.risk_id === risk.id) ? "Assessed" : "Add Assessment"}
-							</button>
+						<td class="px-4 py-3">{risk.actions}</td>
+						<td class="px-4 py-3">{risk.key_persons}</td>
+						<td class="px-4 py-3">${risk.budget}</td>
+						<td class="px-4 py-3">
+							<div class="flex justify-center">
+								<button onclick={() => onAssess(risk)} disabled={riskAssessments.some((ra) => ra.risk_id === risk.id)} class="flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+									{riskAssessments.some((ra) => ra.risk_id === risk.id) ? "Assessed" : "Assess"}
+								</button>
+							</div>
 						</td>
 					</tr>
 				{/each}

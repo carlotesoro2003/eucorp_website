@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { Plus, Save, Target, TriangleAlert } from "lucide-svelte";
+	import { ChevronLeft, Plus, PlusCircle, Save, Target, TriangleAlert } from "lucide-svelte";
 	import RiskCard from "$lib/components/dept-risks-table/RiskCard.svelte";
 	import Loading from "$lib/components/dept-risks-table/Loading.svelte";
 	import Alerts from "$lib/components/dept-risks-table/Alerts.svelte";
@@ -179,6 +179,7 @@
 </script>
 
 <div class="flex flex-col gap-4 p-4 container mx-auto">
+	
 	<!-- Alerts -->
 	{#if successMessage}
 		<div transition:fade class="flex items-center p-4 rounded-lg bg-green-100 text-green-800">
@@ -203,7 +204,7 @@
 	<div class="bg-card rounded-lg shadow border border-border p-6">
 		<div class="flex justify-between items-center mb-6">
 			<h2 class="text-xl font-semibold">Department Risks</h2>
-			<button class="inline-flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50" disabled={isSaving} onclick={() => console.log("Save Progress")}>
+			<button class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50" disabled={isSaving} onclick={() => console.log("Save Progress")}>
 				<Save class="w-4 h-4 mr-2" />
 				Save Progress
 			</button>
@@ -232,9 +233,9 @@
 					{#if isSaving}
 						<div class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></div>
 					{:else}
-						<Save class="w-4 h-4 mr-2" />
+					<PlusCircle class="w-4 h-4 mr-2" />
 					{/if}
-					Save All
+					Submit Risks
 				</button>
 			</div>
 		{/if}
