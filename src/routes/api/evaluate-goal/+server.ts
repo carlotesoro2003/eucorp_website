@@ -13,7 +13,11 @@ export const POST = async ({ request }: { request: Request }) => {
         }
 
         const model = client.getGenerativeModel({ model: 'gemini-pro' });
-        const prompt = `The target is: ${target}. Based on the following evaluation: "${evaluation}", determine if the goal has been achieved and explain why.`;
+        const prompt = `The target is: ${target}. Based on the following evaluation: "${evaluation}", 
+        determine if the goal has been achieved and explain why.
+        Only do it in paragraph form. Dont use bullet points or lists such as ****. Don't start the statement
+        with a yes or no.
+        `;
 
         const result = await model.generateContent(prompt);
 

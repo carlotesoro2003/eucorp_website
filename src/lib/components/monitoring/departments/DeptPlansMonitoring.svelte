@@ -9,6 +9,7 @@
 		id: number;
 		actions_taken: string;
 		kpi: string;
+		target_output: string;
 		objective_id: number;
 		strategic_goal_name: string;
 		objective_name: string;
@@ -118,11 +119,18 @@
 	/** Fetch action plans */
 	const fetchActionPlans = async () => {
 		try {
-			const { data: userProfile, error: profileError } = await supabase.from("profiles").select("department_id").eq("id", profileId).single();
+			const { data: userProfile, error: profileError } = await supabase
+				.from("profiles")
+				.select("department_id")
+				.eq("id", profileId)
+				.single();
 
 			if (profileError || !userProfile?.department_id) throw profileError;
 
-			const { data: profileIds, error: profileIdsError } = await supabase.from("profiles").select("id").eq("department_id", userProfile.department_id);
+			const { data: profileIds, error: profileIdsError } = await supabase
+				.from("profiles")
+				.select("id")
+				.eq("department_id", userProfile.department_id);
 
 			if (profileIdsError) throw profileIdsError;
 
@@ -130,19 +138,18 @@
 
 			const { data, error } = await supabase
 				.from("action_plans")
-				.select(
-					`
+				.select(`
 					id,
 					actions_taken,
 					kpi,
+					target_output,
 					objective_id,
 					strategic_objectives (
 						name,
 						strategic_goals (name)
 					),
 					is_approved
-				`
-				)
+				`)
 				.in("profile_id", profileIdList)
 				.eq("is_approved", true);
 
@@ -152,6 +159,7 @@
 				id: plan.id,
 				actions_taken: plan.actions_taken,
 				kpi: plan.kpi,
+				target_output: plan.target_output || "No Target Output",
 				objective_id: plan.objective_id,
 				strategic_goal_name: plan.strategic_objectives?.strategic_goals?.name || "No Goal Assigned",
 				objective_name: plan.strategic_objectives?.name || "No Objective Assigned",
@@ -181,6 +189,7 @@
 		}
 	};
 
+
 	/** Evaluate action plan using AI */
 	const evaluateActionPlan = async () => {
 		if (!selectedPlan) return;
@@ -191,7 +200,7 @@
 			const response = await fetch("/api/evaluate-goal", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ target: selectedPlan.kpi, evaluation: evaluationText }),
+				body: JSON.stringify({ target: selectedPlan.target_output, evaluation: evaluationText }),
 			});
 
 			const data = await response.json();
@@ -292,6 +301,7 @@
 							</th>
 							<th class="px-4 py-3 text-left">Action Plans</th>
 							<th class="px-4 py-3 text-left">KPI</th>
+							<th class="px-4 py-3">Target Output</th>
                             <th>Actions Taken</th>
 							<th class="px-4 py-3 text-left">Status</th>
 							<th class="px-4 py-3 text-center">View Statement</th>
@@ -309,6 +319,7 @@
 									</div>
 								</td>
 								<td class="px-4 py-3">{plan.kpi}</td>
+								<td class="px-4 py-3">{plan.target_output}</td>
                                 <td class="px-4 py-3"> 
                                     {#if plan.isLoading}
 											<Loader2 class="animate-spin h-5 w-5 text-primary ml-2" />
@@ -386,6 +397,10 @@
 					<div class="mb-4">
 						<label class="block text-sm font-medium mb-1">KPI</label>
 						<p class="text-muted-foreground">{selectedPlan?.kpi}</p>
+					</div>
+					<div class="mb-4">
+						<label class="block text-sm font-medium mb-1">Target Output</label>
+						<p class="text-muted-foreground">{selectedPlan?.target_output}</p>
 					</div>
 					<div class="mb-6">
 						<label class="block text-sm font-medium mb-1">Evaluation</label>
