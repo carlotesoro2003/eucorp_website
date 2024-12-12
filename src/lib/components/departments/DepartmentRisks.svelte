@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { Plus, Save, Target } from "lucide-svelte";
+	import { Plus, Save, Target, TriangleAlert } from "lucide-svelte";
 	import RiskCard from "$lib/components/dept-risks-table/RiskCard.svelte";
 	import Loading from "$lib/components/dept-risks-table/Loading.svelte";
 	import Alerts from "$lib/components/dept-risks-table/Alerts.svelte";
@@ -194,7 +194,7 @@
 	<!-- Header -->
 	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 		<div class="flex items-center gap-2">
-			<Target class="w-8 h-8 text-primary" />
+			<TriangleAlert class="w-8 h-8 text-primary" />
 			<h1 class="text-2xl font-bold">{departmentName} Risk Register</h1>
 		</div>
 		<div class="flex gap-2">

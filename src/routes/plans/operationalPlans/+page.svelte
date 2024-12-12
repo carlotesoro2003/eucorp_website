@@ -152,6 +152,7 @@
 
 <div class="flex flex-col gap-4 container mx-auto p-4">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+		
         <h2 class="text-2xl font-bold">Operational Plans Management</h2>
     </div>
 
