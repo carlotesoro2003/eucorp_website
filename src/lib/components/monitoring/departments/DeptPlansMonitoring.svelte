@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { supabase } from "$lib/supabaseClient";
-	import { Search, ArrowUpDown, Loader2, Eye, XCircle, CheckCircle, X } from "lucide-svelte";
+	import { Search, ArrowUpDown, Loader2, Eye, XCircle, CheckCircle, X, NotepadText } from "lucide-svelte";
 	import { fade, slide } from "svelte/transition";
 
 	/** Types */
@@ -254,10 +254,13 @@
 <div class="flex flex-col gap-4 p-4 container mx-auto min-h-screen bg-background text-foreground">
 	<!-- Fixed Header with responsive design -->
 	<div class="flex flex-col gap-4">
-		<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+		
+	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+		<div class="flex items-center gap-2">
+			<NotepadText class="w-8 h-8 text-primary" />
 			<h1 class="text-2xl font-bold">Plans Monitoring</h1>
-			
 		</div>
+	</div>
 		<div class="flex flex-col sm:flex-row gap-4">
 			<div class="relative flex-1 sm:flex-none max-w-[300px]">
 				<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
@@ -301,8 +304,8 @@
 							</th>
 							<th class="px-4 py-3 text-left">Action Plans</th>
 							<th class="px-4 py-3 text-left">KPI</th>
-							<th class="px-4 py-3">Target Output</th>
-                            <th>Actions Taken</th>
+							<th class="px-4 py-3 text-left" >Target Output</th>
+                            <th class="px-4 py-3 text-left">Actions Taken</th>
 							<th class="px-4 py-3 text-left">Status</th>
 							<th class="px-4 py-3 text-center">View Statement</th>
 						</tr>
@@ -315,7 +318,6 @@
 								<td class="px-4 py-3">
 									<div class="flex items-center gap-2">
 										<p class="line-clamp-2">{plan.actions_taken}</p>
-										
 									</div>
 								</td>
 								<td class="px-4 py-3">{plan.kpi}</td>
@@ -323,6 +325,8 @@
                                 <td class="px-4 py-3"> 
                                     {#if plan.isLoading}
 											<Loader2 class="animate-spin h-5 w-5 text-primary ml-2" />
+										{:else if plan.is_accomplished}
+											{plan.evaluation || "No evaluation"}
 										{:else if !plan.is_accomplished}
 											<button onclick={() => openEvaluationModal(plan)} class="shrink-0 inline-flex items-center px-3 py-1 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">Evaluate</button>
 										{/if}
