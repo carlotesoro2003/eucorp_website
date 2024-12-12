@@ -20,6 +20,7 @@
 		is_approved_president: boolean;
 		profile_id: string;
 		department_name: string | null;
+		department_id: string | null;
 		user_name: string | null;
 	};
 
@@ -349,63 +350,65 @@
 	};
 
 	/** Approve all opportunities */
-const approveAllOpportunities = async () => {
-	isLoading = true;
+	const approveAllOpportunities = async () => {
+		isLoading = true;
 
-	let updateField = {};
+		let updateField = {};
 
-	// Determine the field to update based on the user role
-	if (userRole === "admin") {
-		updateField = { is_approved: true };
-	} else if (userRole === "vice_president") {
-		updateField = { is_approved_vp: true };
-	} else if (userRole === "president") {
-		updateField = { is_approved_president: true };
-	} else {
-		isLoading = false;
-		return; // Exit if the user does not have a valid role
-	}
-
-	try {
-		// Update all displayed opportunities
-		const { error } = await supabase
-			.from("opportunities")
-			.update(updateField)
-			.in(
-				"id",
-				paginatedItems.map((opportunity) => opportunity.id) // Approve only visible opportunities
-			);
-
-		if (error) {
-			displayAlert("Error approving opportunities: " + error.message, "error");
+		// Determine the field to update based on the user role
+		if (userRole === "admin") {
+			updateField = { is_approved: true };
+		} else if (userRole === "vice_president") {
+			updateField = { is_approved_vp: true };
+		} else if (userRole === "president") {
+			updateField = { is_approved_president: true };
 		} else {
-			// If the president is approving, add to monitoring
-			if (userRole === "president") {
-				const monitoringEntries = paginatedItems.map((opportunity) => ({
-					opt_id: opportunity.id,
-					profile_id: opportunity.profile_id,
-				}));
-
-				const { error: monitoringError } = await supabase
-					.from("opt_monitoring")
-					.insert(monitoringEntries);
-
-				if (monitoringError) {
-					displayAlert("Error adding to monitoring: " + monitoringError.message, "error");
-				}
-			}
-
-			// Refresh opportunities list
-			await fetchOpportunities();
-			displayAlert("All displayed opportunities approved successfully!", "success");
+			isLoading = false;
+			return; // Exit if the user does not have a valid role
 		}
-	} catch (error) {
-		console.error("Unexpected error approving all opportunities:", error);
-		displayAlert("An unexpected error occurred.", "error");
-	} finally {
-		isLoading = false;
-	}
-};
+
+		try {
+			// Update all displayed opportunities
+			const { error } = await supabase
+				.from("opportunities")
+				.update(updateField)
+				.in(
+					"id",
+					paginatedItems.map((opportunity) => opportunity.id) // Approve only visible opportunities
+				);
+
+			if (error) {
+				displayAlert("Error approving opportunities: " + error.message, "error");
+			} else {
+				// If the president is approving, add to monitoring
+				if (userRole === "president") {
+					const monitoringEntries = paginatedItems.map((opportunity) => ({
+						opt_id: opportunity.id,
+						profile_id: opportunity.profile_id,
+						department_id: opportunity.department_id, 
+					}));
+
+					const { error: monitoringError } = await supabase
+						.from("opt_monitoring")
+						.insert(monitoringEntries);
+
+					if (monitoringError) {
+						displayAlert("Error adding to monitoring: " + monitoringError.message, "error");
+					}
+				}
+
+				// Refresh opportunities list
+				await fetchOpportunities();
+				displayAlert("All displayed opportunities approved successfully!", "success");
+			}
+		} catch (error) {
+			console.error("Unexpected error approving all opportunities:", error);
+			displayAlert("An unexpected error occurred.", "error");
+		} finally {
+			isLoading = false;
+		}
+	};
+
 
 
 	// Initialize data

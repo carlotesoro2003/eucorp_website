@@ -142,13 +142,42 @@
 	};
 
 	/** Generate PDF report */
+	/** Generate PDF report */
 	const generateSummaryPDF = async () => {
 		isGeneratingSummary = true;
+
 		try {
-			// Your existing PDF generation logic
+			const response = await fetch("/api/summary-report-opt-monitoring", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ opportunities: filteredOpportunities }),
+			});
+
+			const data = await response.json();
+
+			if (!response.ok || data.error) {
+				throw new Error(data.error || "Failed to generate summary.");
+			}
+
+			const doc = new jsPDF();
+			const title = `Summary Report`;
+
+			doc.setFont("times", "normal");
+			doc.setFontSize(12);
+			doc.text("MANUEL S. ENVERGA UNIVERSITY FOUNDATION", 14, 10);
+			doc.setFontSize(10);
+			doc.text("SY 2024-2025", 14, 20);
+			doc.setFontSize(14);
+			doc.text(title, 14, 15);
+
+			const summaryLines = doc.splitTextToSize(data.summaryReport, 180);
+			doc.setFontSize(12);
+			doc.text(summaryLines, 14, 35);
+
 			doc.save("OpportunitiesSummary.pdf");
 		} catch (error) {
-			console.error("Error generating summary:", error);
+			console.error("Error generating summary report:", error);
+			alert("An error occurred while generating the summary report.");
 		} finally {
 			isGeneratingSummary = false;
 		}

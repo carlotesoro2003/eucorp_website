@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { supabase } from "$lib/supabaseClient";
-	import { Plus, PlusCircle, Lightbulb } from "lucide-svelte";
+	import { Plus, Lightbulb } from "lucide-svelte";
 	import OpportunityCard from "$lib/components/dept-opts/OpportunityCard.svelte";
 	import { fade } from "svelte/transition";
 
 	interface Opportunity {
-		id: number;
+		id?: number;
 		opt_statement: string;
 		planned_actions: string;
 		kpi: string;
@@ -18,18 +18,7 @@
 	}
 
 	let opportunities: Opportunity[] = [];
-	let formData = [
-		{
-			opt_statement: "",
-			planned_actions: "",
-			kpi: "",
-			key_persons: "",
-			target_output: "",
-			budget: 0,
-			profile_id: "",
-			department_id: "",
-		},
-	];
+	let formData: Opportunity[] = [];
 	let profile: { id: string; department_id: string } | null = null;
 	let departmentName: string = "";
 	let isLoading = false;
@@ -77,9 +66,10 @@
 
 			departmentName = departmentData.name;
 
-			// Update department_id in new opportunity form data
+			// Pre-fill department_id and profile_id in new opportunity form data
 			formData.forEach((row) => {
 				row.department_id = profile.department_id;
+				row.profile_id = profile.id;
 			});
 		} catch (error) {
 			console.error("Error fetching user profile:", error);
@@ -111,15 +101,14 @@
 	const saveOpportunity = async (opportunity: Opportunity) => {
 		isSaving = true;
 		try {
-			const { error } = await supabase
-				.from("opportunities")
-				.update(opportunity)
-				.eq("id", opportunity.id);
+			const { error } = opportunity.id
+				? await supabase.from("opportunities").update(opportunity).eq("id", opportunity.id) // Update existing opportunity
+				: await supabase.from("opportunities").insert(opportunity); // Save new opportunity
 
 			if (error) throw error;
 
 			displayAlert("Opportunity saved successfully.", "success");
-			await fetchOpportunities();
+			await fetchOpportunities(); // Refresh list
 		} catch (error) {
 			console.error("Error saving opportunity:", error);
 			displayAlert("Error saving opportunity.", "error");
@@ -132,15 +121,12 @@
 	const deleteOpportunity = async (opportunityId: number) => {
 		isSaving = true;
 		try {
-			const { error } = await supabase
-				.from("opportunities")
-				.delete()
-				.eq("id", opportunityId);
+			const { error } = await supabase.from("opportunities").delete().eq("id", opportunityId);
 
 			if (error) throw error;
 
 			displayAlert("Opportunity deleted successfully.", "success");
-			await fetchOpportunities();
+			await fetchOpportunities(); // Refresh list
 		} catch (error) {
 			console.error("Error deleting opportunity:", error);
 			displayAlert("Error deleting opportunity.", "error");
@@ -206,8 +192,9 @@
 					<OpportunityCard
 						data={opportunity}
 						index={index}
+						isNew={false}
 						onSave={saveOpportunity}
-						onDelete={() => deleteOpportunity(opportunity.id)}
+						onDelete={() => deleteOpportunity(opportunity.id!)}
 					/>
 				{/each}
 
@@ -216,6 +203,8 @@
 					<OpportunityCard
 						data={data}
 						index={index}
+						isNew={true}
+						onSave={saveOpportunity}
 						onDelete={() => deleteCard(index)}
 					/>
 				{/each}
