@@ -564,9 +564,9 @@ const init = async () => {
 		</div>
 		<div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
 			<div class="flex items-center gap-2">
-				<input type="number" bind:value={budgetRange.min} placeholder="Min Budget" class="bg-secondary rounded-lg px-3 py-2 w-[150px]" />
+				<input type="number" bind:value={budgetRange.min} placeholder="Min Budget" class=" px-3 py-2 bg-secondary border-secondary rounded-lg  focus:outline-none focus:ring-2 focus:ring-ring w-[150px]" />
 				<span class="text-muted-foreground">to</span>
-				<input type="number" bind:value={budgetRange.max} placeholder="Max Budget" class="bg-secondary rounded-lg px-3 py-2 w-[150px]" />
+				<input type="number" bind:value={budgetRange.max} placeholder="Max Budget" class=" px-3 py-2 bg-secondary border-secondary rounded-lg focus:outline-none focus:ring-2 focus:ring-ring w-[150px]" />
 			</div>
 
 			<!-- Export button -->

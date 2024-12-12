@@ -451,8 +451,12 @@ const approveAllOpportunities = async () => {
 
 			<!-- Approve All Button -->
 		{#if paginatedItems.length > 0}
+		<button onclick={exportToPDF} class="flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg hover:bg-secondary/80 flex-1 md:flex-initial">
+			<Download size={20} />
+			Export
+		</button>
 		<button
-			class="flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg hover:bg-secondary/80 flex-1 md:flex-initial"
+			class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
 			onclick={approveAllOpportunities}
 			disabled={isLoading || paginatedItems.every(
 				(opportunity) =>
@@ -464,10 +468,7 @@ const approveAllOpportunities = async () => {
 			{isLoading ? "Processing..." : "Approve All"}
 		</button>
 	{/if}
-			<button onclick={exportToPDF} class="flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg hover:bg-secondary/80 flex-1 md:flex-initial">
-				<Download size={20} />
-				Export
-			</button>
+			
 		</div>
 	</div>
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { supabase } from "$lib/supabaseClient";
-	import { Search, ArrowUpDown, Target, TriangleAlert } from "lucide-svelte";
+	import { Search, ArrowUpDown } from "lucide-svelte";
 	import { fade } from "svelte/transition";
 
 	/** Risk monitoring interface */
@@ -104,14 +104,6 @@
 </script>
 
 <div class="flex flex-col gap-4 p-4 container mx-auto">
-	
-	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-		<div class="flex items-center gap-2">
-			<TriangleAlert class="w-8 h-8 text-primary" />
-			<h1 class="text-2xl font-bold">Risk Monitoring</h1>
-		</div>
-	</div>
-
 	<!-- {#if showAlert}
 		<div transition:fade class="flex items-center p-4 rounded-lg bg-red-100 text-red-800">
 			<span>{errorMessage}</span>

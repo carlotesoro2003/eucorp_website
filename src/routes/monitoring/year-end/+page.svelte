@@ -76,7 +76,7 @@
       </div>
   
       <!-- Tabs -->
-      <div class=" dark:bg-gray-800 rounded-lg shadow-sm mb-6">
+      <div class=" rounded-lg shadow-sm mb-6">
         <div class="flex flex-wrap gap-2 p-2">
           {#each tabs as tab}
             <button onclick={() => (activeTab = tab.id)} class="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 {activeTab === tab.id ? 'bg-primary hover:bg-primary/90 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'}">
@@ -88,7 +88,7 @@
       </div>
   
       <!-- Content -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      <div class="rounded-lg shadow-sm p-6">
         {#if loading}
         <div class="flex justify-center p-8 ">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

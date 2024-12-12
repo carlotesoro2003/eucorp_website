@@ -4,7 +4,7 @@
   import jsPDF from "jspdf";
   import autoTable from "jspdf-autotable";
   import { page } from "$app/stores";
-  import { Search, ArrowUpDown, ChevronLeft } from "lucide-svelte";
+  import { Search, ArrowUpDown, ChevronLeft, Trash2 } from "lucide-svelte";
 
 
   interface ActionPlan {
@@ -494,27 +494,28 @@
     }
   };
 
-      
+
+
 
 </script>
 
-<div class="min-h-screen p-8">
-  <!-- <a href="/plans" class="flex items-center gap-2 text-muted-foreground mb-2 hover:text-foreground">
-    <ChevronLeft size={20} />
-    Back to Objectives
-  </a> -->
-  <h1 class="text-2xl font-bold mb-4">Action Plans</h1>
+<div class="flex flex-col gap-4 p-4 container mx-auto">
+	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+		<div class="flex items-center gap-2">
+			<h1 class="text-2xl font-bold">Action Plans</h1>
+		</div>
+	</div>
 
-  <div class="flex flex-col md:flex-row gap-4 mb-4">
-		<div class="flex flex-col md:flex-row gap-4 w-full">
+	<div class="flex flex-col md:flex-row gap-4 mb-6">
+		<div class="flex flex-col md:flex-row gap-4 flex-1">
 			<!-- Search Input -->
-			<div class="relative flex-1">
+			<div class="relative flex-1 w-full md:max-w-[300px]">
 				<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
-				<input type="text" bind:value={searchQuery} placeholder="Search action plans..." class="pl-10 pr-4 py-2 bg-secondary border-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring" />
+				<input type="text" bind:value={searchQuery} placeholder="Search action plans..." class="pl-10 pr-4 py-2 bg-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring" />
 			</div>
 
 			<!-- Department Filter -->
-			<select class="select select-bordered w-full md:w-48" bind:value={selectedDepartment} onchange={applyFilters}>
+			<select bind:value={selectedDepartment} onchange={applyFilters} class="bg-secondary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring w-full md:w-[200px]">
 				<option value="all">All Departments</option>
 				{#each departments as department}
 					<option value={department.name}>{department.name}</option>
@@ -522,125 +523,96 @@
 			</select>
 
 			<!-- Status Filter -->
-			<select class="select select-bordered w-full md:w-48" bind:value={filterType} onchange={applyFilters}>
+			<select bind:value={filterType} onchange={applyFilters} class="bg-secondary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring w-full md:w-[200px]">
 				<option value="all">All Status</option>
 				<option value="approved">Approved</option>
 				<option value="notApproved">Not Approved</option>
 			</select>
 
-			<!-- Items per page --> 
-			<select bind:value={itemsPerPage} class="select select-bordered w-full md:w-48">
+			
+		</div>
+
+		<div class="flex gap-2">
+			{#if displayedActionPlans.length > 0}
+				<button onclick={exportToPDF} class="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors">Export to PDF</button>
+				<button onclick={approveAllActionPlans} disabled={isLoading || displayedActionPlans.every((plan) => (currentUserRole === "admin" && plan.is_approved) || (currentUserRole === "vice_president" && plan.is_approved_vp) || (currentUserRole === "president" && plan.is_approved_president))} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50">
+					{isLoading ? "Processing..." : "Approve All"}
+				</button>
+			{/if}
+		</div>
+	</div>
+
+	{#if isLoading}
+		<div class="flex justify-center p-8">
+			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+		</div>
+	{:else if paginatedPlans.length > 0}
+		<div class="overflow-x-auto bg-card rounded-lg shadow border border-border">
+			<table class="min-w-full table-auto">
+				<thead class="bg-muted/50">
+					<tr>
+						<th class="px-4 py-3 text-left">
+							<button onclick={() => toggleSort("department_name")} class="flex items-center gap-1">
+								Department
+								<ArrowUpDown size={16} class={sortField === "department_name" ? "text-primary" : ""} />
+							</button>
+						</th>
+						<th class="px-4 py-3 text-left">
+							<button onclick={() => toggleSort("actions_taken")} class="flex items-center gap-1">
+								Actions Taken
+								<ArrowUpDown size={16} class={sortField === "actions_taken" ? "text-primary" : ""} />
+							</button>
+						</th>
+						<th class="px-4 py-3 text-left">KPI</th>
+						<th class="px-4 py-3 text-left">Target Output</th>
+						<th class="px-4 py-3 text-left">Key Person Responsible</th>
+						<th class="px-4 py-3 text-center">Actions</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-border">
+					{#each paginatedPlans as plan}
+						<tr class="hover:bg-muted/50">
+							<td class="px-4 py-3">{plan.department_name}</td>
+							<td class="px-4 py-3">{plan.actions_taken}</td>
+							<td class="px-4 py-3">{plan.kpi}</td>
+							<td class="px-4 py-3">{plan.target_output}</td>
+							<td class="px-4 py-3">{plan.key_person_responsible}</td>
+							<td class="px-4 py-3">
+								<div class="flex justify-center gap-2">
+									<button onclick={() => approveActionPlan(plan.id)} disabled={isLoading || (currentUserRole === "admin" && plan.is_approved) || (currentUserRole === "vice_president" && (!plan.is_approved || plan.is_approved_vp)) || (currentUserRole === "president" && (!plan.is_approved_vp || plan.is_approved_president))} class="px-2 py-1 rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50 text-sm">
+										{isLoading ? "Processing..." : currentUserRole === "admin" ? (plan.is_approved ? "Admin Approved" : "Approve as Admin") : currentUserRole === "vice_president" ? (plan.is_approved_vp ? "VP Approved" : "Approve as VP") : currentUserRole === "president" ? (plan.is_approved_president ? "President Approved" : "Approve as President") : "Approve"}
+									</button>
+									<button onclick={() => deleteActionPlan(plan.id)} class="p-1.5 hover:bg-muted rounded-lg text-red-400">
+                    <Trash2 size={16} />
+                  </button>
+								</div>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Pagination -->
+		<div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
+			<div class="text-sm text-muted-foreground">
+				Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredAndSortedPlans.length)} of {filteredAndSortedPlans.length} results
+			</div>
+			<div class="flex flex-col sm:flex-row items-center gap-4">
+        <!-- Items per page -->
+			<select bind:value={itemsPerPage} class="bg-secondary border-secondary rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-auto">
 				<option value={5}>5 per page</option>
 				<option value={10}>10 per page</option>
 				<option value={25}>25 per page</option>
 				<option value={50}>50 per page</option>
 			</select>
+				<button disabled={currentPage === 1} onclick={() => (currentPage -= 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50 transition-colors">Previous</button>
+				<button disabled={currentPage === totalPages} onclick={() => (currentPage += 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50 transition-colors">Next</button>
+			</div>
 		</div>
-
-		<!-- Export Button -->
-		{#if displayedActionPlans.length > 0}
-			<button class="btn btn-secondary whitespace-nowrap" onclick={exportToPDF}>Export to PDF</button>
-		{/if}
-    <!-- Approve All Button -->
-  {#if displayedActionPlans.length > 0}
-  <button
-    class="btn btn-primary"
-    onclick={approveAllActionPlans}
-    disabled={isLoading || displayedActionPlans.every(
-      (plan) =>
-        (currentUserRole === "admin" && plan.is_approved) ||
-        (currentUserRole === "vice_president" && plan.is_approved_vp) ||
-        (currentUserRole === "president" && plan.is_approved_president)
-    )}
-  >
-    {isLoading ? "Processing..." : "Approve All"}
-  </button>
-  {/if}
-	</div>
-  <!-- Table for Action Plans -->
-  {#if isLoading}
+	{:else}
   <div class="flex justify-center p-8">
-    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
   </div>
-  {:else if paginatedPlans.length > 0}
-    <div class="overflow-x-auto bg-card rounded-lg shadow border border-border">
-      <table class="min-w-full table-auto">
-        <thead class="bg-muted/50">
-          <tr>
-            <th class="px-4 py-3 text-left">
-							<button onclick={() => toggleSort("department_name")} class="flex items-center gap-1 hover:text-primary">
-								Department
-								<ArrowUpDown size={16} class={sortField === "department_name" ? "text-primary" : ""} />
-							</button>
-						</th>
-            <th class="px-4 py-3 text-left">
-							<button onclick={() => toggleSort("actions_taken")} class="flex items-center gap-1 hover:text-primary">
-								Actions Taken
-								<ArrowUpDown size={16} class={sortField === "actions_taken" ? "text-primary" : ""} />
-							</button>
-						</th>
-            <th>KPI</th>
-            <th>Target Output</th>
-            <th>Key Person Responsible</th>
-            <th class="px-4 py-3 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each paginatedPlans as plan}
-            <tr>
-              <td>{plan.department_name}</td>
-              <td>{plan.actions_taken}</td>
-              <td>{plan.kpi}</td>
-              <td>{plan.target_output}</td>
-              <td>{plan.key_person_responsible}</td>
-              <td class="flex space-x-2">
-                <button
-                  class="btn btn-sm btn-success text-white"
-                  onclick={() => approveActionPlan(plan.id)}
-                  disabled={
-                    isLoading || // Disable while loading
-                    (currentUserRole === "admin" && plan.is_approved) || 
-                    (currentUserRole === "vice_president" && (!plan.is_approved || plan.is_approved_vp)) || 
-                    (currentUserRole === "president" && (!plan.is_approved_vp || plan.is_approved_president))
-                  }
-                >
-                  {isLoading 
-                    ? "Processing..." 
-                    : currentUserRole === "admin"
-                    ? plan.is_approved
-                      ? "Admin Approved"
-                      : "Approve as Admin"
-                    : currentUserRole === "vice_president"
-                    ? plan.is_approved_vp
-                      ? "VP Approved"
-                      : "Approve as VP"
-                    : currentUserRole === "president"
-                    ? plan.is_approved_president
-                      ? "President Approved"
-                      : "Approve as President"
-                    : "Approve"}
-                </button>
-                <button class="btn btn-sm btn-error text-white" onclick={() => deleteActionPlan(plan.id)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination -->
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
-			<div class="text-sm text-muted-foreground">
-				Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredAndSortedPlans.length)} of {filteredAndSortedPlans.length} results
-			</div>
-			<div class="flex gap-2">
-				<button disabled={currentPage === 1} onclick={() => (currentPage -= 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">Previous</button>
-				<button disabled={currentPage === totalPages} onclick={() => (currentPage += 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">Next</button>
-			</div>
-		</div>
-  {:else}
-    <div>No action plans found for this objective.</div>
-  {/if}
+	{/if}
 </div>
