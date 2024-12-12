@@ -1,9 +1,10 @@
-import { P as spread_props, Q as slot, R as sanitize_props, A as push, L as escape_html, F as attr, C as pop, N as ensure_array_like, O as stringify, G as bind_props } from "../../../chunks/index.js";
+import { N as spread_props, O as slot, P as sanitize_props, A as push, L as escape_html, F as attr, C as pop, Q as ensure_array_like, R as stringify, G as bind_props } from "../../../chunks/index.js";
 import { s as supabase } from "../../../chunks/supabaseClient.js";
 import { P as Pencil } from "../../../chunks/pencil.js";
 import { T as Trash_2 } from "../../../chunks/trash-2.js";
 import "jspdf";
 import "jspdf-autotable";
+import { L as Lightbulb } from "../../../chunks/lightbulb.js";
 import { A as Arrow_up_down } from "../../../chunks/arrow-up-down.js";
 import { S as Search } from "../../../chunks/search.js";
 import { D as Download } from "../../../chunks/download.js";
@@ -46,7 +47,7 @@ function TableRow($$payload, $$props) {
     approvingId,
     deletingId
   } = $$props;
-  $$payload.out += `<tr class="hover:bg-muted/50"><td class="px-4 py-3">${escape_html(opportunity.opt_statement)}</td><td class="px-4 py-3">${escape_html(opportunity.planned_actions)}</td><td class="px-4 py-3">${escape_html(opportunity.kpi)}</td><td class="px-4 py-3">${escape_html(opportunity.key_persons)}</td><td class="px-4 py-3">${escape_html(opportunity.target_output)}</td><td class="px-4 py-3">P${escape_html(opportunity.budget.toFixed(2))}</td><td class="px-4 py-3">${escape_html(opportunity.department_name)}</td><td class="px-4 py-3"><div class="flex items-center gap-2"><button${attr("disabled", approvingId === opportunity.id || userRole === "admin" && opportunity.is_approved || userRole === "vice_president" && (!opportunity.is_approved || opportunity.is_approved_vp) || userRole === "president" && (!opportunity.is_approved_vp || opportunity.is_approved_president), true)} class="px-2 py-1 text-sm rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50">${escape_html(approvingId === opportunity.id ? "Processing..." : userRole === "admin" ? opportunity.is_approved ? "Admin Approved" : "Approve" : userRole === "vice_president" ? opportunity.is_approved_vp ? "VP Approved" : "Approve" : userRole === "president" ? opportunity.is_approved_president ? "President Approved" : "Approve" : "Approve")}</button> <button class="p-1 rounded hover:bg-muted">`;
+  $$payload.out += `<tr class="hover:bg-muted/50"><td class="px-4 py-3">${escape_html(opportunity.opt_statement)}</td><td class="px-4 py-3">${escape_html(opportunity.planned_actions)}</td><td class="px-4 py-3">${escape_html(opportunity.kpi)}</td><td class="px-4 py-3">${escape_html(opportunity.key_persons)}</td><td class="px-4 py-3">${escape_html(opportunity.target_output)}</td><td class="px-4 py-3">P${escape_html(opportunity.budget.toFixed(2))}</td><td class="px-4 py-3">${escape_html(opportunity.department_name)}</td><td class="px-4 py-3"><div class="flex items-center gap-2"><button${attr("disabled", approvingId === opportunity.id || userRole === "admin" && opportunity.is_approved || userRole === "vice_president" && (!opportunity.is_approved || opportunity.is_approved_vp) || userRole === "president" && (!opportunity.is_approved_vp || opportunity.is_approved_president), true)} class="px-2 py-1 text-sm rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50">${escape_html(approvingId === opportunity.id ? "Processing..." : userRole === "admin" ? opportunity.is_approved ? "Admin Approved" : "Approve" : userRole === "vice_president" ? opportunity.is_approved_vp ? "VP Approved" : "Approve" : userRole === "president" ? opportunity.is_approved_president ? "President Approved" : "Approve" : "Approve")}</button> <button class="hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground">`;
   Pencil($$payload, { size: 16 });
   $$payload.out += `<!----></button> <button${attr("disabled", deletingId === opportunity.id, true)} class="p-1 rounded hover:bg-muted text-red-500 hover:text-red-600 disabled:opacity-50">`;
   Trash_2($$payload, { size: 16 });
@@ -272,7 +273,9 @@ function AdminOpportunities($$payload, $$props) {
   } else {
     $$payload.out += "<!--[!-->";
   }
-  $$payload.out += `<!--]--> <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><h2 class="text-2xl font-bold">Opportunities Management</h2></div> <button class="md:hidden w-full px-4 py-2 bg-secondary rounded-lg text-left flex justify-between items-center">Filters `;
+  $$payload.out += `<!--]--> <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><div class="flex items-center gap-2">`;
+  Lightbulb($$payload, { class: "w-8 h-8 text-primary" });
+  $$payload.out += `<!----> <h1 class="text-2xl font-bold">Opportunities Management</h1></div></div> <button class="md:hidden w-full px-4 py-2 bg-secondary rounded-lg text-left flex justify-between items-center">Filters `;
   Arrow_up_down($$payload, {
     size: 16,
     class: ""
@@ -282,14 +285,21 @@ function AdminOpportunities($$payload, $$props) {
     class: "absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground",
     size: 20
   });
-  $$payload.out += `<!----> <input type="text"${attr("value", searchQuery)} placeholder="Search opportunities..." class="pl-10 pr-4 py-2 bg-secondary rounded-lg w-full"></div> <select class="bg-secondary rounded-lg px-3 py-2 w-full md:w-[200px]"><option value="all">All Departments</option><!--[-->`;
+  $$payload.out += `<!----> <input type="text"${attr("value", searchQuery)} placeholder="Search opportunities..." class="pl-10 pr-4 py-2 bg-secondary border-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring"></div> <select class="bg-secondary rounded-lg px-3 py-2 w-full md:w-[200px]"><option value="all">All Departments</option><!--[-->`;
   for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
     let department = each_array[$$index];
     $$payload.out += `<option${attr("value", department.name)}>${escape_html(department.name)}</option>`;
   }
-  $$payload.out += `<!--]--></select></div> <div class="flex gap-2 w-full md:w-auto"><button class="flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg hover:bg-secondary/80 flex-1 md:flex-initial">`;
-  Download($$payload, { size: 20 });
-  $$payload.out += `<!----> Export PDF</button></div></div> `;
+  $$payload.out += `<!--]--></select></div> <div class="flex gap-2 w-full md:w-auto">`;
+  if (paginatedItems.length > 0) {
+    $$payload.out += "<!--[-->";
+    $$payload.out += `<button class="flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg hover:bg-secondary/80 flex-1 md:flex-initial">`;
+    Download($$payload, { size: 20 });
+    $$payload.out += `<!----> Export</button> <button class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"${attr("disabled", paginatedItems.every((opportunity) => userRole === "admin" && opportunity.is_approved || userRole === "vice_president" && opportunity.is_approved_vp || userRole === "president" && opportunity.is_approved_president), true)}>${escape_html("Approve All")}</button>`;
+  } else {
+    $$payload.out += "<!--[!-->";
+  }
+  $$payload.out += `<!--]--></div></div> `;
   if (loading) {
     $$payload.out += "<!--[-->";
     $$payload.out += `<div class="flex justify-center p-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>`;
@@ -404,28 +414,39 @@ function DepartmentOpportunities($$payload, $$props) {
     formData.splice(index, 1);
     formData = [...formData];
   };
-  const each_array = ensure_array_like(formData);
-  $$payload.out += `<div class="container mx-auto px-4 py-8"><div class="bg-white rounded-xl shadow-lg p-6 mb-8"><div class="flex justify-between items-center mb-6"><h1 class="text-2xl font-bold text-gray-800">${escape_html("Create Opportunity")}</h1> <button class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"${attr("disabled", isSaving, true)}>`;
-  Save($$payload, { class: "w-4 h-4 mr-2" });
-  $$payload.out += `<!----> Save Progress</button></div> <div class="grid grid-cols-1 gap-6 mb-6"><!--[-->`;
-  for (let index = 0, $$length = each_array.length; index < $$length; index++) {
-    let data = each_array[index];
-    OpportunityCard($$payload, {
-      data,
-      index,
-      onDelete: () => deleteCard(index)
-    });
-  }
-  $$payload.out += `<!--]--></div> <div class="flex flex-wrap gap-4"><button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">`;
-  Plus($$payload, { class: "w-4 h-4 mr-2" });
-  $$payload.out += `<!----> Add New Opportunity</button> <button class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"${attr("disabled", isSaving, true)}>`;
-  Circle_plus($$payload, { class: "w-4 h-4 mr-2" });
-  $$payload.out += `<!----> `;
+  $$payload.out += `<div class="flex flex-col gap-4 p-4 container mx-auto">`;
   {
     $$payload.out += "<!--[!-->";
-    $$payload.out += `${escape_html("Submit Opportunities")}`;
   }
-  $$payload.out += `<!--]--></button></div></div></div>`;
+  $$payload.out += `<!--]--> <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><div class="flex items-center gap-2">`;
+  Lightbulb($$payload, { class: "w-8 h-8 text-primary" });
+  $$payload.out += `<!----> <h1 class="text-2xl font-bold">Opportunities Register</h1></div></div> <div class="bg-card rounded-lg shadow border border-border p-6"><div class="flex justify-between items-center mb-6"><h2 class="text-xl font-semibold">${escape_html("Create Opportunity")}</h2> <button class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"${attr("disabled", isSaving, true)}>`;
+  Save($$payload, { class: "w-4 h-4 mr-2" });
+  $$payload.out += `<!----> Save Progress</button></div> `;
+  {
+    $$payload.out += "<!--[!-->";
+    const each_array = ensure_array_like(formData);
+    $$payload.out += `<div class="grid grid-cols-1 gap-6 mb-6"><!--[-->`;
+    for (let index = 0, $$length = each_array.length; index < $$length; index++) {
+      let data = each_array[index];
+      OpportunityCard($$payload, {
+        data,
+        index,
+        onDelete: () => deleteCard(index)
+      });
+    }
+    $$payload.out += `<!--]--></div> <div class="flex flex-wrap gap-4"><button class="inline-flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">`;
+    Plus($$payload, { class: "w-4 h-4 mr-2" });
+    $$payload.out += `<!----> Add New Opportunity</button> <button class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"${attr("disabled", isSaving, true)}>`;
+    Circle_plus($$payload, { class: "w-4 h-4 mr-2" });
+    $$payload.out += `<!----> `;
+    {
+      $$payload.out += "<!--[!-->";
+      $$payload.out += `${escape_html("Submit Opportunities")}`;
+    }
+    $$payload.out += `<!--]--></button></div>`;
+  }
+  $$payload.out += `<!--]--></div></div>`;
   pop();
 }
 function _page($$payload, $$props) {

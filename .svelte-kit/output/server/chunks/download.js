@@ -1,4 +1,4 @@
-import { P as spread_props, Q as slot, R as sanitize_props } from "./index.js";
+import { N as spread_props, O as slot, P as sanitize_props } from "./index.js";
 import { I as Icon } from "./Icon.js";
 function Download($$payload, $$props) {
   const $$sanitized_props = sanitize_props($$props);

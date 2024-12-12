@@ -7,7 +7,7 @@ function _page($$payload, $$props) {
   $$payload.out += `<div>`;
   {
     $$payload.out += "<!--[-->";
-    $$payload.out += `<p>Loading...</p>`;
+    $$payload.out += `<div class="flex items-center justify-center min-h-screen"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>`;
   }
   $$payload.out += `<!--]--></div>`;
   pop();

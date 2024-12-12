@@ -54,7 +54,7 @@
 	/**Strategic Goals List**/
 	let selectedStrategicGoal: string = $state("all");
 	let showStrategicGoalDropdown: boolean = $state(false);
-	let strategicGoals: string[] = $state([]);
+	let strategicGoals: { name: string; goal_no: number | null }[] = $state([]);
 
 	//Strategic Objectives List
 	let selectedStrategicObjective: string = $state("all");
@@ -151,59 +151,111 @@
 	};
 	
 	//Fetch Strategic Goals
-		const fetchStrategicGoals = async () => {
+	const fetchStrategicGoals = async () => {
 		try {
 			const { data, error } = await supabase.from("strategic_goals").select("name, goal_no");
 			if (error) throw error;
 
-			strategicGoals = ["All Goals", ...data.map((goal: { name: string, goal_no: number }) => goal.name)];
+			// Combine name and goal_no for display
+			strategicGoals = [
+				{ name: "All Goals", goal_no: null },
+				...data.map((goal: { name: string; goal_no: number }) => ({
+					name: `${goal.goal_no} - ${goal.name}`,
+					goal_no: goal.goal_no,
+				})),
+			];
 		} catch (error) {
 			console.error("Error fetching strategic goals:", error);
 		}
 	};
 
-	//Fetch Strategic Objectives
+	// Fetch Strategic Objectives with filtering by selectedStrategicGoal
 	const fetchStrategicObjectives = async () => {
 		try {
-			const { data, error } = await supabase.from("strategic_objectives").select("name");
+			// Find the selected strategic goal
+			const selectedGoal = strategicGoals.find((goal) => goal.name === selectedStrategicGoal);
+
+			// Start with the base query
+			let query = supabase.from("strategic_objectives").select("name, strategic_goal_id");
+
+			// Add a filter if a specific goal is selected
+			if (selectedStrategicGoal !== "all" && selectedGoal?.goal_no) {
+				query = query.eq("strategic_goal_id", selectedGoal.goal_no);
+			}
+
+			// Execute the query
+			const { data, error } = await query;
 			if (error) throw error;
 
-			strategicObjectives = ["All Objectives", ...data.map((objective: { name: string }) => objective.name)];
+			// Map the results to the dropdown
+			strategicObjectives = [
+				"All Objectives",
+				...data.map((objective: { name: string }) => objective.name),
+			];
+
+			console.log("Strategic Objectives:", strategicObjectives); // Debugging
 		} catch (error) {
 			console.error("Error fetching strategic objectives:", error);
+			strategicObjectives = ["All Objectives"];
 		}
 	};
 
+
+
+
+
+	// Reactive statement to fetch objectives when the selected goal changes
+	$effect(() => {
+		if (selectedStrategicGoal !== "all") {
+			fetchStrategicObjectives();
+		} else {
+			strategicObjectives = ["All Objectives"];
+		}
+	});
+
+
+
+
+
 	/** Filter plans based on status, department and search query */
 	const applyFilter = () => {
-    let filtered = plans;
+		let filtered = plans;
 
-    if (filterStatus === "achieved") {
-        filtered = filtered.filter((p) => p.is_accomplished);
-    } else if (filterStatus === "not_achieved") {
-        filtered = filtered.filter((p) => !p.is_accomplished);
-    }
+		if (filterStatus === "achieved") {
+			filtered = filtered.filter((p) => p.is_accomplished);
+		} else if (filterStatus === "not_achieved") {
+			filtered = filtered.filter((p) => !p.is_accomplished);
+		}
 
-    if (selectedDepartment !== "all") {
-        filtered = filtered.filter((p) => p.department === selectedDepartment);
-    }
+		if (selectedDepartment !== "all") {
+			filtered = filtered.filter((p) => p.department === selectedDepartment);
+		}
 
-    if (selectedStrategicGoal !== "all") {
-        filtered = filtered.filter((p) => p.goal === selectedStrategicGoal);
-    }
+		if (selectedStrategicGoal !== "all") {
+			const selectedGoalNo = strategicGoals.find((goal) => goal.name === selectedStrategicGoal)?.goal_no;
+			if (selectedGoalNo) {
+				filtered = filtered.filter((p) => p.goal_no === selectedGoalNo);
+			}
+		}
 
-    if (selectedStrategicObjective !== "all") {
-        filtered = filtered.filter((p) => p.objective === selectedStrategicObjective);
-    }
+		if (selectedStrategicObjective !== "all") {
+			filtered = filtered.filter((p) => p.objective === selectedStrategicObjective);
+		}
 
-    if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        filtered = filtered.filter((p) => p.statement?.toLowerCase().includes(query) || p.actions_taken?.toLowerCase().includes(query) || p.kpi?.toLowerCase().includes(query) || p.department?.toLowerCase().includes(query));
-    }
+		if (searchQuery) {
+			const query = searchQuery.toLowerCase();
+			filtered = filtered.filter((p) =>
+				p.statement?.toLowerCase().includes(query) ||
+				p.actions_taken?.toLowerCase().includes(query) ||
+				p.kpi?.toLowerCase().includes(query) ||
+				p.department?.toLowerCase().includes(query)
+			);
+		}
 
-    filteredPlans = filtered;
-    currentPage = 1;
+		filteredPlans = filtered;
+		currentPage = 1;
 	};
+
 
 	/** Export to PDF with visualization */
 	const exportToPDF = () => {
@@ -404,7 +456,10 @@
 			
 			<!-- Strategic Goal Dropdown -->
 			<div class="relative">
-				<button class="px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2" onclick={() => (showStrategicGoalDropdown = !showStrategicGoalDropdown)}>
+				<button
+					class="px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+					onclick={() => (showStrategicGoalDropdown = !showStrategicGoalDropdown)}
+				>
 					{selectedStrategicGoal === "all" ? "All Goals" : selectedStrategicGoal}
 					<ChevronDown class="w-4 h-4" />
 				</button>
@@ -413,32 +468,35 @@
 					<div class="absolute top-full left-0 mt-1 w-56 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 z-10">
 						{#each strategicGoals as goal}
 							<button
-								class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg {selectedStrategicGoal === goal.toLowerCase() ? 'bg-gray-50 dark:bg-gray-700' : ''}"
+								class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg {selectedStrategicGoal === goal.name ? 'bg-gray-50 dark:bg-gray-700' : ''}"
 								onclick={() => {
-									selectedStrategicGoal = goal === "All Goals" ? "all" : goal;
+									selectedStrategicGoal = goal.name;
 									showStrategicGoalDropdown = false;
-									applyFilter();
 								}}
 							>
-								{goal}
+								{goal.name}
 							</button>
 						{/each}
 					</div>
 				{/if}
 			</div>
 
-			<!-- Strategic Objective Dropdown -->
+
+			<!--Strategic Objective Dropdown-->
 			<div class="relative">
-				<button class="px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2" onclick={() => (showStrategicObjectiveDropdown = !showStrategicObjectiveDropdown)}>
+				<button
+					class="px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+					onclick={() => (showStrategicObjectiveDropdown = !showStrategicObjectiveDropdown)}
+				>
 					{selectedStrategicObjective === "all" ? "All Objectives" : selectedStrategicObjective}
 					<ChevronDown class="w-4 h-4" />
 				</button>
-
+			
 				{#if showStrategicObjectiveDropdown}
 					<div class="absolute top-full left-0 mt-1 w-56 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 z-10">
 						{#each strategicObjectives as objective}
 							<button
-								class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg {selectedStrategicObjective === objective.toLowerCase() ? 'bg-gray-50 dark:bg-gray-700' : ''}"
+								class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg {selectedStrategicObjective === objective ? 'bg-gray-50 dark:bg-gray-700' : ''}"
 								onclick={() => {
 									selectedStrategicObjective = objective === "All Objectives" ? "all" : objective;
 									showStrategicObjectiveDropdown = false;
@@ -451,6 +509,8 @@
 					</div>
 				{/if}
 			</div>
+			
+
 
 		</div>
 

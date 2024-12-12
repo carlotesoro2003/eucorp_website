@@ -1,12 +1,52 @@
-import { L as escape_html, F as attr, C as pop, A as push, N as ensure_array_like } from "../../../chunks/index.js";
+import { N as spread_props, O as slot, P as sanitize_props, L as escape_html, F as attr, C as pop, A as push, Q as ensure_array_like } from "../../../chunks/index.js";
 /* empty css                       */
 import { s as supabase } from "../../../chunks/supabaseClient.js";
 import { P as Pencil } from "../../../chunks/pencil.js";
 import { T as Trash_2 } from "../../../chunks/trash-2.js";
+import { I as Icon } from "../../../chunks/Icon.js";
 import { S as Search } from "../../../chunks/search.js";
 import { D as Download } from "../../../chunks/download.js";
 import { P as Plus } from "../../../chunks/plus.js";
 import { X } from "../../../chunks/x.js";
+function Building($$payload, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  const iconNode = [
+    [
+      "rect",
+      {
+        "width": "16",
+        "height": "20",
+        "x": "4",
+        "y": "2",
+        "rx": "2",
+        "ry": "2"
+      }
+    ],
+    ["path", { "d": "M9 22v-4h6v4" }],
+    ["path", { "d": "M8 6h.01" }],
+    ["path", { "d": "M16 6h.01" }],
+    ["path", { "d": "M12 6h.01" }],
+    ["path", { "d": "M12 10h.01" }],
+    ["path", { "d": "M12 14h.01" }],
+    ["path", { "d": "M16 10h.01" }],
+    ["path", { "d": "M16 14h.01" }],
+    ["path", { "d": "M8 10h.01" }],
+    ["path", { "d": "M8 14h.01" }]
+  ];
+  Icon($$payload, spread_props([
+    { name: "building" },
+    $$sanitized_props,
+    {
+      iconNode,
+      children: ($$payload2) => {
+        $$payload2.out += `<!---->`;
+        slot($$payload2, $$props, "default", {});
+        $$payload2.out += `<!---->`;
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
 function DepartmentForm($$payload, $$props) {
   push();
   let { department = null, isSaving, onSave } = $$props;
@@ -102,7 +142,9 @@ function Table($$payload, $$props) {
     }
     isDeleting = false;
   };
-  $$payload.out += `<div class="flex flex-col gap-4 container mx-auto"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><h2 class="text-2xl font-bold">Departments Management</h2></div> `;
+  $$payload.out += `<div class="flex flex-col gap-4 container mx-auto"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><div class="flex items-center gap-2">`;
+  Building($$payload, { class: "w-8 h-8 text-primary" });
+  $$payload.out += `<!----> <h1 class="text-2xl font-bold">Department Management</h1></div></div> `;
   if (showAlert) {
     $$payload.out += "<!--[-->";
     $$payload.out += `<div${attr("class", `p-4 rounded-lg ${alertType === "success" ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`)}>${escape_html(alertMessage)}</div>`;

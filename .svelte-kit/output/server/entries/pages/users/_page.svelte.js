@@ -1,12 +1,36 @@
-import { F as attr, L as escape_html, C as pop, A as push, N as ensure_array_like, O as stringify } from "../../../chunks/index.js";
+import { N as spread_props, O as slot, P as sanitize_props, F as attr, L as escape_html, C as pop, A as push, Q as ensure_array_like, R as stringify } from "../../../chunks/index.js";
 /* empty css                       */
 import { s as supabase, a as supabaseAdmin } from "../../../chunks/supabaseClient.js";
 import { P as Pencil } from "../../../chunks/pencil.js";
 import { T as Trash_2 } from "../../../chunks/trash-2.js";
+import { I as Icon } from "../../../chunks/Icon.js";
 import { A as Arrow_up_down } from "../../../chunks/arrow-up-down.js";
 import { S as Search } from "../../../chunks/search.js";
 import { D as Download } from "../../../chunks/download.js";
 import { X } from "../../../chunks/x.js";
+function User_round($$payload, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  const iconNode = [
+    [
+      "circle",
+      { "cx": "12", "cy": "8", "r": "5" }
+    ],
+    ["path", { "d": "M20 21a8 8 0 0 0-16 0" }]
+  ];
+  Icon($$payload, spread_props([
+    { name: "user-round" },
+    $$sanitized_props,
+    {
+      iconNode,
+      children: ($$payload2) => {
+        $$payload2.out += `<!---->`;
+        slot($$payload2, $$props, "default", {});
+        $$payload2.out += `<!---->`;
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
 function TableRow($$payload, $$props) {
   push();
   let {
@@ -218,7 +242,9 @@ function Table($$payload, $$props) {
   } else {
     $$payload.out += "<!--[!-->";
   }
-  $$payload.out += `<!--]--> <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><h2 class="text-2xl font-bold">Users Management</h2></div> <button class="md:hidden w-full px-4 py-2 bg-secondary rounded-lg text-left flex justify-between items-center">Filters `;
+  $$payload.out += `<!--]--> <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><div class="flex items-center gap-2">`;
+  User_round($$payload, { class: "w-8 h-8 text-primary" });
+  $$payload.out += `<!----> <h1 class="text-2xl font-bold">User Management</h1></div></div> <button class="md:hidden w-full px-4 py-2 bg-secondary rounded-lg text-left flex justify-between items-center">Filters `;
   Arrow_up_down($$payload, {
     size: 16,
     class: ""

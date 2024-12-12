@@ -1,8 +1,9 @@
-import { E as fallback, N as ensure_array_like, F as attr, O as stringify, L as escape_html, G as bind_props, C as pop, A as push } from "../../../../chunks/index.js";
+import { E as fallback, Q as ensure_array_like, F as attr, R as stringify, L as escape_html, G as bind_props, C as pop, A as push } from "../../../../chunks/index.js";
 import { s as supabase } from "../../../../chunks/supabaseClient.js";
-import { A as AdminPlansMonitoring, D as DeptPlansMonitoring, C as Circle_alert, a as Clipboard_list, T as Triangle_alert, L as Lightbulb } from "../../../../chunks/DeptPlansMonitoring.js";
+import { M as Monitor, A as AdminPlansMonitoring, D as DeptPlansMonitoring, C as Circle_alert, a as Clipboard_list, T as Triangle_alert } from "../../../../chunks/DeptPlansMonitoring.js";
 import "jspdf";
 import "jspdf-autotable";
+import { L as Lightbulb } from "../../../../chunks/lightbulb.js";
 function _page($$payload, $$props) {
   push();
   let data = fallback($$props["data"], null);
@@ -50,17 +51,19 @@ function _page($$payload, $$props) {
   };
   fetchUserProfile();
   const each_array = ensure_array_like(tabs);
-  $$payload.out += `<div class="min-h-screen bg-gray-50 dark:bg-gray-900"><div class="container mx-auto px-4 py-8"><div class="mb-8"><h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Year-end Monitoring Dashboard</h1> <p class="text-gray-600 dark:text-gray-400">Track and manage your organization's plans, risks, and opportunities</p></div> <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6"><div class="flex flex-wrap gap-2 p-2"><!--[-->`;
+  $$payload.out += `<div class="min-h-scree"><div class="container mx-auto px-4 py-8"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3"><div class="flex items-center gap-2">`;
+  Monitor($$payload, { class: "w-8 h-8 text-primary" });
+  $$payload.out += `<!----> <h1 class="text-2xl font-bold">Year-end Monitoring Dashboard</h1></div></div> <div class="rounded-lg shadow-sm mb-6"><div class="flex flex-wrap gap-2 p-2"><!--[-->`;
   for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
     let tab = each_array[$$index];
     $$payload.out += `<button${attr("class", `flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 ${stringify(activeTab === tab.id ? "bg-primary hover:bg-primary/90 text-white" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300")}`)}><!---->`;
     tab.icon?.($$payload, { size: 18 });
     $$payload.out += `<!----> <span>${escape_html(tab.label)}</span></button>`;
   }
-  $$payload.out += `<!--]--></div></div> <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">`;
+  $$payload.out += `<!--]--></div></div> <div class="rounded-lg shadow-sm p-6">`;
   if (loading) {
     $$payload.out += "<!--[-->";
-    $$payload.out += `<div class="flex flex-col items-center justify-center py-12"><div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div> <p class="mt-4 text-gray-600 dark:text-gray-400">Loading your dashboard...</p></div>`;
+    $$payload.out += `<div class="flex justify-center p-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>`;
   } else {
     $$payload.out += "<!--[!-->";
     if (session && profile) {

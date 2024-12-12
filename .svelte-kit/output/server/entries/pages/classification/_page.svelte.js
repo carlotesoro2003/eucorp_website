@@ -1,11 +1,50 @@
-import { A as push, L as escape_html, F as attr, C as pop, N as ensure_array_like, O as stringify } from "../../../chunks/index.js";
+import { N as spread_props, O as slot, P as sanitize_props, A as push, L as escape_html, F as attr, C as pop, Q as ensure_array_like, R as stringify } from "../../../chunks/index.js";
 /* empty css                       */
 import { s as supabase } from "../../../chunks/supabaseClient.js";
 import { X } from "../../../chunks/x.js";
 import { P as Pencil } from "../../../chunks/pencil.js";
 import { T as Trash_2 } from "../../../chunks/trash-2.js";
+import { I as Icon } from "../../../chunks/Icon.js";
 import { S as Search } from "../../../chunks/search.js";
 import { P as Plus } from "../../../chunks/plus.js";
+function Shapes($$payload, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  const iconNode = [
+    [
+      "path",
+      {
+        "d": "M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z"
+      }
+    ],
+    [
+      "rect",
+      {
+        "x": "3",
+        "y": "14",
+        "width": "7",
+        "height": "7",
+        "rx": "1"
+      }
+    ],
+    [
+      "circle",
+      { "cx": "17.5", "cy": "17.5", "r": "3.5" }
+    ]
+  ];
+  Icon($$payload, spread_props([
+    { name: "shapes" },
+    $$sanitized_props,
+    {
+      iconNode,
+      children: ($$payload2) => {
+        $$payload2.out += `<!---->`;
+        slot($$payload2, $$props, "default", {});
+        $$payload2.out += `<!---->`;
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
 function UserForm($$payload, $$props) {
   push();
   let {
@@ -101,7 +140,9 @@ function Table($$payload, $$props) {
       await fetchClassifications();
     }
   };
-  $$payload.out += `<div class="flex flex-col gap-4 container mx-auto"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><h2 class="text-2xl font-bold">Classifications Management</h2></div> `;
+  $$payload.out += `<div class="flex flex-col gap-4 container mx-auto"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><div class="flex items-center gap-2">`;
+  Shapes($$payload, { class: "w-8 h-8 text-primary" });
+  $$payload.out += `<!----> <h1 class="text-2xl font-bold">Classsification Management</h1></div></div> `;
   if (showAlert) {
     $$payload.out += "<!--[-->";
     $$payload.out += `<div${attr("class", `p-4 rounded-lg ${stringify(alertType === "success" ? "bg-green-600" : "bg-red-600")} text-white`)}><span>${escape_html(alertMessage)}</span></div>`;

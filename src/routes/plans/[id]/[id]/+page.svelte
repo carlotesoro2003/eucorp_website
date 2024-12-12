@@ -4,7 +4,8 @@
   import jsPDF from "jspdf";
   import autoTable from "jspdf-autotable";
   import { page } from "$app/stores";
-  import { Search, ArrowUpDown, ChevronLeft, Trash2 } from "lucide-svelte";
+  import { Pencil, Search, ArrowUpDown, Save, X, Trash2 } from "lucide-svelte"; 
+  import { fade, slide } from "svelte/transition";
 
 
   interface ActionPlan {
@@ -49,16 +50,18 @@
   let departments: { id: string; name: string }[] = $state([]);
   let selectedDepartment: string | "all" = $state("all");
   let filterType: "all" | "approved" | "notApproved" = $state("all");
+  let editingPlan: ActionPlan | null = $state(null);
+
 
   let objective: StrategicObjective | null = null;
   let strategicGoal: StrategicGoal | null = null;
   let objective_id: number | null = null;
-  let isLoading = false;
+  let isLoading = $state(false);
 
   let adminName: string | null = null;
   let vicePresidentName: string | null = null;
   let presidentName: string | null = null;
-  let currentUserRole: string | null = null;
+  let currentUserRole: string | null = $state(null);
 
   onMount(async () => {
     const { params } = $page;
@@ -441,58 +444,108 @@
     isLoading = true;
 
     try {
-      // Determine the field to update based on the user role
-      let updateField = {};
-      if (currentUserRole === "admin") {
-        updateField = { is_approved: true };
-      } else if (currentUserRole === "vice_president") {
-        updateField = { is_approved_vp: true };
-      } else if (currentUserRole === "president") {
-        updateField = { is_approved_president: true };
-      } else {
-        isLoading = false;
-        return; // Exit if the user does not have a valid role
-      }
-
-      // Update all action plans that match the current filters
-      const { error } = await supabase
-        .from("action_plans")
-        .update(updateField)
-        .in(
-          "id",
-          displayedActionPlans.map((plan) => plan.id) // Only update displayed plans
-        );
-
-      if (error) {
-        console.error("Error approving all action plans:", error);
-        return;
-      }
-
-      // If the president approves, insert into plan_monitoring
-      if (currentUserRole === "president") {
-        const monitoringEntries = displayedActionPlans.map((plan) => ({
-          action_plan_id: plan.id,
-          profile_id: plan.profile_id,
-        }));
-
-        const { error: monitoringError } = await supabase
-          .from("plan_monitoring")
-          .insert(monitoringEntries);
-
-        if (monitoringError) {
-          console.error("Error inserting into plan_monitoring:", monitoringError);
+        // Determine the field to update based on the user role
+        let updateField = {};
+        if (currentUserRole === "admin") {
+            updateField = { is_approved: true };
+        } else if (currentUserRole === "vice_president") {
+            updateField = { is_approved_vp: true };
+        } else if (currentUserRole === "president") {
+            updateField = { is_approved_president: true };
+        } else {
+            isLoading = false;
+            return; // Exit if the user does not have a valid role
         }
-      }
 
-      // Refresh the action plans list
-      await fetchActionPlans();
-      console.log("All action plans approved successfully.");
+        // Fetch all displayed action plans with the department_id
+        const actionPlanIds = displayedActionPlans.map((plan) => plan.id);
+        const { data: plansData, error: fetchError } = await supabase
+            .from("action_plans")
+            .select("id, profile_id, department_id")
+            .in("id", actionPlanIds);
+
+        if (fetchError) {
+            console.error("Error fetching action plans with department_id:", fetchError);
+            isLoading = false;
+            return;
+        }
+
+        // Update approval fields for all displayed action plans
+        const { error: updateError } = await supabase
+            .from("action_plans")
+            .update(updateField)
+            .in("id", actionPlanIds);
+
+        if (updateError) {
+            console.error("Error approving all action plans:", updateError);
+            isLoading = false;
+            return;
+        }
+
+        // If the President approves, add to plan_monitoring
+        if (currentUserRole === "president" && plansData) {
+            const monitoringEntries = plansData.map((plan) => ({
+                action_plan_id: plan.id,
+                profile_id: plan.profile_id,
+                department_id: plan.department_id, // Include department_id
+            }));
+
+            const { error: monitoringError } = await supabase
+                .from("plan_monitoring")
+                .insert(monitoringEntries);
+
+            if (monitoringError) {
+                console.error("Error inserting into plan_monitoring:", monitoringError);
+            }
+        }
+
+        // Refresh the action plans list
+        await fetchActionPlans();
+        console.log("All action plans approved successfully.");
     } catch (error) {
-      console.error("Unexpected error while approving all action plans:", error);
+        console.error("Unexpected error while approving all action plans:", error);
     } finally {
-      isLoading = false;
+        isLoading = false;
     }
-  };
+};
+
+
+/** Handle row edit */
+const onEditRow = (plan: ActionPlan) => {
+		editingPlan = { ...plan };
+	};
+
+	/** Handle cancel edit */
+	const onCancelEdit = () => {
+		editingPlan = null;
+	};
+
+	/** Handle save edit */
+	const onSaveEdit = async () => {
+		if (!editingPlan) return;
+
+		try {
+			const { error } = await supabase
+				.from("action_plans")
+				.update({
+					actions_taken: editingPlan.actions_taken,
+					kpi: editingPlan.kpi,
+					target_output: editingPlan.target_output,
+					key_person_responsible: editingPlan.key_person_responsible,
+				})
+				.eq("id", editingPlan.id);
+
+			if (error) throw error;
+
+			// Refresh action plans
+			await fetchActionPlans();
+			// Clear editing state
+			editingPlan = null;
+		} catch (error) {
+			console.error("Error updating action plan:", error);
+		}
+	};
+
 
 
 
@@ -500,12 +553,14 @@
 </script>
 
 <div class="flex flex-col gap-4 p-4 container mx-auto">
+	<!-- Header -->
 	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 		<div class="flex items-center gap-2">
 			<h1 class="text-2xl font-bold">Action Plans</h1>
 		</div>
 	</div>
 
+	<!-- Filters -->
 	<div class="flex flex-col md:flex-row gap-4 mb-6">
 		<div class="flex flex-col md:flex-row gap-4 flex-1">
 			<!-- Search Input -->
@@ -528,10 +583,9 @@
 				<option value="approved">Approved</option>
 				<option value="notApproved">Not Approved</option>
 			</select>
-
-			
 		</div>
 
+		<!-- Actions -->
 		<div class="flex gap-2">
 			{#if displayedActionPlans.length > 0}
 				<button onclick={exportToPDF} class="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors">Export to PDF</button>
@@ -542,8 +596,9 @@
 		</div>
 	</div>
 
+	<!-- Table -->
 	{#if isLoading}
-		<div class="flex justify-center p-8">
+		<div class="flex justify-center p-8" transition:fade>
 			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
 		</div>
 	{:else if paginatedPlans.length > 0}
@@ -571,23 +626,54 @@
 				</thead>
 				<tbody class="divide-y divide-border">
 					{#each paginatedPlans as plan}
-						<tr class="hover:bg-muted/50">
-							<td class="px-4 py-3">{plan.department_name}</td>
-							<td class="px-4 py-3">{plan.actions_taken}</td>
-							<td class="px-4 py-3">{plan.kpi}</td>
-							<td class="px-4 py-3">{plan.target_output}</td>
-							<td class="px-4 py-3">{plan.key_person_responsible}</td>
-							<td class="px-4 py-3">
-								<div class="flex justify-center gap-2">
-									<button onclick={() => approveActionPlan(plan.id)} disabled={isLoading || (currentUserRole === "admin" && plan.is_approved) || (currentUserRole === "vice_president" && (!plan.is_approved || plan.is_approved_vp)) || (currentUserRole === "president" && (!plan.is_approved_vp || plan.is_approved_president))} class="px-2 py-1 rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50 text-sm">
-										{isLoading ? "Processing..." : currentUserRole === "admin" ? (plan.is_approved ? "Admin Approved" : "Approve as Admin") : currentUserRole === "vice_president" ? (plan.is_approved_vp ? "VP Approved" : "Approve as VP") : currentUserRole === "president" ? (plan.is_approved_president ? "President Approved" : "Approve as President") : "Approve"}
-									</button>
-									<button onclick={() => deleteActionPlan(plan.id)} class="p-1.5 hover:bg-muted rounded-lg text-red-400">
-                    <Trash2 size={16} />
-                  </button>
-								</div>
-							</td>
-						</tr>
+						{#if editingPlan?.id === plan.id}
+							<tr class="hover:bg-muted/50" transition:slide>
+								<td class="px-4 py-3">{plan.department_name}</td>
+								<td class="px-4 py-3">
+									<input type="text" bind:value={editingPlan.actions_taken} class="w-full px-2 py-1 bg-background border border-input rounded focus:outline-none focus:ring-2 focus:ring-ring" />
+								</td>
+								<td class="px-4 py-3">
+									<input type="text" bind:value={editingPlan.kpi} class="w-full px-2 py-1 bg-background border border-input rounded focus:outline-none focus:ring-2 focus:ring-ring" />
+								</td>
+								<td class="px-4 py-3">
+									<input type="text" bind:value={editingPlan.target_output} class="w-full px-2 py-1 bg-background border border-input rounded focus:outline-none focus:ring-2 focus:ring-ring" />
+								</td>
+								<td class="px-4 py-3">
+									<input type="text" bind:value={editingPlan.key_person_responsible} class="w-full px-2 py-1 bg-background border border-input rounded focus:outline-none focus:ring-2 focus:ring-ring" />
+								</td>
+								<td class="px-4 py-3">
+									<div class="flex justify-center gap-2">
+										<button onclick={onSaveEdit} class="p-1.5 hover:bg-muted rounded-lg text-green-500">
+											<Save size={16} />
+										</button>
+										<button onclick={onCancelEdit} class="p-1.5 hover:bg-muted rounded-lg text-red-400">
+											<X size={16} />
+										</button>
+									</div>
+								</td>
+							</tr>
+						{:else}
+							<tr class="hover:bg-muted/50">
+								<td class="px-4 py-3">{plan.department_name}</td>
+								<td class="px-4 py-3">{plan.actions_taken}</td>
+								<td class="px-4 py-3">{plan.kpi}</td>
+								<td class="px-4 py-3">{plan.target_output}</td>
+								<td class="px-4 py-3">{plan.key_person_responsible}</td>
+								<td class="px-4 py-3">
+									<div class="flex justify-center gap-2">
+										<button onclick={() => approveActionPlan(plan.id)} disabled={isLoading || (currentUserRole === "admin" && plan.is_approved) || (currentUserRole === "vice_president" && (!plan.is_approved || plan.is_approved_vp)) || (currentUserRole === "president" && (!plan.is_approved_vp || plan.is_approved_president))} class="px-2 py-1 rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50 text-sm">
+											{isLoading ? "Processing..." : currentUserRole === "admin" ? (plan.is_approved ? "Admin Approved" : "Approve as Admin") : currentUserRole === "vice_president" ? (plan.is_approved_vp ? "VP Approved" : "Approve as VP") : currentUserRole === "president" ? (plan.is_approved_president ? "President Approved" : "Approve as President") : "Approve"}
+										</button>
+										<button onclick={() => onEditRow(plan)} class="p-1.5 hover:bg-muted rounded-lg">
+											<Pencil size={16} />
+										</button>
+										<button onclick={() => deleteActionPlan(plan.id)} class="p-1.5 hover:bg-muted rounded-lg text-red-400">
+											<Trash2 size={16} />
+										</button>
+									</div>
+								</td>
+							</tr>
+						{/if}
 					{/each}
 				</tbody>
 			</table>
@@ -599,20 +685,20 @@
 				Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredAndSortedPlans.length)} of {filteredAndSortedPlans.length} results
 			</div>
 			<div class="flex flex-col sm:flex-row items-center gap-4">
-        <!-- Items per page -->
-			<select bind:value={itemsPerPage} class="bg-secondary border-secondary rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-auto">
-				<option value={5}>5 per page</option>
-				<option value={10}>10 per page</option>
-				<option value={25}>25 per page</option>
-				<option value={50}>50 per page</option>
-			</select>
+				<!-- Items per page -->
+				<select bind:value={itemsPerPage} class="bg-secondary border-secondary rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-auto">
+					<option value={5}>5 per page</option>
+					<option value={10}>10 per page</option>
+					<option value={25}>25 per page</option>
+					<option value={50}>50 per page</option>
+				</select>
 				<button disabled={currentPage === 1} onclick={() => (currentPage -= 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50 transition-colors">Previous</button>
 				<button disabled={currentPage === totalPages} onclick={() => (currentPage += 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50 transition-colors">Next</button>
 			</div>
 		</div>
 	{:else}
-  <div class="flex justify-center p-8">
-    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-  </div>
+		<div class="flex justify-center p-8" transition:fade>
+			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+		</div>
 	{/if}
 </div>

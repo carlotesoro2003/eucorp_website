@@ -204,10 +204,6 @@
 	<div class="bg-card rounded-lg shadow border border-border p-6">
 		<div class="flex justify-between items-center mb-6">
 			<h2 class="text-xl font-semibold">Department Risks</h2>
-			<button class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50" disabled={isSaving} onclick={() => console.log("Save Progress")}>
-				<Save class="w-4 h-4 mr-2" />
-				Save Progress
-			</button>
 		</div>
 
 		{#if isLoading}

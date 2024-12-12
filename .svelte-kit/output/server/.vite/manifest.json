@@ -15,11 +15,12 @@
       "_index.js",
       "_Icon.js",
       "_supabaseClient.js",
+      "_search.js",
       "_download.js",
-      "_chevron-right.js"
+      "_loader-circle.js"
     ],
     "css": [
-      "_app/immutable/assets/tailwind.B0YylkT4.css"
+      "_app/immutable/assets/tailwind.B938H5MK.css"
     ]
   },
   "_Icon.js": {
@@ -29,6 +30,10 @@
       "_index.js"
     ]
   },
+  "_Login.svelte_svelte_type_style_lang.js": {
+    "file": "_app/immutable/assets/Login.9zYHWIvY.css",
+    "src": "_Login.svelte_svelte_type_style_lang.js"
+  },
   "_arrow-up-down.js": {
     "file": "chunks/arrow-up-down.js",
     "name": "arrow-up-down",
@@ -37,9 +42,9 @@
       "_Icon.js"
     ]
   },
-  "_chevron-right.js": {
-    "file": "chunks/chevron-right.js",
-    "name": "chevron-right",
+  "_chevron-left.js": {
+    "file": "chunks/chevron-left.js",
+    "name": "chevron-left",
     "imports": [
       "_index.js",
       "_Icon.js"
@@ -92,6 +97,22 @@
     "name": "internal",
     "imports": [
       "_index.js"
+    ]
+  },
+  "_lightbulb.js": {
+    "file": "chunks/lightbulb.js",
+    "name": "lightbulb",
+    "imports": [
+      "_index.js",
+      "_Icon.js"
+    ]
+  },
+  "_loader-circle.js": {
+    "file": "chunks/loader-circle.js",
+    "name": "loader-circle",
+    "imports": [
+      "_index.js",
+      "_Icon.js"
     ]
   },
   "_pencil.js": {
@@ -148,12 +169,28 @@
     "name": "supabaseClient"
   },
   "_tailwind.js": {
-    "file": "_app/immutable/assets/tailwind.B0YylkT4.css",
+    "file": "_app/immutable/assets/tailwind.B938H5MK.css",
     "src": "_tailwind.js"
+  },
+  "_target.js": {
+    "file": "chunks/target.js",
+    "name": "target",
+    "imports": [
+      "_index.js",
+      "_Icon.js"
+    ]
   },
   "_trash-2.js": {
     "file": "chunks/trash-2.js",
     "name": "trash-2",
+    "imports": [
+      "_index.js",
+      "_Icon.js"
+    ]
+  },
+  "_user.js": {
+    "file": "chunks/user.js",
+    "name": "user",
     "imports": [
       "_index.js",
       "_Icon.js"
@@ -204,8 +241,9 @@
       "_index3.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.Cn6R0ye0.css",
-      "_app/immutable/assets/tailwind.B0YylkT4.css"
+      "_app/immutable/assets/_layout.CRsCZAtX.css",
+      "_app/immutable/assets/tailwind.B938H5MK.css",
+      "_app/immutable/assets/Login.9zYHWIvY.css"
     ]
   },
   "src/routes/+layout.ts": {
@@ -270,11 +308,12 @@
       "_x.js",
       "_pencil.js",
       "_trash-2.js",
+      "_Icon.js",
       "_search.js",
       "_plus.js"
     ],
     "css": [
-      "_app/immutable/assets/tailwind.B0YylkT4.css"
+      "_app/immutable/assets/tailwind.B938H5MK.css"
     ]
   },
   "src/routes/dashboard/+page.svelte": {
@@ -288,7 +327,7 @@
       "_supabaseClient.js"
     ],
     "css": [
-      "_app/immutable/assets/tailwind.B0YylkT4.css"
+      "_app/immutable/assets/tailwind.B938H5MK.css"
     ]
   },
   "src/routes/departments/+page.svelte": {
@@ -301,13 +340,14 @@
       "_supabaseClient.js",
       "_pencil.js",
       "_trash-2.js",
+      "_Icon.js",
       "_search.js",
       "_download.js",
       "_plus.js",
       "_x.js"
     ],
     "css": [
-      "_app/immutable/assets/tailwind.B0YylkT4.css"
+      "_app/immutable/assets/tailwind.B938H5MK.css"
     ]
   },
   "src/routes/leads/+page.svelte": {
@@ -318,9 +358,10 @@
     "imports": [
       "_index.js",
       "_supabaseClient.js",
-      "_Icon.js",
+      "_user.js",
       "_pencil.js",
       "_trash-2.js",
+      "_Icon.js",
       "_search.js",
       "_arrow-up-down.js",
       "_plus.js",
@@ -335,7 +376,11 @@
     "imports": [
       "_index.js",
       "_supabaseClient.js",
+      "_Icon.js",
       "_eye.js"
+    ],
+    "css": [
+      "_app/immutable/assets/Login.9zYHWIvY.css"
     ]
   },
   "src/routes/monitoring/+page.svelte": {
@@ -349,7 +394,7 @@
     ],
     "css": [
       "_app/immutable/assets/_page.CoufgFaY.css",
-      "_app/immutable/assets/tailwind.B0YylkT4.css"
+      "_app/immutable/assets/tailwind.B938H5MK.css"
     ]
   },
   "src/routes/monitoring/mid-year/+page.svelte": {
@@ -360,7 +405,8 @@
     "imports": [
       "_index.js",
       "_supabaseClient.js",
-      "_DeptPlansMonitoring.js"
+      "_DeptPlansMonitoring.js",
+      "_lightbulb.js"
     ]
   },
   "src/routes/monitoring/year-end/+page.svelte": {
@@ -371,7 +417,8 @@
     "imports": [
       "_index.js",
       "_supabaseClient.js",
-      "_DeptPlansMonitoring.js"
+      "_DeptPlansMonitoring.js",
+      "_lightbulb.js"
     ]
   },
   "src/routes/opportunities/+page.svelte": {
@@ -384,6 +431,7 @@
       "_supabaseClient.js",
       "_pencil.js",
       "_trash-2.js",
+      "_lightbulb.js",
       "_arrow-up-down.js",
       "_search.js",
       "_download.js",
@@ -402,6 +450,7 @@
       "_index.js",
       "_supabaseClient.js",
       "_client.js",
+      "_target.js",
       "_search.js",
       "_plus.js"
     ]
@@ -427,7 +476,8 @@
       "_supabaseClient.js",
       "_client.js",
       "_search.js",
-      "_arrow-up-down.js"
+      "_arrow-up-down.js",
+      "_trash-2.js"
     ]
   },
   "src/routes/plans/operationalPlans/+page.svelte": {
@@ -441,6 +491,7 @@
       "_client.js",
       "_arrow-up-down.js",
       "_eye.js",
+      "_Icon.js",
       "_search.js",
       "_download.js"
     ]
@@ -454,6 +505,7 @@
       "_index.js",
       "_supabaseClient.js",
       "_client.js",
+      "_chevron-left.js",
       "_plus.js",
       "_save.js",
       "_trash-2.js",
@@ -468,7 +520,7 @@
     "imports": [
       "_index.js",
       "_supabaseClient.js",
-      "_Icon.js",
+      "_target.js",
       "_plus.js"
     ]
   },
@@ -479,10 +531,10 @@
     "isEntry": true,
     "imports": [
       "_index.js",
-      "_supabaseClient.js"
-    ],
-    "css": [
-      "_app/immutable/assets/tailwind.B0YylkT4.css"
+      "_supabaseClient.js",
+      "_loader-circle.js",
+      "_user.js",
+      "_Icon.js"
     ]
   },
   "src/routes/riskManagement/+page.svelte": {
@@ -494,8 +546,10 @@
       "_index.js",
       "_supabaseClient.js",
       "_pencil.js",
-      "_x.js",
-      "_plus.js"
+      "_trash-2.js",
+      "_Icon.js",
+      "_plus.js",
+      "_x.js"
     ]
   },
   "src/routes/risks/+page.svelte": {
@@ -515,7 +569,23 @@
     "isEntry": true,
     "imports": [
       "_index.js",
-      "_supabaseClient.js"
+      "_supabaseClient.js",
+      "_chevron-left.js"
+    ]
+  },
+  "src/routes/school-year/+page.svelte": {
+    "file": "entries/pages/school-year/_page.svelte.js",
+    "name": "entries/pages/school-year/_page.svelte",
+    "src": "src/routes/school-year/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index.js",
+      "_supabaseClient.js",
+      "_Icon.js",
+      "_search.js",
+      "_plus.js",
+      "_pencil.js",
+      "_trash-2.js"
     ]
   },
   "src/routes/test-sidebar/+page.svelte": {
@@ -526,11 +596,9 @@
     "imports": [
       "_index.js",
       "_sheet-content.js",
-      "_chevron-right.js",
+      "_Icon.js",
       "_supabaseClient.js",
       "_client.js",
-      "_Icon.js",
-      "_plus.js",
       "_index3.js"
     ]
   },
@@ -544,13 +612,14 @@
       "_supabaseClient.js",
       "_pencil.js",
       "_trash-2.js",
+      "_Icon.js",
       "_arrow-up-down.js",
       "_search.js",
       "_download.js",
       "_x.js"
     ],
     "css": [
-      "_app/immutable/assets/tailwind.B0YylkT4.css"
+      "_app/immutable/assets/tailwind.B938H5MK.css"
     ]
   }
 }

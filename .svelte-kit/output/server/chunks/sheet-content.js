@@ -1,5 +1,5 @@
 import { w as writable } from "./index3.js";
-import { B as setContext$1, W as hasContext, M as getContext$1, A as push, C as pop, U as once, X as getAllContexts, G as bind_props, V as spread_attributes, P as spread_props, S as copy_payload, T as assign_payload } from "./index.js";
+import { B as setContext$1, W as hasContext, M as getContext$1, A as push, C as pop, U as once, X as getAllContexts, G as bind_props, V as spread_attributes, N as spread_props, S as copy_payload, T as assign_payload } from "./index.js";
 import { clsx } from "clsx";
 import parse from "style-to-object";
 import { computePosition, offset, shift, limitShift, flip, size, arrow, hide, autoUpdate } from "@floating-ui/dom";

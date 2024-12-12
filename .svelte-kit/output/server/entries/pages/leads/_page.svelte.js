@@ -1,28 +1,30 @@
-import { P as spread_props, Q as slot, R as sanitize_props, A as push, L as escape_html, F as attr, C as pop, N as ensure_array_like } from "../../../chunks/index.js";
+import { N as spread_props, O as slot, P as sanitize_props, A as push, L as escape_html, F as attr, C as pop, Q as ensure_array_like } from "../../../chunks/index.js";
 import { s as supabase } from "../../../chunks/supabaseClient.js";
-import { I as Icon } from "../../../chunks/Icon.js";
+import { U as User } from "../../../chunks/user.js";
 import { P as Pencil } from "../../../chunks/pencil.js";
 import { T as Trash_2 } from "../../../chunks/trash-2.js";
+import { I as Icon } from "../../../chunks/Icon.js";
 import { S as Search } from "../../../chunks/search.js";
 import { A as Arrow_up_down } from "../../../chunks/arrow-up-down.js";
 import { P as Plus } from "../../../chunks/plus.js";
 import { X } from "../../../chunks/x.js";
-function User($$payload, $$props) {
+function Users_round($$payload, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   const iconNode = [
+    ["path", { "d": "M18 21a8 8 0 0 0-16 0" }],
+    [
+      "circle",
+      { "cx": "10", "cy": "8", "r": "5" }
+    ],
     [
       "path",
       {
-        "d": "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+        "d": "M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"
       }
-    ],
-    [
-      "circle",
-      { "cx": "12", "cy": "7", "r": "4" }
     ]
   ];
   Icon($$payload, spread_props([
-    { name: "user" },
+    { name: "users-round" },
     $$sanitized_props,
     {
       iconNode,
@@ -115,7 +117,9 @@ function Table($$payload, $$props) {
       closeForm();
     }
   };
-  $$payload.out += `<div class="flex flex-col gap-4 container mx-auto"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><h2 class="text-2xl font-bold">Leads Management</h2></div> `;
+  $$payload.out += `<div class="flex flex-col gap-4 container mx-auto"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><div class="flex items-center gap-2">`;
+  Users_round($$payload, { class: "w-8 h-8 text-primary" });
+  $$payload.out += `<!----> <h1 class="text-2xl font-bold">Leads</h1></div></div> `;
   if (successMessage) {
     $$payload.out += "<!--[-->";
     $$payload.out += `<div class="bg-green-500/20 text-green-400 p-4 rounded-lg">${escape_html(successMessage)}</div>`;

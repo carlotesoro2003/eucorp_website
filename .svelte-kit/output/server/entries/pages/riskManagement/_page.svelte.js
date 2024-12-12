@@ -1,8 +1,33 @@
-import { A as push, L as escape_html, F as attr, C as pop, N as ensure_array_like } from "../../../chunks/index.js";
+import { N as spread_props, O as slot, P as sanitize_props, A as push, L as escape_html, F as attr, C as pop, Q as ensure_array_like } from "../../../chunks/index.js";
 import { s as supabase } from "../../../chunks/supabaseClient.js";
 import { P as Pencil } from "../../../chunks/pencil.js";
-import { X } from "../../../chunks/x.js";
+import { T as Trash_2 } from "../../../chunks/trash-2.js";
+import { I as Icon } from "../../../chunks/Icon.js";
 import { P as Plus } from "../../../chunks/plus.js";
+import { X } from "../../../chunks/x.js";
+function Trending_up($$payload, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  const iconNode = [
+    [
+      "polyline",
+      { "points": "22 7 13.5 15.5 8.5 10.5 2 17" }
+    ],
+    ["polyline", { "points": "16 7 22 7 22 13" }]
+  ];
+  Icon($$payload, spread_props([
+    { name: "trending-up" },
+    $$sanitized_props,
+    {
+      iconNode,
+      children: ($$payload2) => {
+        $$payload2.out += `<!---->`;
+        slot($$payload2, $$props, "default", {});
+        $$payload2.out += `<!---->`;
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
 function RatingForm($$payload, $$props) {
   push();
   let { type, item, onSave, onCancel } = $$props;
@@ -46,10 +71,10 @@ function TableRow($$payload, $$props) {
     }
     $$payload.out += `<!--]-->`;
   }
-  $$payload.out += `<!--]--><td class="px-6 py-4"><div class="flex gap-2"><button class="p-2 hover:bg-muted rounded-lg">`;
+  $$payload.out += `<!--]--><td class="px-6 py-4"><div class="flex gap-2"><button class="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground">`;
   Pencil($$payload, { size: 16 });
-  $$payload.out += `<!----></button> <button class="p-2 hover:bg-red-100 text-red-500 rounded-lg">`;
-  X($$payload, { size: 16 });
+  $$payload.out += `<!----></button> <button class="p-2 hover:bg-red-100 text-red-500 hover:text-red-600 rounded-lg disabled:opacity-50">`;
+  Trash_2($$payload, { size: 16 });
   $$payload.out += `<!----></button></div></td></tr>`;
   pop();
 }
@@ -182,15 +207,17 @@ function Table($$payload, $$props) {
         break;
     }
   };
-  $$payload.out += `<div class="min-h-screen container"><div class="flex justify-between items-center mb-6"><h1 class="text-2xl font-bold">Ratings Management</h1> <button class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90">`;
+  $$payload.out += `<div class="min-h-screen container"><div class="mb-6"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><div class="flex items-center gap-2">`;
+  Trending_up($$payload, { class: "w-8 h-8 text-primary" });
+  $$payload.out += `<!----> <h1 class="text-2xl font-bold">Ratings Management</h1></div></div> <div class="flex justify-between py-3 items-center"><div class="flex items-center"><label for="dataSelect" class="text-lg font-semibold mr-4">Select Data Type:</label> <div class="relative w-64"><select id="dataSelect" class="w-full px-4 py-2 bg-card border border-border rounded-lg appearance-none"><option value="likelihoodRating">Likelihood Rating</option><option value="severity">Severity</option><option value="riskControlRating">Risk Control Rating</option><option value="riskMonitoringRating">Risk Monitoring Rating</option></select> <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"><svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></div></div> <button class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90">`;
   Plus($$payload, { size: 20 });
-  $$payload.out += `<!----> Add New</button></div> <div class="container mx-auto p-4"><label for="dataSelect" class="text-lg font-semibold mr-4">Select Data Type:</label> <div class="relative inline-block w-64"><select id="dataSelect" class="w-full px-4 py-2 bg-card border border-border rounded-lg appearance-none"><option value="likelihoodRating">Likelihood Rating</option><option value="severity">Severity</option><option value="riskControlRating">Risk Control Rating</option><option value="riskMonitoringRating">Risk Monitoring Rating</option></select> <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"><svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></div></div> `;
+  $$payload.out += `<!----> Add New</button></div></div> `;
   if (isLoading) {
     $$payload.out += "<!--[-->";
     $$payload.out += `<div class="flex justify-center p-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>`;
   } else {
     $$payload.out += "<!--[!-->";
-    $$payload.out += `<div class="overflow-x-auto shadow-lg rounded-lg bg-card border border-border">`;
+    $$payload.out += `<div class="overflow-x-auto bg-card rounded-lg shadow border border-border">`;
     {
       $$payload.out += "<!--[-->";
       const each_array = ensure_array_like(likelihoodRating);

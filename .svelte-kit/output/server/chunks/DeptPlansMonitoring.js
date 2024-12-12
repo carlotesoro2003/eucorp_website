@@ -1,16 +1,39 @@
-import { P as spread_props, Q as slot, R as sanitize_props, L as escape_html, F as attr, C as pop, A as push, N as ensure_array_like, O as stringify, G as bind_props, S as copy_payload, T as assign_payload } from "./index.js";
+import { N as spread_props, O as slot, P as sanitize_props, C as pop, A as push, L as escape_html, F as attr, R as stringify, Q as ensure_array_like, G as bind_props, S as copy_payload, T as assign_payload } from "./index.js";
 import { I as Icon } from "./Icon.js";
 import { s as supabase } from "./supabaseClient.js";
+import "chart.js/auto";
 import "jspdf";
 import "jspdf-autotable";
+import { S as Search } from "./search.js";
 import { D as Download } from "./download.js";
-import { C as Chevron_right } from "./chevron-right.js";
+import { L as Loader_circle } from "./loader-circle.js";
 /* empty css         */
-function Chevron_down($$payload, $$props) {
+function Building_2($$payload, $$props) {
   const $$sanitized_props = sanitize_props($$props);
-  const iconNode = [["path", { "d": "m6 9 6 6 6-6" }]];
+  const iconNode = [
+    [
+      "path",
+      {
+        "d": "M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"
+      }
+    ],
+    [
+      "path",
+      { "d": "M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" }
+    ],
+    [
+      "path",
+      {
+        "d": "M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"
+      }
+    ],
+    ["path", { "d": "M10 6h4" }],
+    ["path", { "d": "M10 10h4" }],
+    ["path", { "d": "M10 14h4" }],
+    ["path", { "d": "M10 18h4" }]
+  ];
   Icon($$payload, spread_props([
-    { name: "chevron-down" },
+    { name: "building-2" },
     $$sanitized_props,
     {
       iconNode,
@@ -23,11 +46,11 @@ function Chevron_down($$payload, $$props) {
     }
   ]));
 }
-function Chevron_left($$payload, $$props) {
+function Chevron_down($$payload, $$props) {
   const $$sanitized_props = sanitize_props($$props);
-  const iconNode = [["path", { "d": "m15 18-6-6 6-6" }]];
+  const iconNode = [["path", { "d": "m6 9 6 6 6-6" }]];
   Icon($$payload, spread_props([
-    { name: "chevron-left" },
+    { name: "chevron-down" },
     $$sanitized_props,
     {
       iconNode,
@@ -147,20 +170,40 @@ function File_text($$payload, $$props) {
     }
   ]));
 }
-function Lightbulb($$payload, $$props) {
+function Monitor($$payload, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   const iconNode = [
     [
-      "path",
+      "rect",
       {
-        "d": "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"
+        "width": "20",
+        "height": "14",
+        "x": "2",
+        "y": "3",
+        "rx": "2"
       }
     ],
-    ["path", { "d": "M9 18h6" }],
-    ["path", { "d": "M10 22h4" }]
+    [
+      "line",
+      {
+        "x1": "8",
+        "x2": "16",
+        "y1": "21",
+        "y2": "21"
+      }
+    ],
+    [
+      "line",
+      {
+        "x1": "12",
+        "x2": "12",
+        "y1": "17",
+        "y2": "21"
+      }
+    ]
   ];
   Icon($$payload, spread_props([
-    { name: "lightbulb" },
+    { name: "monitor" },
     $$sanitized_props,
     {
       iconNode,
@@ -173,16 +216,28 @@ function Lightbulb($$payload, $$props) {
     }
   ]));
 }
-function Loader_circle($$payload, $$props) {
+function Notepad_text($$payload, $$props) {
   const $$sanitized_props = sanitize_props($$props);
   const iconNode = [
+    ["path", { "d": "M8 2v4" }],
+    ["path", { "d": "M12 2v4" }],
+    ["path", { "d": "M16 2v4" }],
     [
-      "path",
-      { "d": "M21 12a9 9 0 1 1-6.219-8.56" }
-    ]
+      "rect",
+      {
+        "width": "16",
+        "height": "18",
+        "x": "4",
+        "y": "4",
+        "rx": "2"
+      }
+    ],
+    ["path", { "d": "M8 10h6" }],
+    ["path", { "d": "M8 14h8" }],
+    ["path", { "d": "M8 18h5" }]
   ];
   Icon($$payload, spread_props([
-    { name: "loader-circle" },
+    { name: "notepad-text" },
     $$sanitized_props,
     {
       iconNode,
@@ -221,6 +276,11 @@ function Triangle_alert($$payload, $$props) {
     }
   ]));
 }
+function DoughnutChart($$payload, $$props) {
+  push();
+  $$payload.out += `<div class="h-[200px]"><canvas></canvas></div>`;
+  pop();
+}
 function AdminPlansMonitoring($$payload, $$props) {
   push();
   let plans = [];
@@ -229,43 +289,69 @@ function AdminPlansMonitoring($$payload, $$props) {
   let isLoading = true;
   let isGeneratingSummary = false;
   let searchQuery = "";
+  let showAlert = false;
+  let alertMessage = "";
+  let alertType = "success";
   let currentPage = 1;
-  let itemsPerPage = 10;
+  let itemsPerPage = 5;
   let totalPages = Math.ceil(filteredPlans.length / itemsPerPage);
   let paginatedPlans = filteredPlans.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const chartData = {
+    achieved: filteredPlans.filter((p) => p.is_accomplished).length,
+    notAchieved: filteredPlans.filter((p) => !p.is_accomplished).length
+  };
+  let departments = [];
+  let selectedStrategicGoal = "all";
+  let strategicGoals = [];
+  let strategicObjectives = [];
   const statusOptions = [
-    {
-      value: "all",
-      label: "All Status",
-      color: "bg-blue-600"
-    },
-    {
-      value: "achieved",
-      label: "Achieved",
-      color: "bg-green-600"
-    },
-    {
-      value: "not_achieved",
-      label: "Not Achieved",
-      color: "bg-red-600"
-    }
+    { value: "all", label: "All Status" },
+    { value: "achieved", label: "Achieved" },
+    { value: "not_achieved", label: "Not Achieved" }
   ];
   const getStatusLabel = (value) => {
     return statusOptions.find((opt) => opt.value === value)?.label || "All Status";
+  };
+  const displayAlert = (message, type) => {
+    alertMessage = message;
+    alertType = type;
+    showAlert = true;
+    setTimeout(
+      () => {
+        showAlert = false;
+      },
+      3e3
+    );
   };
   const fetchPlanMonitoring = async () => {
     isLoading = true;
     try {
       const { data, error } = await supabase.from("plan_monitoring").select(`
-                id,
-                action_plan_id,
-                evaluation,
-                statement,
-                is_accomplished,
-                time_completed,
-                action_plans (actions_taken, kpi)
-            `);
+				id,
+				action_plan_id,
+				evaluation,
+				statement,
+				is_accomplished,
+				time_completed,
+				department_id,
+				action_plans (
+					actions_taken,
+					kpi,
+					objective_id,
+					strategic_objectives (
+						name,
+						strategic_goal_id,
+						strategic_goals (name, goal_no)
+					)
+				)
+			`);
       if (error) throw error;
+      const {
+        data: departmentsData,
+        error: departmentsError
+      } = await supabase.from("departments").select("id, name");
+      if (departmentsError) throw departmentsError;
+      const departmentMap = Object.fromEntries(departmentsData.map((dept) => [dept.id, dept.name]));
       plans = data.map((plan) => ({
         id: plan.id,
         action_plan_id: plan.action_plan_id,
@@ -273,8 +359,12 @@ function AdminPlansMonitoring($$payload, $$props) {
         statement: plan.statement,
         is_accomplished: plan.is_accomplished,
         time_completed: plan.time_completed,
+        department: departmentMap[plan.department_id] || "Unassigned",
         actions_taken: plan.action_plans?.actions_taken || "No Actions Taken",
-        kpi: plan.action_plans?.kpi || "No KPI"
+        kpi: plan.action_plans?.kpi || "No KPI",
+        objective: plan.action_plans?.strategic_objectives?.name || "No Objective",
+        goal: plan.action_plans?.strategic_objectives?.strategic_goals?.name || "No Goal",
+        goal_no: plan.action_plans?.strategic_objectives?.strategic_goals?.goal_no || 0
       }));
       applyFilter();
     } catch (error) {
@@ -283,55 +373,132 @@ function AdminPlansMonitoring($$payload, $$props) {
       isLoading = false;
     }
   };
+  const fetchDepartments = async () => {
+    try {
+      const { data, error } = await supabase.from("departments").select("name");
+      if (error) throw error;
+      departments = [
+        "All Departments",
+        ...data.map((dept) => dept.name)
+      ];
+    } catch (error) {
+      displayAlert("Error fetching departments", "error");
+    }
+  };
+  const fetchStrategicGoals = async () => {
+    try {
+      const { data, error } = await supabase.from("strategic_goals").select("name, goal_no");
+      if (error) throw error;
+      strategicGoals = [
+        { name: "All Goals", goal_no: null },
+        ...data.map((goal) => ({
+          name: `${goal.goal_no} - ${goal.name}`,
+          goal_no: goal.goal_no
+        }))
+      ];
+    } catch (error) {
+      console.error("Error fetching strategic goals:", error);
+    }
+  };
+  const fetchStrategicObjectives = async () => {
+    try {
+      const selectedGoal = strategicGoals.find((goal) => goal.name === selectedStrategicGoal);
+      let query = supabase.from("strategic_objectives").select("name, strategic_goal_id");
+      if (selectedStrategicGoal !== "all" && selectedGoal?.goal_no) ;
+      const { data, error } = await query;
+      if (error) throw error;
+      strategicObjectives = [
+        "All Objectives",
+        ...data.map((objective) => objective.name)
+      ];
+      console.log("Strategic Objectives:", strategicObjectives);
+    } catch (error) {
+      console.error("Error fetching strategic objectives:", error);
+      strategicObjectives = ["All Objectives"];
+    }
+  };
   const applyFilter = () => {
     let filtered = plans;
     filteredPlans = filtered;
     currentPage = 1;
   };
   fetchPlanMonitoring();
-  $$payload.out += `<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-8"><div class="max-w-7xl mx-auto"><h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-6">Plans Monitoring</h1> <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><div class="flex flex-wrap gap-2 items-center"><div class="relative"><button class="px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">${escape_html(getStatusLabel(filterStatus))} `;
+  fetchDepartments();
+  fetchStrategicGoals();
+  fetchStrategicObjectives();
+  $$payload.out += `<div class="flex flex-col gap-4 p-4 container mx-auto">`;
+  if (showAlert) {
+    $$payload.out += "<!--[-->";
+    $$payload.out += `<div${attr("class", `flex items-center p-4 rounded-lg ${stringify(alertType === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")}`)}><span>${escape_html(alertMessage)}</span></div>`;
+  } else {
+    $$payload.out += "<!--[!-->";
+  }
+  $$payload.out += `<!--]--> <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><div class="flex items-center gap-2">`;
+  Notepad_text($$payload, { class: "w-8 h-8 text-primary" });
+  $$payload.out += `<!----> <h1 class="text-2xl font-bold">Plans Monitoring</h1></div></div> <div class="grid grid-cols-1 md:grid-cols-4 gap-4"><div class="bg-card rounded-lg shadow border border-border p-4"><h3 class="text-sm font-medium text-muted-foreground">Total Plans</h3> <p class="text-2xl font-semibold mt-2">${escape_html(filteredPlans.length)}</p></div> <div class="bg-card rounded-lg shadow border border-border p-4"><h3 class="text-sm font-medium text-muted-foreground">Achieved</h3> <p class="text-2xl font-semibold text-green-600 mt-2">${escape_html(chartData.achieved)}</p></div> <div class="bg-card rounded-lg shadow border border-border p-4"><h3 class="text-sm font-medium text-muted-foreground">Not Achieved</h3> <p class="text-2xl font-semibold text-red-600 mt-2">${escape_html(chartData.notAchieved)}</p></div> <div class="bg-card rounded-lg shadow border border-border p-4">`;
+  DoughnutChart($$payload);
+  $$payload.out += `<!----></div></div> <div class="flex flex-col md:flex-row gap-4 mb-2 items-center justify-between"><div class="flex flex-col md:flex-row gap-4 flex-1"><div class="relative flex-1 w-full md:max-w-[300px]">`;
+  Search($$payload, {
+    class: "absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground",
+    size: 20
+  });
+  $$payload.out += `<!----> <input type="text"${attr("value", searchQuery)} placeholder="Search plans..." class="pl-10 pr-4 py-2 bg-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring"></div> <div class="relative"><button class="px-4 py-2 bg-secondary rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors flex items-center gap-2">${escape_html(getStatusLabel(filterStatus))} `;
   Chevron_down($$payload, { class: "w-4 h-4" });
   $$payload.out += `<!----></button> `;
   {
     $$payload.out += "<!--[!-->";
   }
-  $$payload.out += `<!--]--></div> <input type="text"${attr("value", searchQuery)} placeholder="Search plans..." class="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"></div> <div class="flex gap-2 justify-end"><button class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2">`;
+  $$payload.out += `<!--]--></div> <div class="relative"><button class="px-4 py-2 bg-secondary rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors flex items-center gap-2">`;
+  Building_2($$payload, { class: "w-4 h-4" });
+  $$payload.out += `<!----> ${escape_html("All Departments")} `;
+  Chevron_down($$payload, { class: "w-4 h-4" });
+  $$payload.out += `<!----></button> `;
+  {
+    $$payload.out += "<!--[!-->";
+  }
+  $$payload.out += `<!--]--></div> <div class="relative"><button class="px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">${escape_html("All Goals")} `;
+  Chevron_down($$payload, { class: "w-4 h-4" });
+  $$payload.out += `<!----></button> `;
+  {
+    $$payload.out += "<!--[!-->";
+  }
+  $$payload.out += `<!--]--></div> <div class="relative"><button class="px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2">${escape_html("All Objectives")} `;
+  Chevron_down($$payload, { class: "w-4 h-4" });
+  $$payload.out += `<!----></button> `;
+  {
+    $$payload.out += "<!--[!-->";
+  }
+  $$payload.out += `<!--]--></div></div> <div class="flex gap-2"><button class="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-secondary/80 justify-center flex-1 md:flex-initial whitespace-nowrap">`;
   Download($$payload, { class: "w-4 h-4" });
-  $$payload.out += `<!----> Export PDF</button> <button class="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"${attr("disabled", isGeneratingSummary, true)}>`;
+  $$payload.out += `<!----> Export PDF</button> <button class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"${attr("disabled", isGeneratingSummary, true)}>`;
   {
     $$payload.out += "<!--[!-->";
     File_text($$payload, { class: "w-4 h-4" });
   }
-  $$payload.out += `<!--]--> Generate Report</button></div></div> <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">`;
+  $$payload.out += `<!--]--> Generate Report</button></div></div> <div class="overflow-x-auto bg-card rounded-lg shadow border border-border">`;
   if (isLoading) {
     $$payload.out += "<!--[-->";
     $$payload.out += `<div class="flex items-center justify-center p-8">`;
-    Loader_circle($$payload, {
-      class: "w-6 h-6 animate-spin text-blue-600 dark:text-blue-400"
-    });
-    $$payload.out += `<!----> <span class="ml-2 text-gray-600 dark:text-gray-400">Loading plans...</span></div>`;
+    Loader_circle($$payload, { class: "w-6 h-6 animate-spin text-primary" });
+    $$payload.out += `<!----> <span class="ml-2 text-muted-foreground">Loading plans...</span></div>`;
   } else {
     $$payload.out += "<!--[!-->";
     if (filteredPlans.length > 0) {
       $$payload.out += "<!--[-->";
-      const each_array_1 = ensure_array_like(paginatedPlans);
-      $$payload.out += `<div class="overflow-x-auto"><table class="w-full border-collapse"><thead><tr class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600"><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action Plans</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">KPI</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions Taken to Achieve Action Plan</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Statement</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th><th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Completed</th></tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700"><!--[-->`;
-      for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
-        let plan = each_array_1[$$index_1];
-        $$payload.out += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"><td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-200">${escape_html(plan.actions_taken)}</td><td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-200">${escape_html(plan.kpi)}</td><td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-200">${escape_html(plan.evaluation || "Pending")}</td><td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-200">${escape_html(plan.statement || "Pending")}</td><td class="px-6 py-4"><span${attr("class", `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stringify(plan.is_accomplished ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200" : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200")}`)}>${escape_html(plan.is_accomplished ? "Achieved" : "Not Achieved")}</span></td><td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">${escape_html(plan.time_completed ? new Date(plan.time_completed).toLocaleString() : "N/A")}</td></tr>`;
+      const each_array_4 = ensure_array_like(paginatedPlans);
+      $$payload.out += `<table class="min-w-full table-auto"><thead class="bg-muted/50"><tr><th class="px-4 py-3 text-left">Department</th><th class="px-4 py-3 text-left">Action Plans</th><th class="px-4 py-3 text-left">KPI</th><th class="px-4 py-3 text-left">Actions Taken</th><th class="px-4 py-3 text-left">Statement</th><th class="px-4 py-3 text-left">Status</th><th class="px-4 py-3 text-left">Completed</th></tr></thead><tbody class="divide-y divide-border"><!--[-->`;
+      for (let $$index_4 = 0, $$length = each_array_4.length; $$index_4 < $$length; $$index_4++) {
+        let plan = each_array_4[$$index_4];
+        $$payload.out += `<tr class="hover:bg-muted/50"><td class="px-4 py-3">${escape_html(plan.department)}</td><td class="px-4 py-3">${escape_html(plan.actions_taken)}</td><td class="px-4 py-3">${escape_html(plan.kpi)}</td><td class="px-4 py-3">${escape_html(plan.evaluation || "Pending")}</td><td class="px-4 py-3">${escape_html(plan.statement || "Pending")}</td><td class="px-4 py-3"><span${attr("class", `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stringify(plan.is_accomplished ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")}`)}>${escape_html(plan.is_accomplished ? "Achieved" : "Not Achieved")}</span></td><td class="px-4 py-3 text-muted-foreground">${escape_html(plan.time_completed ? new Date(plan.time_completed).toLocaleString() : "N/A")}</td></tr>`;
       }
-      $$payload.out += `<!--]--></tbody></table></div> <div class="flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600"><div class="text-sm text-gray-700 dark:text-gray-300">Showing ${escape_html((currentPage - 1) * itemsPerPage + 1)} to ${escape_html(Math.min(currentPage * itemsPerPage, filteredPlans.length))} of ${escape_html(filteredPlans.length)} entries</div> <div class="flex gap-2"><button class="p-2 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"${attr("disabled", currentPage === 1, true)}>`;
-      Chevron_left($$payload, { class: "w-5 h-5" });
-      $$payload.out += `<!----></button> <button class="p-2 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"${attr("disabled", currentPage === totalPages, true)}>`;
-      Chevron_right($$payload, { class: "w-5 h-5" });
-      $$payload.out += `<!----></button></div></div>`;
+      $$payload.out += `<!--]--></tbody></table> <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-muted/50 border-t border-border"><div class="text-sm text-muted-foreground">Showing ${escape_html((currentPage - 1) * itemsPerPage + 1)} to ${escape_html(Math.min(currentPage * itemsPerPage, filteredPlans.length))} of ${escape_html(filteredPlans.length)} results</div> <div class="flex flex-col sm:flex-row items-center gap-4"><select class="bg-secondary rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-ring"><option${attr("value", 5)}>5 per page</option><option${attr("value", 10)}>10 per page</option><option${attr("value", 25)}>25 per page</option></select> <div class="flex gap-2"><button${attr("disabled", currentPage === 1, true)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50 transition-colors">Previous</button> <button${attr("disabled", currentPage === totalPages, true)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50 transition-colors">Next</button></div></div></div>`;
     } else {
       $$payload.out += "<!--[!-->";
-      $$payload.out += `<div class="text-center p-8 text-gray-500 dark:text-gray-400">No plans found matching your criteria.</div>`;
+      $$payload.out += `<div class="text-center p-8 text-muted-foreground">No plans found matching your criteria.</div>`;
     }
     $$payload.out += `<!--]-->`;
   }
-  $$payload.out += `<!--]--></div></div></div>`;
+  $$payload.out += `<!--]--></div></div>`;
   pop();
 }
 function Filters($$payload, $$props) {
@@ -429,7 +596,7 @@ export {
   AdminPlansMonitoring as A,
   Circle_alert as C,
   DeptPlansMonitoring as D,
-  Lightbulb as L,
+  Monitor as M,
   Triangle_alert as T,
   Clipboard_list as a
 };

@@ -11,6 +11,7 @@
 		severity,
 		riskControlRating,
 		riskMonitoringRating,
+		isSaving = $bindable(false),
 		onClose,
 		onSuccess,
 		onError,
@@ -20,6 +21,7 @@
 		severity: Severity[];
 		riskControlRating: RiskControlRating[];
 		riskMonitoringRating: RiskMonitoringRating[];
+		isSaving: boolean;
 		onClose: () => void;
 		onSuccess: (message: string) => void;
 		onError: (message: string) => void;
@@ -52,24 +54,41 @@
 
 	/** Handle assessment save */
 	const handleSave = async () => {
+		if (!isFormValid || !selectedRisk) return;
+
+		isSaving = true;
 		try {
-			const { error } = await supabase.from("risk_assessment").insert({
-				risk_id: selectedRisk?.id,
-				lr: assessment.likelihoodRating,
-				s: assessment.severity,
-				rcr: assessment.riskControlRating,
-				rmr: assessment.riskMonitoringRating,
-			});
+			// Insert new assessment
+			const { data, error } = await supabase
+				.from("risk_assessment")
+				.insert({
+					risk_id: selectedRisk.id,
+					lr: assessment.likelihoodRating,
+					s: assessment.severity,
+					rcr: assessment.riskControlRating,
+					rmr: assessment.riskMonitoringRating,
+				})
+				.select();
 
 			if (error) throw error;
+
+			// Fetch updated risk assessments to refresh the UI
+			const { data: updatedAssessments, error: fetchError } = await supabase.from("risk_assessment").select("*");
+
+			if (fetchError) throw fetchError;
 
 			onSuccess("Assessment saved successfully");
 			onClose();
 		} catch (error) {
 			onError("Failed to save assessment");
+		} finally {
+			isSaving = false;
 		}
 	};
 </script>
+
+<!-- Rest of your component remains the same -->
+
 
 <!-- Backdrop -->
 <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -152,8 +171,13 @@
 
 		<!-- Footer -->
 		<div class="flex items-center justify-end gap-3 p-6 border-t dark:border-gray-700">
-			<button onclick={onClose} class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">Cancel</button>
-			<button onclick={handleSave} disabled={!isFormValid} class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Save Assessment</button>
+			<button onclick={onClose} disabled={isSaving} class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+			<button onclick={handleSave} disabled={!isFormValid || isSaving} class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+				{#if isSaving}
+					<div class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+				{/if}
+				Save Assessment
+			</button>
 		</div>
 	</div>
 </div>

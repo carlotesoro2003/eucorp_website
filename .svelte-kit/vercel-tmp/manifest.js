@@ -10,7 +10,7 @@ return {
 	assets: new Set(["favicon.png","images/login_bg.png"]),
 	mimeTypes: {".png":"image/png"},
 	_: {
-		client: {"start":"_app/immutable/entry/start.H-cVuYDB.js","app":"_app/immutable/entry/app.BkJabCjD.js","imports":["_app/immutable/entry/start.H-cVuYDB.js","_app/immutable/chunks/entry.DOGBvY7d.js","_app/immutable/chunks/utils.CRNn4dtP.js","_app/immutable/chunks/index.DOYwEOHp.js","_app/immutable/entry/app.BkJabCjD.js","_app/immutable/chunks/preload-helper.Dwm_PvIR.js","_app/immutable/chunks/utils.CRNn4dtP.js","_app/immutable/chunks/store.B1kL-7Ni.js","_app/immutable/chunks/render.xPn1qZIb.js","_app/immutable/chunks/disclose-version.Bg9kRutz.js","_app/immutable/chunks/if.CRsBAEFG.js","_app/immutable/chunks/svelte-component.CsbbSknF.js","_app/immutable/chunks/this.CcPsTaMA.js","_app/immutable/chunks/index-client.BdGz_wQc.js"],"stylesheets":[],"fonts":[],"uses_env_dynamic_public":false},
+		client: {"start":"_app/immutable/entry/start.exxaNYgd.js","app":"_app/immutable/entry/app.C4fZglgS.js","imports":["_app/immutable/entry/start.exxaNYgd.js","_app/immutable/chunks/entry.CMKkUr-m.js","_app/immutable/chunks/utils.Cx6K9qTo.js","_app/immutable/chunks/index.Cf17R-GU.js","_app/immutable/entry/app.C4fZglgS.js","_app/immutable/chunks/preload-helper.Tg4Km7Zr.js","_app/immutable/chunks/utils.Cx6K9qTo.js","_app/immutable/chunks/store.BALTJZ26.js","_app/immutable/chunks/disclose-version.Bg9kRutz.js","_app/immutable/chunks/if.Bgpzl8Wa.js","_app/immutable/chunks/svelte-component.BOrk4Q_Q.js","_app/immutable/chunks/this.DKiYVa2M.js","_app/immutable/chunks/index-client.lWLCSZVk.js"],"stylesheets":[],"fonts":[],"uses_env_dynamic_public":false},
 		nodes: [
 			__memo(() => import('../output/server/nodes/0.js')),
 			__memo(() => import('../output/server/nodes/1.js')),
@@ -35,7 +35,8 @@ return {
 			__memo(() => import('../output/server/nodes/20.js')),
 			__memo(() => import('../output/server/nodes/21.js')),
 			__memo(() => import('../output/server/nodes/22.js')),
-			__memo(() => import('../output/server/nodes/23.js'))
+			__memo(() => import('../output/server/nodes/23.js')),
+			__memo(() => import('../output/server/nodes/24.js'))
 		],
 		routes: [
 			{
@@ -207,17 +208,24 @@ return {
 				endpoint: null
 			},
 			{
+				id: "/school-year",
+				pattern: /^\/school-year\/?$/,
+				params: [],
+				page: { layouts: [0,], errors: [1,], leaf: 22 },
+				endpoint: null
+			},
+			{
 				id: "/test-sidebar",
 				pattern: /^\/test-sidebar\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 22 },
+				page: { layouts: [0,], errors: [1,], leaf: 23 },
 				endpoint: null
 			},
 			{
 				id: "/users",
 				pattern: /^\/users\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 23 },
+				page: { layouts: [0,], errors: [1,], leaf: 24 },
 				endpoint: null
 			}
 		],

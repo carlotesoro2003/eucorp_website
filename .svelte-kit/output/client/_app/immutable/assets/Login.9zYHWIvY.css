@@ -1,0 +1,1 @@
+html{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.3s;animation-duration:.3s}html.dark{--tw-bg-opacity: 1;background-color:rgb(17 24 39 / var(--tw-bg-opacity))}

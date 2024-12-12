@@ -1,12 +1,10 @@
-import { U as once, A as push, V as spread_attributes, G as bind_props, C as pop, S as copy_payload, T as assign_payload, P as spread_props, O as stringify, Q as slot, R as sanitize_props, F as attr, N as ensure_array_like, L as escape_html, J as store_get, K as unsubscribe_stores } from "../../../chunks/index.js";
+import { U as once, A as push, V as spread_attributes, G as bind_props, C as pop, S as copy_payload, T as assign_payload, N as spread_props, R as stringify, O as slot, P as sanitize_props, F as attr, Q as ensure_array_like, L as escape_html, J as store_get, K as unsubscribe_stores } from "../../../chunks/index.js";
 import { A as ARROW_LEFT, a as ARROW_RIGHT, b as ARROW_DOWN, c as ARROW_UP, d as box, H as HOME, E as END, i as isBrowser, e as createContext, f as useRefById, g as useId, m as mergeProps, h as getDataOpenClosed, j as getDataDisabled, S as SPACE, k as ENTER, l as getAriaExpanded, n as noop, P as Presence_layer, o as getAriaOrientation, p as getAriaHidden, q as getDataOrientation, r as PAGE_DOWN, s as PAGE_UP, t as isHTMLElement, T as TAB, v as focusFirst, w as isElement, x as afterTick, y as isElementOrSVGElement, z as getAriaDisabled, B as useDialogRoot, F as Floating_layer, C as Popper_layer_force_mount, D as Popper_layer, G as getFloatingContentCSSVars, I as Floating_layer_anchor, J as cn, K as setSidebar, L as Provider, M as SIDEBAR_COOKIE_NAME, N as SIDEBAR_COOKIE_MAX_AGE, O as SIDEBAR_WIDTH, Q as SIDEBAR_WIDTH_ICON, R as useSidebar, U as Button, V as Sheet_content, W as SIDEBAR_WIDTH_MOBILE, X as Sidebar_menu_button, Y as Portal, u as userStore } from "../../../chunks/sheet-content.js";
 import "style-to-object";
 import "clsx";
-import { C as Chevron_right } from "../../../chunks/chevron-right.js";
+import { I as Icon } from "../../../chunks/Icon.js";
 import { s as supabase } from "../../../chunks/supabaseClient.js";
 import { g as goto } from "../../../chunks/client.js";
-import { I as Icon } from "../../../chunks/Icon.js";
-import { P as Plus } from "../../../chunks/plus.js";
 import { d as derived } from "../../../chunks/index3.js";
 function getElemDirection(elem) {
   const style = window.getComputedStyle(elem);
@@ -2125,6 +2123,23 @@ function Sidebar($$payload, $$props) {
   bind_props($$props, { ref });
   pop();
 }
+function Chevron_right($$payload, $$props) {
+  const $$sanitized_props = sanitize_props($$props);
+  const iconNode = [["path", { "d": "m9 18 6-6-6-6" }]];
+  Icon($$payload, spread_props([
+    { name: "chevron-right" },
+    $$sanitized_props,
+    {
+      iconNode,
+      children: ($$payload2) => {
+        $$payload2.out += `<!---->`;
+        slot($$payload2, $$props, "default", {});
+        $$payload2.out += `<!---->`;
+      },
+      $$slots: { default: true }
+    }
+  ]));
+}
 function Nav_main($$payload, $$props) {
   push();
   let { items } = $$props;
@@ -2536,25 +2551,6 @@ function Dropdown_menu_separator($$payload, $$props) {
   bind_props($$props, { ref });
   pop();
 }
-function Dropdown_menu_shortcut($$payload, $$props) {
-  push();
-  let {
-    ref = null,
-    class: className,
-    children,
-    $$slots,
-    $$events,
-    ...restProps
-  } = $$props;
-  $$payload.out += `<span${spread_attributes({
-    class: cn("ml-auto text-xs tracking-widest opacity-60", className),
-    ...restProps
-  })}>`;
-  children?.($$payload);
-  $$payload.out += `<!----></span>`;
-  bind_props($$props, { ref });
-  pop();
-}
 const Root = Menu;
 const Trigger = Menu_trigger;
 const Group = Menu_group;
@@ -2878,7 +2874,7 @@ function Nav_user($$payload, $$props) {
 function Team_switcher($$payload, $$props) {
   push();
   let { teams } = $$props;
-  const sidebar = useSidebar();
+  useSidebar();
   let activeTeam = teams[0];
   $$payload.out += `<!---->`;
   Sidebar_menu($$payload, {
@@ -2901,9 +2897,7 @@ function Team_switcher($$payload, $$props) {
                       children: ($$payload6) => {
                         $$payload6.out += `<div class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"><!---->`;
                         activeTeam.logo($$payload6, { class: "size-4" });
-                        $$payload6.out += `<!----></div> <div class="grid flex-1 text-left text-sm leading-tight"><span class="truncate font-semibold">${escape_html(activeTeam.name)}</span> <span class="truncate text-xs">${escape_html(activeTeam.plan)}</span></div> `;
-                        Chevrons_up_down($$payload6, { class: "ml-auto" });
-                        $$payload6.out += `<!---->`;
+                        $$payload6.out += `<!----></div> <div class="grid flex-1 text-left text-sm leading-tight"><span class="truncate font-semibold">${escape_html(activeTeam.name)}</span> <span class="truncate text-xs">${escape_html(activeTeam.plan)}</span></div>`;
                       },
                       $$slots: { default: true }
                     }
@@ -2912,61 +2906,6 @@ function Team_switcher($$payload, $$props) {
                 };
                 Trigger($$payload4, { child, $$slots: { child: true } });
               }
-              $$payload4.out += `<!----> <!---->`;
-              Dropdown_menu_content($$payload4, {
-                class: "w-[--bits-dropdown-menu-anchor-width] min-w-56 rounded-lg",
-                align: "start",
-                side: sidebar.isMobile ? "bottom" : "right",
-                sideOffset: 4,
-                children: ($$payload5) => {
-                  const each_array = ensure_array_like(teams);
-                  $$payload5.out += `<!---->`;
-                  Dropdown_menu_label($$payload5, {
-                    class: "text-muted-foreground text-xs",
-                    children: ($$payload6) => {
-                      $$payload6.out += `<!---->Teams`;
-                    },
-                    $$slots: { default: true }
-                  });
-                  $$payload5.out += `<!----> <!--[-->`;
-                  for (let index = 0, $$length = each_array.length; index < $$length; index++) {
-                    let team = each_array[index];
-                    $$payload5.out += `<!---->`;
-                    Dropdown_menu_item($$payload5, {
-                      onSelect: () => activeTeam = team,
-                      class: "gap-2 p-2",
-                      children: ($$payload6) => {
-                        $$payload6.out += `<div class="flex size-6 items-center justify-center rounded-sm border"><!---->`;
-                        team.logo($$payload6, { class: "size-4 shrink-0" });
-                        $$payload6.out += `<!----></div> ${escape_html(team.name)} <!---->`;
-                        Dropdown_menu_shortcut($$payload6, {
-                          children: ($$payload7) => {
-                            $$payload7.out += `<!---->⌘${escape_html(index + 1)}`;
-                          },
-                          $$slots: { default: true }
-                        });
-                        $$payload6.out += `<!---->`;
-                      },
-                      $$slots: { default: true }
-                    });
-                    $$payload5.out += `<!---->`;
-                  }
-                  $$payload5.out += `<!--]--> <!---->`;
-                  Dropdown_menu_separator($$payload5, {});
-                  $$payload5.out += `<!----> <!---->`;
-                  Dropdown_menu_item($$payload5, {
-                    class: "gap-2 p-2",
-                    children: ($$payload6) => {
-                      $$payload6.out += `<div class="bg-background flex size-6 items-center justify-center rounded-md border">`;
-                      Plus($$payload6, { class: "size-4" });
-                      $$payload6.out += `<!----></div> <div class="text-muted-foreground font-medium">Add team</div>`;
-                    },
-                    $$slots: { default: true }
-                  });
-                  $$payload5.out += `<!---->`;
-                },
-                $$slots: { default: true }
-              });
               $$payload4.out += `<!---->`;
             },
             $$slots: { default: true }
@@ -3165,9 +3104,10 @@ function App_sidebar($$payload, $$props) {
             url: "/classification"
           },
           {
-            title: "Risk Management",
+            title: "Ratings Management",
             url: "/riskManagement"
-          }
+          },
+          { title: "School Years", url: "/school-year" }
         ]
       },
       {
@@ -3175,7 +3115,7 @@ function App_sidebar($$payload, $$props) {
         url: "/plans",
         icon: Chart_pie,
         items: [
-          { title: "Strategic Planning", url: "/plans" },
+          { title: "Strategic Goals", url: "/plans" },
           { title: "Risks", url: "/risks" },
           { title: "Opportunities", url: "/opportunities" }
         ]

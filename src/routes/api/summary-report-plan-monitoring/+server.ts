@@ -31,7 +31,7 @@ export const POST = async ({ request }: { request: Request }) => {
             You are a professional analyst tasked with creating a summary report based on the provided action plans. Here is the data for the action plans:
             \n${formattedPlans}\n
             Please write a detailed, cohesive, and professional narrative summarizing the overall performance of the plans. Highlight key achievements, areas needing improvement, and overall insights in essay format for stakeholders. 
-            only use paragaph form, avoid bullet points and dont use unnecessary asterisks, and ensure the tone is formal and professional.
+            only use paragaph form, avoid bullet points and dont use unnecessary asterisks, dont start the report with conclusion words such as overall etc. and ensure the tone is formal and professional.
         `;
 
         // Generate the summary report using the AI model

@@ -6,7 +6,7 @@
 	let { chartData }: { chartData: { achieved: number; notAchieved: number } } = $props();
 
 	// Chart instance
-	let chart: Chart | null = null;
+	let chart: Chart<"doughnut", number[], string> | null = null;
 	let canvas: HTMLCanvasElement;
 
 	// Create chart

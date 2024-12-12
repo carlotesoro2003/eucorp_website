@@ -4,6 +4,7 @@ import "../../chunks/client.js";
 import "../../chunks/supabaseClient.js";
 import { p as page } from "../../chunks/stores.js";
 import { u as userStore } from "../../chunks/sheet-content.js";
+/* empty css                                               */
 import "clsx";
 import { g as get, d as derived, w as writable } from "../../chunks/index3.js";
 function html(value) {
@@ -361,7 +362,7 @@ function _layout($$payload, $$props) {
   $$payload.out += `<!----> `;
   {
     $$payload.out += "<!--[-->";
-    $$payload.out += `<div class="flex items-center justify-center min-h-screen"><span class="loading loading-spinner loading-lg"></span></div>`;
+    $$payload.out += `<div class="flex items-center justify-center min-h-screen"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>`;
   }
   $$payload.out += `<!--]-->`;
   if ($$store_subs) unsubscribe_stores($$store_subs);

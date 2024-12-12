@@ -9,7 +9,7 @@ const POST = async ({ request }) => {
       return json({ error: "Target and evaluation are required" }, { status: 400 });
     }
     const model = client.getGenerativeModel({ model: "gemini-pro" });
-    const prompt = `The target is: ${target}. Based on the following evaluation: "${evaluation}", determine if the goal has been achieved and explain why. only do the statement in paragraph form.`;
+    const prompt = `The target is: ${target}. Based on the following evaluation: "${evaluation}", determine if the goal has been achieved and explain why.`;
     const result = await model.generateContent(prompt);
     console.log("[DEBUG] AI API Response:", result);
     const aiEvaluation = result.response?.text?.();

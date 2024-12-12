@@ -1,38 +1,37 @@
-import { N as ensure_array_like, L as escape_html, F as attr, C as pop, A as push, G as bind_props } from "../../../chunks/index.js";
+import { Q as ensure_array_like, L as escape_html, C as pop, A as push, G as bind_props } from "../../../chunks/index.js";
 /* empty css                       */
 import "../../../chunks/client.js";
 import { s as supabase } from "../../../chunks/supabaseClient.js";
 import "chart.js/auto";
-import { Chart, registerables } from "chart.js";
 const dashboardData = {
   cards: [
     {
       title: "Strategic Goals",
-      value: "0 Goals",
+      value: "0",
       // Placeholder for dynamic value
       change: 12.5,
-      icon: "💰"
+      icon: "🎯"
     },
     {
       title: "Unmitigated Risks",
-      value: "0 Risks",
+      value: "0",
       // Placeholder for dynamic value
       change: -2.4,
-      icon: "📊"
+      icon: "⚠️"
     },
     {
       title: "Opportunities",
-      value: "0 Opportunities",
+      value: "0",
       // Placeholder for dynamic value
       change: 8.2,
-      icon: "👥"
+      icon: "💡"
     },
     {
       title: "Users",
-      value: "0 Users",
+      value: "0",
       // Placeholder for dynamic value
       change: 5.1,
-      icon: "✅"
+      icon: "👥"
     }
   ],
   barChart: {
@@ -82,14 +81,11 @@ const dashboardData = {
 function DashboardCards($$payload, $$props) {
   push();
   let cards = dashboardData.cards;
-  const getChangeColor = (change) => {
-    return change >= 0 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600";
-  };
   const each_array = ensure_array_like(cards);
   $$payload.out += `<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"><!--[-->`;
   for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
     let card = each_array[$$index];
-    $$payload.out += `<div class="group relative overflow-hidden rounded-lg border border-border p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"><div class="flex items-center justify-between"><div><p class="text-sm font-medium text-gray-500">${escape_html(card.title)}</p> <p class="mt-2 text-3xl font-bold text-gray-900">${escape_html(card.value)}</p></div> <div class="rounded-xl bg-blue-50 p-4 text-2xl text-blue-600 transition-transform duration-300 group-hover:rotate-12">${escape_html(card.icon)}</div></div> <div class="mt-4"><span${attr("class", `inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium ${getChangeColor(card.change)}`)}>${escape_html(card.change >= 0 ? "↑" : "↓")} ${escape_html(Math.abs(card.change))}%</span> <span class="ml-2 text-sm text-gray-500">from last month</span></div></div>`;
+    $$payload.out += `<div class="group relative overflow-hidden rounded-lg border border-border p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"><div class="flex items-center justify-between"><div><p class="text-sm font-medium text-gray-500">${escape_html(card.title)}</p> <p class="mt-2 text-3xl font-bold text-gray-900">${escape_html(card.value)}</p></div> <div class="rounded-xl bg-blue-50 p-4 text-2xl text-blue-600 transition-transform duration-300 group-hover:rotate-12">${escape_html(card.icon)}</div></div> <div class="mt-4"></div></div>`;
   }
   $$payload.out += `<!--]--></div>`;
   pop();
@@ -127,7 +123,24 @@ function Header($$payload, $$props) {
     month: "long",
     day: "numeric"
   });
-  $$payload.out += `<header class="flex flex-col gap-4 rounded-xle p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between"><div><h1 class="text-3xl font-bold text-gray-900">Welcome</h1> <p class="mt-1 text-sm text-gray-500">${escape_html(currentDate)}</p></div></header>`;
+  let currentSchoolYear = null;
+  async function fetchCurrentSchoolYear() {
+    try {
+      const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+      const { data, error } = await supabase.from("school_years").select("school_year").lte("start_date", today).gte("end_date", today).single();
+      if (error) {
+        console.error("Error fetching school year:", error);
+        currentSchoolYear = "Unknown";
+      } else {
+        currentSchoolYear = data?.school_year || "Unknown";
+      }
+    } catch (err) {
+      console.error("Unexpected error fetching school year:", err);
+      currentSchoolYear = "Unknown";
+    }
+  }
+  fetchCurrentSchoolYear();
+  $$payload.out += `<header class="flex flex-col gap-4 rounded-xle p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between"><div><h1 class="text-2xl font-bold">Welcome</h1> <p class="mt-1 text-sm">${escape_html(currentDate)}</p> <p class="mt-1 text-sm">Current School Year: ${escape_html(currentSchoolYear || "Loading...")}</p></div></header>`;
   pop();
 }
 function AdminDashboard($$payload, $$props) {
@@ -147,8 +160,17 @@ function AdminDashboard($$payload, $$props) {
 }
 function DepartmentDashboard($$payload, $$props) {
   push();
-  Chart.register(...registerables);
-  $$payload.out += `<div class="min-h-screen bg-gray-900 p-6 text-gray-100 space-y-6"><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"><div class="stats shadow bg-gray-800"><div class="stat"><div class="stat-title text-gray-400">Total Projects</div> <div class="stat-value text-blue-400">25</div> <div class="stat-desc text-gray-500">+10% this month</div></div></div> <div class="stats shadow bg-gray-800"><div class="stat"><div class="stat-title text-gray-400">Completed Tasks</div> <div class="stat-value text-green-400">120</div> <div class="stat-desc text-gray-500">+5% from last week</div></div></div> <div class="stats shadow bg-gray-800"><div class="stat"><div class="stat-title text-gray-400">Pending Approvals</div> <div class="stat-value text-yellow-400">8</div> <div class="stat-desc text-gray-500">Needs review</div></div></div> <div class="stats shadow bg-gray-800"><div class="stat"><div class="stat-title text-gray-400">New Members</div> <div class="stat-value text-purple-400">15</div> <div class="stat-desc text-gray-500">Joined this month</div></div></div></div> <div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="card shadow-lg bg-gray-800"><div class="card-body"><h2 class="card-title text-gray-200">Overview</h2> <div class="h-64"><canvas id="barChart"></canvas></div></div></div> <div class="card shadow-lg bg-gray-800"><div class="card-body"><h2 class="card-title text-gray-200">Risk Level</h2> <div class="h-64"><canvas id="pieChart"></canvas></div></div></div></div></div>`;
+  $$payload.out += `<main class="min-h-screen p-4 md:p-6 container mx-auto"><div class="mx-auto max-w-7xl space-y-8">`;
+  Header($$payload);
+  $$payload.out += `<!----> `;
+  DashboardCards($$payload);
+  $$payload.out += `<!----> <div class="rounded-lg border border-border p-4 hover:shadow-lg transition-all duration-300"><h2 class="mb-6 text-xl font-semibold text-gray-800">Strategic Goal Overiew</h2> `;
+  BarChart($$payload);
+  $$payload.out += `<!----></div> <div class="grid gap-8 lg:grid-cols-2">`;
+  RiskAnalysis($$payload);
+  $$payload.out += `<!----> `;
+  RecentEvents($$payload);
+  $$payload.out += `<!----></div></div></main>`;
   pop();
 }
 function _page($$payload, $$props) {
@@ -173,7 +195,7 @@ function _page($$payload, $$props) {
   $$payload.out += `<div class="min-h-screen"><div class="flex flex-col items-center justify-center w-full h-full"><div class="w-full">`;
   if (loading) {
     $$payload.out += "<!--[-->";
-    $$payload.out += `<div class="flex flex-col items-center justify-center"><span class="loading loading-spinner loading-sm"></span> <p>Loading...</p></div>`;
+    $$payload.out += `<div class="flex flex-col items-center justify-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>`;
   } else {
     $$payload.out += "<!--[!-->";
     if (session !== null && profile) {

@@ -1,37 +1,7 @@
-import { P as spread_props, Q as slot, R as sanitize_props, F as attr, N as ensure_array_like, L as escape_html, C as pop, O as stringify, A as push } from "../../../../chunks/index.js";
+import { F as attr, Q as ensure_array_like, L as escape_html, C as pop, R as stringify, A as push } from "../../../../chunks/index.js";
 import "../../../../chunks/supabaseClient.js";
-import { I as Icon } from "../../../../chunks/Icon.js";
+import { T as Target } from "../../../../chunks/target.js";
 import { P as Plus } from "../../../../chunks/plus.js";
-function Target($$payload, $$props) {
-  const $$sanitized_props = sanitize_props($$props);
-  const iconNode = [
-    [
-      "circle",
-      { "cx": "12", "cy": "12", "r": "10" }
-    ],
-    [
-      "circle",
-      { "cx": "12", "cy": "12", "r": "6" }
-    ],
-    [
-      "circle",
-      { "cx": "12", "cy": "12", "r": "2" }
-    ]
-  ];
-  Icon($$payload, spread_props([
-    { name: "target" },
-    $$sanitized_props,
-    {
-      iconNode,
-      children: ($$payload2) => {
-        $$payload2.out += `<!---->`;
-        slot($$payload2, $$props, "default", {});
-        $$payload2.out += `<!---->`;
-      },
-      $$slots: { default: true }
-    }
-  ]));
-}
 function _page($$payload, $$props) {
   push();
   let strategicGoals = [];

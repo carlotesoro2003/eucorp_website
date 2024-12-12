@@ -22,6 +22,7 @@
 	let profile: any = $state(null);
 	let departmentName: string = $state("");
 	let isLoading: boolean = $state(true);
+	let isSaving: boolean = $state(false);
 
 	let successMessage: string | null = $state(null);
 	let errorMessage: string | null = $state(null);
@@ -29,6 +30,7 @@
 	// Dialog state
 	let showDialog: boolean = $state(false);
 	let selectedRisk: Risk | null = $state(null);
+
 
   
 
@@ -83,30 +85,38 @@
     }
   };
 
-  const fetchRiskMonitoringRating = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("risk_monitoring_rating")
-        .select("*");
-      if (error) throw error;
-      riskMonitoringRating = data;
-    } catch (error) {
-      errorMessage = "Failed to fetch risk monitoring rating.";
-    }
-  };
+	const fetchRiskMonitoringRating = async () => {
+		try {
+		const { data, error } = await supabase
+			.from("risk_monitoring_rating")
+			.select("*");
+		if (error) throw error;
+		riskMonitoringRating = data;
+		} catch (error) {
+		errorMessage = "Failed to fetch risk monitoring rating.";
+		}
+	};
 
-  const fetchRisks = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("risks")
-        .select("*")
-        .order("rrn", { ascending: true });
-      if (error) throw error;
-      savedRisks = data;
-    } catch (error) {
-      errorMessage = "Failed to fetch saved risks.";
-    }
-  };
+	const fetchRisks = async () => {
+			try {
+				if (!profile?.department_id) {
+					errorMessage = "Department ID not found. Please try reloading.";
+					return;
+				}
+
+				const { data, error } = await supabase
+					.from("risks")
+					.select("*")
+					.eq("department_id", profile.department_id) // Filter by department_id
+					.order("rrn", { ascending: true });
+				if (error) throw error;
+
+				savedRisks = data;
+			} catch (error) {
+				errorMessage = "Failed to fetch saved risks.";
+			}
+	};
+
 
   const fetchRiskAssessments = async () => {
     try {
@@ -121,27 +131,38 @@
   };
 
 
-	const fetchUserProfile = async () => {
-		isLoading = true;
-		try {
-			const { data: sessionData } = await supabase.auth.getSession();
-			session = sessionData.session;
+  const fetchUserProfile = async () => {
+    isLoading = true;
+    try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        session = sessionData.session;
 
-			if (session) {
-				const { data: profileData } = await supabase.from("profiles").select("id, department_id").eq("id", session.user.id).single();
-				profile = profileData;
+        if (session) {
+            const { data: profileData } = await supabase
+                .from("profiles")
+                .select("id, department_id")
+                .eq("id", session.user.id)
+                .single();
+            profile = profileData;
 
-				const { data: departmentData } = await supabase.from("departments").select("name").eq("id", profile.department_id).single();
-				departmentName = departmentData ? departmentData.name : "Unknown Department";
+            const { data: departmentData } = await supabase
+                .from("departments")
+                .select("name")
+                .eq("id", profile.department_id)
+                .single();
+            departmentName = departmentData ? departmentData.name : "Unknown Department";
 
-				await fetchAllData();
-			}
-		} catch (error) {
-			errorMessage = "Failed to load profile. Please try again.";
-		} finally {
-			isLoading = false;
-		}
-	};
+            // Fetch risks and other data
+            await fetchRisks(); // Fetch risks for the user's department
+            await fetchAllData();
+        }
+    } catch (error) {
+        errorMessage = "Failed to load profile. Please try again.";
+    } finally {
+        isLoading = false;
+    }
+};
+
 
 	// Dialog handlers
 	const handleOpenDialog = (risk: Risk) => {
@@ -157,10 +178,8 @@
 	// Message handlers
 	const handleSuccess = (message: string) => {
 		successMessage = message;
-
 		setTimeout(() => (successMessage = null), 3000);
 	};
-
 
 	const handleError = (message: string) => {
 		errorMessage = message;
@@ -182,23 +201,14 @@
 		<Notifications {successMessage} {errorMessage} />
 
 		{#if isLoading}
-      <div class="flex justify-center items-center min-h-[400px]">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
+			<div class="flex justify-center items-center min-h-[400px]">
+				<div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+			</div>
 		{:else}
-			<RiskTable {savedRisks} {classification} {riskAssessments} onAssess={handleOpenDialog} />
+			<RiskTable {savedRisks} {classification} {riskAssessments} {isSaving} onAssess={handleOpenDialog} />
 
 			{#if showDialog}
-			<AssessmentDialog
-				{selectedRisk}
-				{likelihoodRating}
-				{severity}
-				{riskControlRating}
-				{riskMonitoringRating}
-				onClose={handleCloseDialog}
-				onSuccess={handleSuccess}
-				onError={handleError}
-			/>
+				<AssessmentDialog bind:isSaving {selectedRisk} {likelihoodRating} {severity} {riskControlRating} {riskMonitoringRating} onClose={handleCloseDialog} onSuccess={handleSuccess} onError={handleError} />
 			{/if}
 		{/if}
 	</main>
