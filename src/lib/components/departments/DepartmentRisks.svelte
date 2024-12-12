@@ -202,9 +202,9 @@
 
 	<!-- Content -->
 	<div class="bg-card rounded-lg shadow border border-border p-6">
-		<div class="flex justify-between items-center mb-6">
+		<!-- <div class="flex justify-between items-center mb-6">
 			<h2 class="text-xl font-semibold">Department Risks</h2>
-		</div>
+		</div> -->
 
 		{#if isLoading}
 			<div class="flex justify-center p-8">
