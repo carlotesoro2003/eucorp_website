@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { supabase } from "$lib/supabaseClient";
-	import { Plus, Trash2, Save, PlusCircle } from "lucide-svelte";
+	import { Plus, Trash2, Save, Target, PlusCircle } from "lucide-svelte";
 	import OpportunityCard from "$lib/components/dept-opts/OpportunityCard.svelte";
+	import { fade } from "svelte/transition";
 
 	interface Opportunity {
 		id: number;
@@ -33,6 +34,19 @@
 		},
 	]);
 	let profileId: string | null = $state(null);
+	let showAlert: boolean = $state(false);
+	let alertMessage: string = $state("");
+	let alertType: "success" | "error" = $state("success");
+
+	/** Display Alert */
+	const displayAlert = (message: string, type: "success" | "error") => {
+		alertMessage = message;
+		alertType = type;
+		showAlert = true;
+		setTimeout(() => {
+			showAlert = false;
+		}, 3000);
+	};
 
 	// Functions
 	const fetchUserProfile = async (): Promise<void> => {
@@ -44,7 +58,7 @@
 			const { data, error } = await supabase.from("profiles").select("id, department_id").eq("id", session.user.id).single();
 
 			if (error) {
-				console.error("Error fetching profile:", error);
+				displayAlert("Error fetching profile", "error");
 			} else {
 				profileId = data.id;
 				formData.forEach((row) => {
@@ -71,7 +85,7 @@
 				.select();
 
 			if (error) {
-				console.error("Error creating opportunities:", error);
+				displayAlert("Error creating opportunities", "error");
 				return;
 			}
 
@@ -81,7 +95,7 @@
 						const { data: departmentData, error: departmentError } = await supabase.from("departments").select("name").eq("id", opportunity.department_id).single();
 
 						if (departmentError) {
-							console.error(`Error fetching department name for ID ${opportunity.department_id}:`, departmentError);
+							displayAlert(`Error fetching department name`, "error");
 							return null;
 						}
 
@@ -102,6 +116,7 @@
 				}
 			}
 
+			displayAlert("Opportunities created successfully", "success");
 			// Reset form and refresh
 			await fetchOpportunities();
 			formData = [
@@ -117,7 +132,7 @@
 				},
 			];
 		} catch (err) {
-			console.error("Unexpected error:", err);
+			displayAlert("Unexpected error occurred", "error");
 		} finally {
 			isSaving = false;
 		}
@@ -128,7 +143,7 @@
 		const { data, error } = await supabase.from("opportunities").select("*").eq("profile_id", profileId);
 
 		if (error) {
-			console.error("Error fetching opportunities:", error);
+			displayAlert("Error fetching opportunities", "error");
 		} else {
 			opportunities = data;
 		}
@@ -164,40 +179,59 @@
 	});
 </script>
 
-<div class="container mx-auto px-4 py-8">
-	<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+<div class="flex flex-col gap-4 p-4 container mx-auto">
+	{#if showAlert}
+		<div transition:fade class="flex items-center p-4 rounded-lg {alertType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+			<span>{alertMessage}</span>
+		</div>
+	{/if}
+
+	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+		<div class="flex items-center gap-2">
+			<Target class="w-8 h-8 text-primary" />
+			<h1 class="text-2xl font-bold">Department Opportunities</h1>
+		</div>
+	</div>
+
+	<div class="bg-card rounded-lg shadow border border-border p-6">
 		<div class="flex justify-between items-center mb-6">
-			<h1 class="text-2xl font-bold text-gray-800">
+			<h2 class="text-xl font-semibold">
 				{selectedOpportunity ? "Edit Opportunity" : "Create Opportunity"}
-			</h1>
-			<button class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50" disabled={isSaving} onclick={() => console.log("Save Progress")}>
+			</h2>
+			<button class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50" disabled={isSaving} onclick={() => console.log("Save Progress")}>
 				<Save class="w-4 h-4 mr-2" />
 				Save Progress
 			</button>
 		</div>
 
-		<!-- Cards Container -->
-		<div class="grid grid-cols-1 gap-6 mb-6">
-			{#each formData as data, index}
-				<OpportunityCard {data} {index} onDelete={() => deleteCard(index)} />
-			{/each}
-		</div>
+		{#if isLoading}
+			<div class="flex justify-center p-8">
+				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+			</div>
+		{:else}
+			<!-- Cards Container -->
+			<div class="grid grid-cols-1 gap-6 mb-6">
+				{#each formData as data, index}
+					<OpportunityCard {data} {index} onDelete={() => deleteCard(index)} />
+				{/each}
+			</div>
 
-		<!-- Action Buttons -->
-		<div class="flex flex-wrap gap-4">
-			<button onclick={addCard} class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-				<Plus class="w-4 h-4 mr-2" />
-				Add New Opportunity
-			</button>
+			<!-- Action Buttons -->
+			<div class="flex flex-wrap gap-4">
+				<button onclick={addCard} class="inline-flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
+					<Plus class="w-4 h-4 mr-2" />
+					Add New Opportunity
+				</button>
 
-			<button onclick={createOpportunity} class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50" disabled={isLoading || isSaving}>
-				<PlusCircle class="w-4 h-4 mr-2" />
-				{#if isSaving}
-          <div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-				{:else}
-					{selectedOpportunity ? "Save Changes" : "Submit Opportunities"}
-				{/if}
-			</button>
-		</div>
+				<button onclick={createOpportunity} class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50" disabled={isLoading || isSaving}>
+					<PlusCircle class="w-4 h-4 mr-2" />
+					{#if isSaving}
+						<div class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
+					{:else}
+						{selectedOpportunity ? "Save Changes" : "Submit Opportunities"}
+					{/if}
+				</button>
+			</div>
+		{/if}
 	</div>
 </div>

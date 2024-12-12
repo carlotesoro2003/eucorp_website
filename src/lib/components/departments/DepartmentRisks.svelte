@@ -197,28 +197,46 @@
 			<TriangleAlert class="w-8 h-8 text-primary" />
 			<h1 class="text-2xl font-bold">{departmentName} Risk Register</h1>
 		</div>
-		<div class="flex gap-2">
-			<button onclick={addRow} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-				<Plus size={20} />
-				Add Risk
-			</button>
-			<button onclick={saveRisks} disabled={isSaving} class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50">
-				<Save size={20} />
-				{isSaving ? "Saving..." : "Save All"}
-			</button>
-		</div>
 	</div>
 
 	<!-- Content -->
-	{#if isLoading}
-		<div class="flex justify-center p-8">
-			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+	<div class="bg-card rounded-lg shadow border border-border p-6">
+		<div class="flex justify-between items-center mb-6">
+			<h2 class="text-xl font-semibold">Department Risks</h2>
+			<button class="inline-flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50" disabled={isSaving} onclick={() => console.log("Save Progress")}>
+				<Save class="w-4 h-4 mr-2" />
+				Save Progress
+			</button>
 		</div>
-	{:else}
-		<div class="grid grid-cols-1 gap-4">
-			{#each risks as risk, index}
-				<RiskCard {risk} {classification} {index} {removeRow} />
-			{/each}
-		</div>
-	{/if}
+
+		{#if isLoading}
+			<div class="flex justify-center p-8">
+				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+			</div>
+		{:else}
+			<!-- Risk Cards -->
+			<div class="grid grid-cols-1 gap-4 mb-6">
+				{#each risks as risk, index}
+					<RiskCard {risk} {classification} {index} {removeRow} />
+				{/each}
+			</div>
+
+			<!-- Action Buttons -->
+			<div class="flex flex-wrap gap-4">
+				<button onclick={addRow} class="inline-flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
+					<Plus class="w-4 h-4 mr-2" />
+					Add Risk
+				</button>
+
+				<button onclick={saveRisks} disabled={isSaving} class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50">
+					{#if isSaving}
+						<div class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></div>
+					{:else}
+						<Save class="w-4 h-4 mr-2" />
+					{/if}
+					Save All
+				</button>
+			</div>
+		{/if}
+	</div>
 </div>
