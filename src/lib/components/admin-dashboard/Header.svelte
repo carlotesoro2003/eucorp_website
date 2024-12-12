@@ -40,8 +40,8 @@
 
 <header class="flex flex-col gap-4 rounded-xle p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
 	<div>
-		<h1 class="text-3xl font-bold text-gray-900">Welcome</h1>
-		<p class="mt-1 text-sm text-gray-500">{currentDate}</p>
-		<p class="mt-1 text-sm text-gray-500">Current School Year: {currentSchoolYear || "Loading..."}</p>
+		<h1 class="text-2xl font-bold">Welcome</h1>
+		<p class="mt-1 text-sm ">{currentDate}</p>
+		<p class="mt-1 text-sm">Current School Year: {currentSchoolYear || "Loading..."}</p>
 	</div>
 </header>

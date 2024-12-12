@@ -70,7 +70,7 @@
 					<td class="px-4 py-3 hidden xl:table-cell">{objective.eval_measures}</td>
 					<td class="px-4 py-3">
                        
-						<button onclick={() => viewObjective(objective.id)} class="btn btn-ghost btn-sm" title="View Action Plans"><Eye size={18}/></button>
+						<button onclick={() => viewObjective(objective.id)} class="btn btn-ghost btn-sm text-blue-500" title="View Action Plans"><Eye size={18}/></button>
 					</td>
 				</tr>
 			{/each}
