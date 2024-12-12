@@ -177,8 +177,7 @@
 	};
 
 
-
-
+	
 		/** Trigger updates when dropdown values change */
 		const handleDropdownChange = () => {
 			updateRatings();

@@ -1,171 +1,45 @@
 <script lang="ts">
-	import { Trash2, Plus, Save, Loader2, X, ChevronLeft } from "lucide-svelte";
+	import { Trash2, Plus, Save, Loader2, ChevronLeft } from "lucide-svelte";
 	import { supabase } from "$lib/supabaseClient";
 	import { onMount } from "svelte";
 	import { page } from "$app/stores";
-	import Alert from "$lib/components/operational-plans/add-action-plans/Alert.svelte";
-	import Modal from "$lib/components/operational-plans/add-action-plans/Modal.svelte";
-	import type { ActionPlan } from "$lib/types/ActionPlan";
-	import { fade } from "svelte/transition";
+	import PlanCard from "$lib/components/monitoring/departments/PlanComponent/PlanCard.svelte";
 
-	/** Interface for strategic objective */
 	interface StrategicObjective {
 		name: string;
 		strategic_goal_id: number;
 	}
 
-	/** Interface for strategic goal */
 	interface StrategicGoal {
 		name: string;
 		goal_no: number;
 	}
 
-	/** State variables */
-	let actionPlans: ActionPlan[] = $state([]);
-	let currentPlan: ActionPlan = $state({
-		actions_taken: "",
-		kpi: "",
-		target_output: "",
-		key_person_responsible: "",
-		objective_id: 0,
-		profile_id: "",
-		department_id: "",
-	});
+	interface ActionPlan {
+		id?: number;
+		actions_taken: string;
+		kpi: string;
+		target_output: string;
+		key_person_responsible: string;
+		objective_id: number;
+		profile_id: string;
+		department_id: string;
+	}
 
-	let strategicObjective: StrategicObjective | null = $state(null);
-	let strategicGoal: StrategicGoal | null = $state(null);
-	let alertMessage: string = $state("");
-	let alertType: string = $state("info");
-	let objective_id: number | null = $state(null);
-	let isSubmitting: boolean = $state(false);
-	let profile_id: string = $state("");
-	let showModal: boolean = $state(false);
-	let editIndex: number = $state(-1);
-	let showAlert: boolean = $state(false);
+	let strategicObjective: StrategicObjective | null = null;
+	let strategicGoal: StrategicGoal | null = null;
+	let actionPlans: ActionPlan[] = [];
+	let newPlans: ActionPlan[] = [];
+	let profile: { id: string; department_id: string } | null = null;
+	let objective_id: number | null = null;
+	let isLoading = false;
+	let isSaving = false;
+	let showAlert = false;
+	let alertMessage = "";
+	let alertType: "success" | "error" = "success";
 
-	/** On component mount */
-	onMount(() => {
-		const { params } = $page;
-		objective_id = parseInt(params.id);
-
-		if (objective_id) {
-			currentPlan.objective_id = objective_id;
-			fetchStrategicObjectiveAndGoal(objective_id);
-			fetchUserProfileId();
-		} else {
-			displayAlert("Objective ID is missing.", "error");
-		}
-	});
-
-	/** Fetch user profile ID and department */
-	const fetchUserProfileId = async () => {
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
-		if (user) {
-			const { data: profileData, error } = await supabase.from("profiles").select("id, department_id").eq("id", user.id).single();
-
-			if (error || !profileData) {
-				displayAlert("Failed to fetch user profile details.", "error");
-				return;
-			}
-
-			profile_id = profileData.id;
-			currentPlan.profile_id = profile_id;
-			currentPlan.department_id = profileData.department_id;
-		} else {
-			displayAlert("User not logged in.", "error");
-		}
-	};
-
-	/** Fetch strategic objective and goal */
-	const fetchStrategicObjectiveAndGoal = async (objective_id: number) => {
-		try {
-			const { data: objectiveData, error: objectiveError } = await supabase.from("strategic_objectives").select("name, strategic_goal_id").eq("id", objective_id).single();
-
-			if (objectiveError || !objectiveData) {
-				displayAlert("Failed to fetch strategic objective.", "error");
-				return;
-			}
-
-			strategicObjective = objectiveData;
-
-			const { data: goalData, error: goalError } = await supabase.from("strategic_goals").select("name, goal_no").eq("id", objectiveData.strategic_goal_id).single();
-
-			if (goalError || !goalData) {
-				displayAlert("Failed to fetch strategic goal.", "error");
-				return;
-			}
-
-			strategicGoal = goalData;
-		} catch (err) {
-			displayAlert("An error occurred while fetching strategic data.", "error");
-		}
-	};
-
-	/** Open modal to add/edit plan */
-	const openModal = (index: number = -1) => {
-		if (index >= 0) {
-			currentPlan = { ...actionPlans[index] };
-			editIndex = index;
-		} else {
-			currentPlan = {
-				actions_taken: "",
-				kpi: "",
-				target_output: "",
-				key_person_responsible: "",
-				objective_id: objective_id || 0,
-				profile_id,
-				department_id: currentPlan.department_id,
-			};
-			editIndex = -1;
-		}
-		showModal = true;
-	};
-
-	/** Save current plan */
-	const savePlan = () => {
-		if (editIndex >= 0) {
-			actionPlans[editIndex] = { ...currentPlan };
-		} else {
-			actionPlans = [...actionPlans, { ...currentPlan }];
-		}
-		showModal = false;
-	};
-
-	/** Delete plan */
-	const deletePlan = (index: number) => {
-		if (confirm("Are you sure you want to delete this plan?")) {
-			actionPlans = actionPlans.filter((_, i) => i !== index);
-		}
-	};
-
-	/** Submit action plans */
-	const submitActionPlans = async () => {
-		if (actionPlans.length === 0) {
-			displayAlert("Please add at least one action plan.", "warning");
-			return;
-		}
-
-		try {
-			isSubmitting = true;
-			const { error } = await supabase.from("action_plans").insert(actionPlans);
-
-			if (error) {
-				displayAlert("Failed to submit action plans.", "error");
-			} else {
-				displayAlert("Action plans submitted successfully.", "success");
-				actionPlans = [];
-			}
-		} catch (err) {
-			displayAlert("An error occurred while submitting action plans.", "error");
-		} finally {
-			isSubmitting = false;
-		}
-	};
-
-	/** Display Alert */
-	const displayAlert = (message: string, type: "success" | "error" | "warning") => {
+	/** Display alert messages */
+	const displayAlert = (message: string, type: "success" | "error") => {
 		alertMessage = message;
 		alertType = type;
 		showAlert = true;
@@ -173,22 +47,181 @@
 			showAlert = false;
 		}, 3000);
 	};
+
+	/** Fetch strategic objective and goal */
+	const fetchStrategicObjectiveAndGoal = async (objective_id: number) => {
+		try {
+			const { data: objectiveData, error: objectiveError } = await supabase
+				.from("strategic_objectives")
+				.select("name, strategic_goal_id")
+				.eq("id", objective_id)
+				.single();
+
+			if (objectiveError || !objectiveData) throw new Error("Failed to fetch strategic objective.");
+
+			strategicObjective = objectiveData;
+
+			const { data: goalData, error: goalError } = await supabase
+				.from("strategic_goals")
+				.select("name, goal_no")
+				.eq("id", objectiveData.strategic_goal_id)
+				.single();
+
+			if (goalError || !goalData) throw new Error("Failed to fetch strategic goal.");
+
+			strategicGoal = goalData;
+		} catch (error) {
+			console.error("Error fetching strategic data:", error);
+			displayAlert("Failed to fetch strategic details.", "error");
+		}
+	};
+
+	/** Fetch existing action plans */
+	const fetchActionPlans = async () => {
+		isLoading = true;
+		try {
+			const { data, error } = await supabase
+				.from("action_plans")
+				.select("*")
+				.eq("objective_id", objective_id);
+
+			if (error) throw error;
+
+			actionPlans = data || [];
+		} catch (error) {
+			console.error("Error fetching action plans:", error);
+			displayAlert("Failed to fetch action plans.", "error");
+		} finally {
+			isLoading = false;
+		}
+	};
+
+	/** Save an action plan */
+	const savePlan = async (plan: ActionPlan, isNew: boolean) => {
+		if (!plan.profile_id || !plan.department_id || !plan.objective_id) {
+			displayAlert("Plan is missing required fields.", "error");
+			return;
+		}
+
+		isSaving = true;
+		try {
+			if (isNew) {
+				const { data, error } = await supabase.from("action_plans").insert([plan]);
+				if (error) throw error;
+				if (data) actionPlans = [...actionPlans, ...data];
+			} else {
+				const { error } = await supabase.from("action_plans").update(plan).eq("id", plan.id);
+				if (error) throw error;
+				actionPlans = actionPlans.map((p) => (p.id === plan.id ? plan : p));
+			}
+			displayAlert(isNew ? "Plan added successfully." : "Plan updated successfully.", "success");
+		} catch (error) {
+			console.error("Error saving action plan:", error);
+			displayAlert("Failed to save action plan.", "error");
+		} finally {
+			isSaving = false;
+		}
+	};
+
+	/** Delete an action plan */
+	const deletePlan = async (id: number) => {
+		isSaving = true;
+		try {
+			const { error } = await supabase.from("action_plans").delete().eq("id", id);
+			if (error) throw error;
+			actionPlans = actionPlans.filter((p) => p.id !== id);
+			displayAlert("Plan deleted successfully.", "success");
+		} catch (error) {
+			console.error("Error deleting action plan:", error);
+			displayAlert("Failed to delete action plan.", "error");
+		} finally {
+			isSaving = false;
+		}
+	};
+
+	/** Add a new plan to the list */
+	const addNewPlan = () => {
+		if (!profile?.id || !profile.department_id || !objective_id) {
+			displayAlert("Missing required profile or objective information.", "error");
+			return;
+		}
+
+		newPlans = [
+			...newPlans,
+			{
+				actions_taken: "",
+				kpi: "",
+				target_output: "",
+				key_person_responsible: "",
+				objective_id: objective_id,
+				profile_id: profile.id,
+				department_id: profile.department_id,
+			},
+		];
+	};
+
+	/** Remove a new plan from the list */
+	const deleteNewPlan = (index: number) => {
+		newPlans = newPlans.filter((_, i) => i !== index);
+	};
+
+	/** Fetch data on mount */
+	onMount(async () => {
+		try {
+			const { params } = $page;
+			objective_id = parseInt(params.id);
+
+			if (!objective_id) {
+				displayAlert("Objective ID is missing.", "error");
+				return;
+			}
+
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+
+			if (!user) {
+				displayAlert("User not logged in.", "error");
+				return;
+			}
+
+			const { data: profileData, error: profileError } = await supabase
+				.from("profiles")
+				.select("id, department_id")
+				.eq("id", user.id)
+				.single();
+
+			if (profileError || !profileData) {
+				displayAlert("Failed to fetch user profile details.", "error");
+				return;
+			}
+
+			profile = profileData;
+
+			await fetchStrategicObjectiveAndGoal(objective_id);
+			await fetchActionPlans();
+		} catch (error) {
+			console.error("Error during initialization:", error);
+			displayAlert("Initialization failed.", "error");
+		}
+	});
 </script>
 
 <div class="flex flex-col gap-4 p-4 container mx-auto">
 	{#if showAlert}
-		<div transition:fade class="flex items-center p-4 rounded-lg {alertType === 'success' ? 'bg-green-100 text-green-800' : alertType === 'error' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">
+		<div class="p-4 rounded-lg {alertType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
 			<span>{alertMessage}</span>
 		</div>
 	{/if}
+
 	<a href="/plans/operationalPlans" class="flex items-center gap-2 text-muted-foreground mb-2 hover:text-foreground">
 		<ChevronLeft size={20} />
 		Back to Operational Plans
 	</a>
 
-	<!-- Header -->
+	<!-- Strategic Details -->
 	<div class="bg-card border border-border rounded-lg shadow p-6">
-		<h1 class="text-2xl font-bold">Action Plans</h1>
+		<h1 class="text-2xl font-bold">Strategic Details</h1>
 		{#if strategicGoal && strategicObjective}
 			<div class="mt-4 space-y-2">
 				<h5 class="text-md font-medium">
@@ -200,102 +233,45 @@
 					<span class="ml-2 text-muted-foreground">{strategicObjective.name}</span>
 				</h5>
 			</div>
+		{:else}
+			<p class="text-muted-foreground">Loading strategic details...</p>
 		{/if}
 	</div>
 
-	<!-- Action Plans List -->
+	<!-- Action Plans -->
 	<div class="bg-card rounded-lg shadow border border-border p-6">
-		<div class="flex justify-between items-center mb-6">
-			<h2 class="text-xl font-semibold">Action Plans List</h2>
-			<button onclick={() => openModal()} class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-				<Plus size={20} />
-				Add Plan
-			</button>
-		</div>
+		<h2 class="text-xl font-semibold mb-4">Action Plans</h2>
+		{#if isLoading}
+			<div class="flex justify-center p-8">
+				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+			</div>
+		{:else}
+			<div class="space-y-4">
+				{#each actionPlans as plan, index}
+					<PlanCard
+						data={plan}
+						index={index}
+						onSave={(updatedPlan) => savePlan(updatedPlan, false)}
+						onDelete={() => deletePlan(plan.id!)}
+					/>
+				{/each}
 
-		<div class="space-y-4">
-			{#each actionPlans as plan, index}
-				<div class="border border-border rounded-lg p-4 relative hover:bg-muted/50 transition-colors">
-					<div class="grid md:grid-cols-2 gap-4">
-						<div>
-							<h4 class="font-medium">Actions Taken</h4>
-							<p class="text-muted-foreground mt-1">{plan.actions_taken}</p>
-						</div>
-						<div>
-							<h4 class="font-medium">KPI</h4>
-							<p class="text-muted-foreground mt-1">{plan.kpi}</p>
-						</div>
-						<div>
-							<h4 class="font-medium">Target Output</h4>
-							<p class="text-muted-foreground mt-1">{plan.target_output}</p>
-						</div>
-						<div>
-							<h4 class="font-medium">Key Person Responsible</h4>
-							<p class="text-muted-foreground mt-1">{plan.key_person_responsible}</p>
-						</div>
-					</div>
-					<div class="absolute top-4 right-4 flex gap-2">
-						<button onclick={() => openModal(index)} class="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
-							<Save size={18} />
-						</button>
-						<button onclick={() => deletePlan(index)} class="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors">
-							<Trash2 size={18} />
-						</button>
-					</div>
-				</div>
-			{/each}
-		</div>
+				{#each newPlans as newPlan, index}
+					<PlanCard
+						data={newPlan}
+						index={index}
+						onSave={(addedPlan) => savePlan(addedPlan, true)}
+						onDelete={() => deleteNewPlan(index)}
+					/>
+				{/each}
+			</div>
 
-		{#if actionPlans.length === 0}
-			<div class="text-center py-8 text-muted-foreground">No action plans added yet. Click "Add Plan" to create one.</div>
+			<div class="flex justify-end mt-4">
+				<button onclick={addNewPlan} class="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg">
+					<Plus class="w-4 h-4 mr-2" />
+					Add New Plan
+				</button>
+			</div>
 		{/if}
-	</div>
-
-	<!-- Submit Button -->
-	<div class="flex justify-end">
-		<button onclick={submitActionPlans} disabled={isSubmitting} class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50">
-			{#if isSubmitting}
-				<Loader2 class="animate-spin" size={20} />
-				Submitting...
-			{:else}
-				<Save size={20} />
-				Submit All
-			{/if}
-		</button>
 	</div>
 </div>
-
-<!-- Modal -->
-<Modal bind:show={showModal}>
-	<div class="p-6">
-		<div class="flex justify-between items-center mb-6">
-			<h3 class="text-xl font-semibold">
-				{editIndex >= 0 ? "Edit" : "Add"} Action Plan
-			</h3>
-			<button onclick={() => (showModal = false)} class="text-muted-foreground hover:text-foreground transition-colors">
-				<X size={24} />
-			</button>
-		</div>
-
-		<div class="space-y-4">
-			{#each ["actions_taken", "kpi", "target_output", "key_person_responsible"] as field}
-				<div class="space-y-2">
-					<label class="block text-sm font-medium">
-						{field
-							.split("_")
-							.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-							.join(" ")}
-					</label>
-					<textarea class="w-full px-3 py-2 rounded-lg bg-secondary border border-border focus:ring-2 focus:ring-ring" value={currentPlan[field]} oninput={(e) => (currentPlan[field] = e.target.value)}></textarea>
-				</div>
-			{/each}
-		</div>
-
-		<div class="mt-6 flex justify-end gap-4">
-			<button onclick={() => (showModal = false)} class="px-4 py-2 border border-border rounded-lg text-muted-foreground hover:bg-muted transition-colors">Cancel</button>
-			<button onclick={savePlan} class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
-				{editIndex >= 0 ? "Update" : "Add"} Plan
-			</button>
-		</div>
-	</div>
-</Modal>

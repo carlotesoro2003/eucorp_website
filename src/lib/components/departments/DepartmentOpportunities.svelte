@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { supabase } from "$lib/supabaseClient";
-	import { Plus, Trash2, Save, Target, PlusCircle, Lightbulb } from "lucide-svelte";
+	import { Plus, PlusCircle, Lightbulb } from "lucide-svelte";
 	import OpportunityCard from "$lib/components/dept-opts/OpportunityCard.svelte";
 	import { fade } from "svelte/transition";
 
@@ -14,14 +14,11 @@
 		target_output: string;
 		budget: number;
 		profile_id: string;
+		department_id: string;
 	}
 
-	// Reactive states
-	let opportunities: Opportunity[] = $state([]);
-	let selectedOpportunity: Opportunity | null = $state(null);
-	let isLoading: boolean = $state(false);
-	let isSaving: boolean = $state(false);
-	let formData = $state([
+	let opportunities: Opportunity[] = [];
+	let formData = [
 		{
 			opt_statement: "",
 			planned_actions: "",
@@ -32,11 +29,14 @@
 			profile_id: "",
 			department_id: "",
 		},
-	]);
-	let profileId: string | null = $state(null);
-	let showAlert: boolean = $state(false);
-	let alertMessage: string = $state("");
-	let alertType: "success" | "error" = $state("success");
+	];
+	let profile: { id: string; department_id: string } | null = null;
+	let departmentName: string = "";
+	let isLoading = false;
+	let isSaving = false;
+	let showAlert = false;
+	let alertMessage = "";
+	let alertType: "success" | "error" = "success";
 
 	/** Display Alert */
 	const displayAlert = (message: string, type: "success" | "error") => {
@@ -48,113 +48,108 @@
 		}, 3000);
 	};
 
-	// Functions
-	const fetchUserProfile = async (): Promise<void> => {
-		const {
-			data: { session },
-		} = await supabase.auth.getSession();
+	/** Fetch User Profile */
+	const fetchUserProfile = async () => {
+		try {
+			const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+			if (sessionError) throw sessionError;
 
-		if (session) {
-			const { data, error } = await supabase.from("profiles").select("id, department_id").eq("id", session.user.id).single();
+			const userId = sessionData?.session?.user?.id;
+			if (!userId) throw new Error("No logged-in user found.");
 
-			if (error) {
-				displayAlert("Error fetching profile", "error");
-			} else {
-				profileId = data.id;
-				formData.forEach((row) => {
-					row.department_id = data.department_id;
-				});
-			}
+			const { data: profileData, error: profileError } = await supabase
+				.from("profiles")
+				.select("id, department_id")
+				.eq("id", userId)
+				.single();
+
+			if (profileError) throw profileError;
+
+			profile = profileData;
+
+			const { data: departmentData, error: departmentError } = await supabase
+				.from("departments")
+				.select("name")
+				.eq("id", profile.department_id)
+				.single();
+
+			if (departmentError) throw departmentError;
+
+			departmentName = departmentData.name;
+
+			// Update department_id in new opportunity form data
+			formData.forEach((row) => {
+				row.department_id = profile.department_id;
+			});
+		} catch (error) {
+			console.error("Error fetching user profile:", error);
+			displayAlert("Failed to fetch profile details.", "error");
 		}
 	};
 
-	const createOpportunity = async () => {
-		if (!profileId) return;
-
-		isSaving = true;
+	/** Fetch Opportunities */
+	const fetchOpportunities = async () => {
+		isLoading = true;
 		try {
 			const { data, error } = await supabase
 				.from("opportunities")
-				.insert(
-					formData.map((row) => ({
-						...row,
-						profile_id: profileId,
-						department_id: row.department_id,
-					}))
-				)
-				.select();
+				.select("*")
+				.eq("department_id", profile?.department_id);
 
-			if (error) {
-				displayAlert("Error creating opportunities", "error");
-				return;
-			}
+			if (error) throw error;
 
-			if (data && data.length > 0) {
-				const events = await Promise.all(
-					data.map(async (opportunity) => {
-						const { data: departmentData, error: departmentError } = await supabase.from("departments").select("name").eq("id", opportunity.department_id).single();
+			opportunities = data || [];
+		} catch (error) {
+			console.error("Error fetching opportunities:", error);
+			displayAlert("Error fetching opportunities.", "error");
+		} finally {
+			isLoading = false;
+		}
+	};
 
-						if (departmentError) {
-							displayAlert(`Error fetching department name`, "error");
-							return null;
-						}
+	/** Save Edited Opportunity */
+	const saveOpportunity = async (opportunity: Opportunity) => {
+		isSaving = true;
+		try {
+			const { error } = await supabase
+				.from("opportunities")
+				.update(opportunity)
+				.eq("id", opportunity.id);
 
-						const departmentName = departmentData?.name || "Unknown Department";
+			if (error) throw error;
 
-						return {
-							event_id: opportunity.id,
-							event_type: "opportunity",
-							description: `${departmentName} created a new opportunity`,
-						};
-					})
-				);
-
-				const validEvents = events.filter((event) => event !== null);
-
-				if (validEvents.length > 0) {
-					await supabase.from("recent_events").insert(validEvents);
-				}
-			}
-
-			displayAlert("Opportunities created successfully", "success");
-			// Reset form and refresh
+			displayAlert("Opportunity saved successfully.", "success");
 			await fetchOpportunities();
-			formData = [
-				{
-					opt_statement: "",
-					planned_actions: "",
-					kpi: "",
-					key_persons: "",
-					target_output: "",
-					budget: 0,
-					profile_id: "",
-					department_id: formData[0].department_id,
-				},
-			];
-		} catch (err) {
-			displayAlert("Unexpected error occurred", "error");
+		} catch (error) {
+			console.error("Error saving opportunity:", error);
+			displayAlert("Error saving opportunity.", "error");
 		} finally {
 			isSaving = false;
 		}
 	};
 
-	const fetchOpportunities = async (): Promise<void> => {
-		isLoading = true;
-		const { data, error } = await supabase.from("opportunities").select("*").eq("profile_id", profileId);
+	/** Delete Opportunity */
+	const deleteOpportunity = async (opportunityId: number) => {
+		isSaving = true;
+		try {
+			const { error } = await supabase
+				.from("opportunities")
+				.delete()
+				.eq("id", opportunityId);
 
-		if (error) {
-			displayAlert("Error fetching opportunities", "error");
-		} else {
-			opportunities = data;
+			if (error) throw error;
+
+			displayAlert("Opportunity deleted successfully.", "success");
+			await fetchOpportunities();
+		} catch (error) {
+			console.error("Error deleting opportunity:", error);
+			displayAlert("Error deleting opportunity.", "error");
+		} finally {
+			isSaving = false;
 		}
-		isLoading = false;
 	};
 
-	const deleteCard = (index: number) => {
-		formData.splice(index, 1);
-		formData = [...formData];
-	};
-
+	/** Add New Opportunity Form */
 	const addCard = () => {
 		formData = [
 			...formData,
@@ -165,20 +160,26 @@
 				key_persons: "",
 				target_output: "",
 				budget: 0,
-				profile_id: profileId || "",
-				department_id: formData[0]?.department_id || "",
+				profile_id: profile?.id || "",
+				department_id: profile?.department_id || "",
 			},
 		];
 	};
 
-	onMount(() => {
-		fetchUserProfile();
-		if (profileId) {
-			fetchOpportunities();
-		}
+	/** Delete New Opportunity Form */
+	const deleteCard = (index: number) => {
+		formData.splice(index, 1);
+		formData = [...formData];
+	};
+
+	/** Initialize Data */
+	onMount(async () => {
+		await fetchUserProfile();
+		await fetchOpportunities();
 	});
 </script>
 
+<!-- Template -->
 <div class="flex flex-col gap-4 p-4 container mx-auto">
 	{#if showAlert}
 		<div transition:fade class="flex items-center p-4 rounded-lg {alertType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
@@ -189,47 +190,41 @@
 	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 		<div class="flex items-center gap-2">
 			<Lightbulb class="w-8 h-8 text-primary" />
-			<h1 class="text-2xl font-bold">Opportunities Register</h1>
+			<h1 class="text-2xl font-bold">{departmentName} Opportunities Register</h1>
 		</div>
 	</div>
 
 	<div class="bg-card rounded-lg shadow border border-border p-6">
-		<div class="flex justify-between items-center mb-6">
-			<h2 class="text-xl font-semibold">
-				{selectedOpportunity ? "Edit Opportunity" : "Create Opportunity"}
-			</h2>
-			<button class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50" disabled={isSaving} onclick={() => console.log("Save Progress")}>
-				<Save class="w-4 h-4 mr-2" />
-				Save Progress
-			</button>
-		</div>
-
 		{#if isLoading}
 			<div class="flex justify-center p-8">
-				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
 			</div>
 		{:else}
-			<!-- Cards Container -->
+			<!-- Existing Opportunities -->
 			<div class="grid grid-cols-1 gap-6 mb-6">
+				{#each opportunities as opportunity, index}
+					<OpportunityCard
+						data={opportunity}
+						index={index}
+						onSave={saveOpportunity}
+						onDelete={() => deleteOpportunity(opportunity.id)}
+					/>
+				{/each}
+
+				<!-- New Opportunities -->
 				{#each formData as data, index}
-					<OpportunityCard {data} {index} onDelete={() => deleteCard(index)} />
+					<OpportunityCard
+						data={data}
+						index={index}
+						onDelete={() => deleteCard(index)}
+					/>
 				{/each}
 			</div>
 
-			<!-- Action Buttons -->
-			<div class="flex flex-wrap gap-4">
+			<div class="flex gap-4">
 				<button onclick={addCard} class="inline-flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
 					<Plus class="w-4 h-4 mr-2" />
 					Add New Opportunity
-				</button>
-
-				<button onclick={createOpportunity} class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50" disabled={isLoading || isSaving}>
-					<PlusCircle class="w-4 h-4 mr-2" />
-					{#if isSaving}
-						<div class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
-					{:else}
-						{selectedOpportunity ? "Save Changes" : "Submit Opportunities"}
-					{/if}
 				</button>
 			</div>
 		{/if}
