@@ -384,7 +384,7 @@
 		<div transition:fade={{ duration: 200 }} class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
 			<div transition:slide={{ duration: 200 }} class="bg-background rounded-lg shadow-xl w-full max-w-lg mx-4">
 				<div class="flex items-center justify-between p-4 border-b border-border">
-					<h2 class="text-lg font-semibold">Evaluate Action Plan</h2>
+					<h2 class="text-lg font-semibold">Actions Taken</h2>
 					<button onclick={closeEvaluationModal} class="p-1 hover:bg-muted rounded-full">
 						<X size={20} />
 					</button>
@@ -403,8 +403,8 @@
 						<p class="text-muted-foreground">{selectedPlan?.target_output}</p>
 					</div>
 					<div class="mb-6">
-						<label class="block text-sm font-medium mb-1">Evaluation</label>
-						<textarea bind:value={evaluationText} class="w-full h-32 px-3 py-2 text-sm bg-secondary rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-ring resize-none" placeholder="Enter your evaluation..." />
+						<label class="block text-sm font-medium mb-1">Actions Taken to Achieve Action Plan</label>
+						<textarea bind:value={evaluationText} class="w-full h-32 px-3 py-2 text-sm bg-secondary rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-ring resize-none" placeholder="Enter your actions..." />
 					</div>
 					<div class="flex justify-end gap-3">
 						<button onclick={closeEvaluationModal} class="px-4 py-2 text-sm hover:bg-muted rounded-md">Cancel</button>
