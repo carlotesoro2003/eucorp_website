@@ -1,6 +1,6 @@
 <script lang="ts">
   import { supabase } from "$lib/supabaseClient";
-  import { AlertCircle, ClipboardList, AlertTriangle, Lightbulb } from "lucide-svelte";
+  import { AlertCircle, ClipboardList, AlertTriangle, Lightbulb, Monitor } from "lucide-svelte";
 
   // Admin Monitoring Pages
   import AdminPlansMonitoring from "$lib/components/monitoring/admin/AdminPlansMonitoring.svelte";
@@ -64,16 +64,19 @@
   };
 </script>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="min-h-screen ">
 	<div class="container mx-auto px-4 py-8">
 		<!-- Header -->
-		<div class="mb-8">
-			<h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Mid-year Monitoring Dashboard</h1>
-			<p class="text-gray-600 dark:text-gray-400">Track and manage your organization's plans, risks, and opportunities</p>
+		<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
+			<div class="flex items-center gap-2">
+				<Monitor class="w-8 h-8 text-primary" />
+				<h1 class="text-2xl font-bold">Mid-year Monitoring Dashboard</h1>
+			</div>
 		</div>
+	
 
 		<!-- Tabs -->
-		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6">
+		<div class=" dark:bg-gray-800 rounded-lg shadow-sm mb-6">
 			<div class="flex flex-wrap gap-2 p-2">
 				{#each tabs as tab}
 					<button onclick={() => (activeTab = tab.id)} class="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-200 {activeTab === tab.id ? 'bg-primary hover:bg-primary/90 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'}">
@@ -87,10 +90,9 @@
 		<!-- Content -->
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
 			{#if loading}
-				<div class="flex flex-col items-center justify-center py-12">
-					<div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-					<p class="mt-4 text-gray-600 dark:text-gray-400">Loading your dashboard...</p>
-				</div>
+			<div class="flex justify-center p-8 ">
+				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+			</div>
 			{:else if session && profile}
 				{#if profile.role === "admin" || profile.role === "vice_president" || profile.role === "president"}
 					{#if activeTab === "Plans"}

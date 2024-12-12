@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Pencil, Search, Trash2, Plus, X, ArrowUpDown } from "lucide-svelte";
+	import { Pencil, Search, Trash2, Plus, X, ArrowUpDown, Group, UsersRound } from "lucide-svelte";
 	import { supabase } from "$lib/supabaseClient";
 	import LeadForm from "$lib/components/leads-table/LeadForm.svelte";
 	import LeadCard from "$lib/components/leads-table/LeadCard.svelte";
@@ -111,9 +111,11 @@
 
 <div class="flex flex-col gap-4 container mx-auto ">
 	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-		<h2 class="text-2xl font-bold">Leads Management</h2>
+		<div class="flex items-center gap-2">
+			<UsersRound class="w-8 h-8 text-primary" />
+			<h1 class="text-2xl font-bold">Leads</h1>
+		</div>
 	</div>
-
 	<!-- Success and Error Alerts -->
 	{#if successMessage}
 		<div class="bg-green-500/20 text-green-400 p-4 rounded-lg">{successMessage}</div>

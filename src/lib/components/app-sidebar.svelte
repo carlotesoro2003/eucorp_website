@@ -38,12 +38,13 @@
         url: "/users",
         icon: Bot,
         items: [
-          {title:"School Years", url: "/school-year"},
           { title: "Users", url: "/users" },
+          
           { title: "Departments", url: "/departments" },
           { title: "Leads", url: "/leads" },
           { title: "Classifications", url: "/classification" },
-          { title: "Risk Management", url: "/riskManagement" },
+          { title: "Ratings Management", url: "/riskManagement" },
+          {title:"School Years", url: "/school-year"}
         ],
       },
       {
@@ -51,7 +52,7 @@
         url: "/plans",
         icon: ChartPie,
         items: [
-          { title: "Strategic Planning", url: "/plans" },
+          { title: "Strategic Goals", url: "/plans" },
           { title: "Risks", url: "/risks" },
           { title: "Opportunities", url: "/opportunities" },
         ],

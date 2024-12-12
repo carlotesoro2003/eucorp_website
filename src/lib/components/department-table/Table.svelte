@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Download, Plus, Search, X } from "lucide-svelte";
+	import { Building, Download, Plus, Search, X } from "lucide-svelte";
 	import { onMount } from "svelte";
 	import { supabase } from "$lib/supabaseClient";
 	import DepartmentForm from "$lib/components/department-table/DepartmentForm.svelte";
@@ -137,7 +137,10 @@
 
 <div class="flex flex-col gap-4 container mx-auto">
 	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-		<h2 class="text-2xl font-bold">Departments Management</h2>
+		<div class="flex items-center gap-2">
+			<Building class="w-8 h-8 text-primary" />
+			<h1 class="text-2xl font-bold">Department Management</h1>
+		</div>
 	</div>
 
 	{#if showAlert}

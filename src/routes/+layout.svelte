@@ -179,7 +179,7 @@ onMount(() => {
 <!-- Render loading spinner during session validation -->
 {#if loading}
   <div class="flex items-center justify-center min-h-screen ">
-    <span class="loading loading-spinner loading-lg"></span>
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
   </div>
 
 {:else if user.session && user.isVerified}

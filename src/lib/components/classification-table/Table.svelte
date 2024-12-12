@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Plus, Search } from "lucide-svelte";
+	import { Plus, Search, Shapes } from "lucide-svelte";
 	import { supabase } from "$lib/supabaseClient";
 	import UserForm from "$lib/components/classification-table/UserForm.svelte";
 	import ClassificationCard from "$lib/components/classification-table/ClassificationCard.svelte";
@@ -117,7 +117,10 @@
 
 <div class="flex flex-col gap-4 container mx-auto ">
 	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-		<h2 class="text-2xl font-bold">Classifications Management</h2>
+		<div class="flex items-center gap-2">
+			<Shapes class="w-8 h-8 text-primary" />
+			<h1 class="text-2xl font-bold">Classsification Management</h1>
+		</div>
 	</div>
 
 	<!-- Alert -->

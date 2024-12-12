@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Download, Pencil, Search, Trash2, Plus, X, ArrowUpDown } from "lucide-svelte";
+	import { Download, Pencil, Search, Trash2, Plus, X, ArrowUpDown, Lightbulb } from "lucide-svelte";
 	import TableRow from "$lib/components/admin-opportunities-table/TableRow.svelte";
 	import OpportunityForm from "$lib/components/admin-opportunities-table/OpportunityForm.svelte";
 	import jsPDF from "jspdf";
@@ -420,8 +420,11 @@ const approveAllOpportunities = async () => {
 	{/if}
 
 	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-		<h2 class="text-2xl font-bold">Opportunities Management</h2>
-	</div>
+		<div class="flex items-center gap-2">
+		  <Lightbulb class="w-8 h-8 text-primary" />
+		  <h1 class="text-2xl font-bold">Opportunities Management</h1>
+		</div>
+	  </div>
 
 	<!-- Mobile filters toggle -->
 	<button onclick={() => (showMobileFilters = !showMobileFilters)} class="md:hidden w-full px-4 py-2 bg-secondary rounded-lg text-left flex justify-between items-center">
@@ -434,7 +437,7 @@ const approveAllOpportunities = async () => {
 		<div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
 			<div class="relative flex-1 md:w-[300px]">
 				<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
-				<input type="text" bind:value={searchQuery} placeholder="Search opportunities..." class="pl-10 pr-4 py-2 bg-secondary rounded-lg w-full" />
+				<input type="text" bind:value={searchQuery} placeholder="Search opportunities..." class="pl-10 pr-4 py-2 bg-secondary border-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring" />
 			</div>
 			<select bind:value={departmentFilter} class="bg-secondary rounded-lg px-3 py-2 w-full md:w-[200px]">
 				<option value="all">All Departments</option>
@@ -443,25 +446,27 @@ const approveAllOpportunities = async () => {
 				{/each}
 			</select>
 		</div>
-		<!-- Approve All Button -->
-		{#if paginatedItems.length > 0}
-			<button
-				class="btn btn-primary flex items-center gap-2"
-				onclick={approveAllOpportunities}
-				disabled={isLoading || paginatedItems.every(
-					(opportunity) =>
-						(userRole === "admin" && opportunity.is_approved) ||
-						(userRole === "vice_president" && opportunity.is_approved_vp) ||
-						(userRole === "president" && opportunity.is_approved_president)
-				)}
-			>
-				{isLoading ? "Processing..." : "Approve All"}
-			</button>
-		{/if}
+		
 		<div class="flex gap-2 w-full md:w-auto">
+
+			<!-- Approve All Button -->
+		{#if paginatedItems.length > 0}
+		<button
+			class="flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg hover:bg-secondary/80 flex-1 md:flex-initial"
+			onclick={approveAllOpportunities}
+			disabled={isLoading || paginatedItems.every(
+				(opportunity) =>
+					(userRole === "admin" && opportunity.is_approved) ||
+					(userRole === "vice_president" && opportunity.is_approved_vp) ||
+					(userRole === "president" && opportunity.is_approved_president)
+			)}
+		>
+			{isLoading ? "Processing..." : "Approve All"}
+		</button>
+	{/if}
 			<button onclick={exportToPDF} class="flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg hover:bg-secondary/80 flex-1 md:flex-initial">
 				<Download size={20} />
-				Export PDF
+				Export
 			</button>
 		</div>
 	</div>

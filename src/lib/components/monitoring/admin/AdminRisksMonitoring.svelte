@@ -61,10 +61,9 @@
 
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
 	{#if isLoading}
-		<div class="flex items-center justify-center p-8">
-			<Loader2 class="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400" />
-			<span class="ml-2 text-gray-600 dark:text-gray-400">Loading risks...</span>
-		</div>
+	<div class="flex justify-center p-8 ">
+		<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+	</div>
 	{:else if errorMessage}
 		<div class="p-4 bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
 			{errorMessage}

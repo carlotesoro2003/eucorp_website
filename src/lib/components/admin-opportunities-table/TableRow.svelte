@@ -47,7 +47,7 @@
 			<button onclick={() => onApprove(opportunity.id)} disabled={approvingId === opportunity.id || (userRole === "admin" && opportunity.is_approved) || (userRole === "vice_president" && (!opportunity.is_approved || opportunity.is_approved_vp)) || (userRole === "president" && (!opportunity.is_approved_vp || opportunity.is_approved_president))} class="px-2 py-1 text-sm rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50">
 				{approvingId === opportunity.id ? "Processing..." : userRole === "admin" ? (opportunity.is_approved ? "Admin Approved" : "Approve") : userRole === "vice_president" ? (opportunity.is_approved_vp ? "VP Approved" : "Approve") : userRole === "president" ? (opportunity.is_approved_president ? "President Approved" : "Approve") : "Approve"}
 			</button>
-			<button onclick={() => onEdit(opportunity)} class="p-1 rounded hover:bg-muted">
+			<button onclick={() => onEdit(opportunity)} class="hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground">
 				<Pencil size={16} />
 			</button>
 			<button onclick={() => onDelete(opportunity.id)} disabled={deletingId === opportunity.id} class="p-1 rounded hover:bg-muted text-red-500 hover:text-red-600 disabled:opacity-50">

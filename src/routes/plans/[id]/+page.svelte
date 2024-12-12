@@ -3,7 +3,7 @@
 	import { supabase } from "$lib/supabaseClient";
 	import { page } from "$app/stores";
 	import { goto } from "$app/navigation";
-	import { Search, FileDown, Pencil, Plus, ChevronLeft, ArrowUpDown } from "lucide-svelte";
+	import { Search, FileDown, Pencil, Plus, ChevronLeft, ArrowUpDown, Download } from "lucide-svelte";
 	import jsPDF from "jspdf";
 	import autoTable from "jspdf-autotable";
 	import EditObjectiveForm from "$lib/components/strategic-objectives/EditObjectiveForm.svelte";
@@ -259,7 +259,7 @@
 						<ChevronLeft size={20} />
 						Back to Goals
 					</a>
-					<h1 class="text-3xl font-bold">Strategic Objectives for Goal {goal?.goal_no}</h1>
+					<h1 class="text-2xl font-bold">Strategic Objectives for Goal {goal?.goal_no}</h1>
 					{#if goal}
 						<div class="mt-2 text-muted-foreground">
 							<p>
@@ -272,16 +272,6 @@
 							</p>
 						</div>
 					{/if}
-				</div>
-				<div class="flex flex-col sm:flex-row gap-2">
-					<button onclick={() => (showAddForm = true)} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 justify-center whitespace-nowrap w-full md:w-auto">
-						<Plus size={20} />
-						Add Objectives
-					</button>
-					<button onclick={exportToPDF} class="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-secondary/80 justify-center flex-1 md:flex-initial whitespace-nowrap">
-						<FileDown size={20} />
-						Export PDF
-					</button>
 				</div>
 			</div>
 
@@ -298,18 +288,23 @@
 			{/if}
 
 			{#if objectives.length > 0}
-				<!-- Search and filters -->
-				<div class="flex flex-col md:flex-row gap-4">
-					<div class="relative flex-3">
+				<!-- Search and Actions -->
+				<div class="flex flex-col md:flex-row justify-between items-center gap-4">
+					<div class="relative flex-3 w-full md:max-w-[300px]">
 						<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
 						<input type="text" bind:value={searchQuery} placeholder="Search objectives..." class="pl-10 pr-4 py-2 bg-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring" />
 					</div>
-					<select bind:value={itemsPerPage} class="bg-secondary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring w-full md:w-[150px]">
-						<option value={5}>5 per page</option>
-						<option value={10}>10 per page</option>
-						<option value={25}>25 per page</option>
-						<option value={50}>50 per page</option>
-					</select>
+					<div class="flex gap-2">
+						<button onclick={exportToPDF} class="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-secondary/80 justify-center whitespace-nowrap">
+							<Download size={20} />
+							Export
+						</button>
+						<button onclick={() => (showAddForm = true)} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 justify-center whitespace-nowrap">
+							<Plus size={20} />
+							Add Objectives
+						</button>
+						
+					</div>
 				</div>
 
 				<!-- Table -->
@@ -342,10 +337,10 @@
 									<td class="px-4 py-3">{objective.eval_measures}</td>
 									<td class="px-4 py-3">
 										<div class="flex justify-center gap-2">
-											<button onclick={() => handleObjectiveClick(objective.id)} class="btn btn-ghost" title="View plans">
+											<button onclick={() => handleObjectiveClick(objective.id)} class="p-1.5 hover:bg-primary/10 rounded-md transition-colors text-blue-500" title="View plans">
 												<Eye size={18} />
 											</button>
-											<button onclick={() => (editingObjective = objective)} class="btn btn-ghost btn-sm">
+											<button onclick={() => (editingObjective = objective)} class="hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground">
 												<Pencil size={18} />
 											</button>
 										</div>
@@ -357,12 +352,19 @@
 				</div>
 
 				<!-- Pagination -->
-				<div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+				<div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
 					<div class="text-sm text-muted-foreground">
 						Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredObjectives.length)} of {filteredObjectives.length} results
 					</div>
-					<div class="flex gap-2">
+					<div class="flex gap-2 items-center">
+						<select bind:value={itemsPerPage} class="bg-secondary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring">
+							<option value={5}>5 per page</option>
+							<option value={10}>10 per page</option>
+							<option value={25}>25 per page</option>
+							<option value={50}>50 per page</option>
+						</select>
 						<button disabled={currentPage === 1} onclick={() => (currentPage -= 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">Previous</button>
+						
 						<button disabled={currentPage === totalPages} onclick={() => (currentPage += 1)} class="px-3 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-50">Next</button>
 					</div>
 				</div>

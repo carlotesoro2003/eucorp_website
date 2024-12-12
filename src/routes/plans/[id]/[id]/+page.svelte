@@ -4,7 +4,7 @@
   import jsPDF from "jspdf";
   import autoTable from "jspdf-autotable";
   import { page } from "$app/stores";
-  import { Search, ArrowUpDown } from "lucide-svelte";
+  import { Search, ArrowUpDown, ChevronLeft } from "lucide-svelte";
 
 
   interface ActionPlan {
@@ -499,6 +499,10 @@
 </script>
 
 <div class="min-h-screen p-8">
+  <!-- <a href="/plans" class="flex items-center gap-2 text-muted-foreground mb-2 hover:text-foreground">
+    <ChevronLeft size={20} />
+    Back to Objectives
+  </a> -->
   <h1 class="text-2xl font-bold mb-4">Action Plans</h1>
 
   <div class="flex flex-col md:flex-row gap-4 mb-4">

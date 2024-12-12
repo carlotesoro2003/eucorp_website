@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PencilIcon, X } from "lucide-svelte";
+	import { PencilIcon, Trash, Trash2, X } from "lucide-svelte";
 
 	/** Props */
 	let {
@@ -27,11 +27,11 @@
 	{/if}
 	<td class="px-6 py-4">
 		<div class="flex gap-2">
-			<button onclick={() => onEdit(item)} class="p-2 hover:bg-muted rounded-lg">
+			<button onclick={() => onEdit(item)} class="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground">
 				<PencilIcon size={16} />
 			</button>
-			<button onclick={() => onDelete(item.id)} class="p-2 hover:bg-red-100 text-red-500 rounded-lg">
-				<X size={16} />
+			<button onclick={() => onDelete(item.id)} class="p-2 hover:bg-red-100 text-red-500 hover:text-red-600 rounded-lg disabled:opacity-50">
+				<Trash2 size={16} />
 			</button>
 		</div>
 	</td>

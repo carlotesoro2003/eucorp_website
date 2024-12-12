@@ -45,7 +45,9 @@
 
 <div>
   {#if isLoading}
-    <p>Loading...</p>
+  <div class="flex items-center justify-center min-h-screen ">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
   {:else if errorMessage}
     <p class="text-red-500">{errorMessage}</p>
   {:else}

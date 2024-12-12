@@ -41,8 +41,7 @@
       <div class="w-full ">
         {#if loading}
           <div class="flex flex-col items-center justify-center">
-            <span class="loading loading-spinner loading-sm"></span>
-            <p>Loading...</p> <!-- Show loading state -->
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         {:else if session !== null && profile}
        

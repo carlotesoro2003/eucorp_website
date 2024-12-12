@@ -1,5 +1,5 @@
 	<script lang="ts">
-		import { Download, Pencil, Search, Trash2, Plus, X, ArrowUpDown } from "lucide-svelte";
+		import { Download, Pencil, Search, Trash2, Plus, X, ArrowUpDown, School, Users2, User2 } from "lucide-svelte";
 		import TableRow from "$lib/components/user-table/TableRow.svelte";
 		import UserForm from "$lib/components/user-table/UserForm.svelte";
 		import { supabase, supabaseAdmin } from "$lib/supabaseClient";
@@ -235,7 +235,10 @@
 		{/if}
 
 		<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-			<h2 class="text-2xl font-bold">Users Management</h2>
+			<div class="flex items-center gap-2">
+				<User2 class="w-8 h-8 text-primary" />
+				<h1 class="text-2xl font-bold">User Management</h1>
+			</div>
 		</div>
 
 		<!-- Mobile filters toggle -->

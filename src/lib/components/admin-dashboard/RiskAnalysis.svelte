@@ -112,25 +112,32 @@
 <div class="rounded-lg border border-border p-4 hover:shadow-lg transition-all duration-300">
 	<h2 class="mb-6 text-xl font-semibold text-gray-800">Risk Analysis</h2>
 	{#if isLoading}
-		<div class="text-center">
-			<span class="loading loading-spinner text-primary"></span>
-			<p>Loading risk data...</p>
-		</div>
+	  <div class="text-center">
+		<span class="loading loading-spinner text-primary"></span>
+		<p>Loading risk data...</p>
+	  </div>
 	{:else}
-		<div class="relative mb-6">
-			<select
-				bind:value={selectedCategory}
-				on:change={createChart}
-				class="appearance-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 pr-10 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 focus:border-blue-500 focus:outline-none"
-			>
-				{#each classifications as classification}
-					<option value={classification}>{classification}</option>
-				{/each}
-			</select>
-			<ChevronDown class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+	  <!-- Header and Dropdown aligned -->
+	  <div class="flex justify-between items-center mb-6">
+		<p class="text-gray-800 font-medium">Classification:</p>
+		<div class="relative w-full sm:w-1/3 lg:w-1/4">
+		  <select
+			bind:value={selectedCategory}
+			on:change={createChart}
+			class="appearance-none w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 pr-10 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 focus:border-blue-500 focus:outline-none"
+		  >
+			{#each classifications as classification}
+			  <option value={classification}>{classification}</option>
+			{/each}
+		  </select>
+		  <ChevronDown class="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 pointer-events-none" />
 		</div>
-		<div class="h-[300px]">
-			<canvas bind:this={canvas}></canvas>
-		</div>
+	  </div>
+  
+	  <!-- Chart -->
+	  <div class="h-[300px]">
+		<canvas bind:this={canvas}></canvas>
+	  </div>
 	{/if}
-</div>
+  </div>
+  

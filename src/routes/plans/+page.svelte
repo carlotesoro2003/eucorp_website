@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Search, ArrowUpDown, Plus, Edit, Trash2, Eye } from "lucide-svelte";
+	import { Search, ArrowUpDown, Plus, Edit, Trash2, Eye, Pencil, Target } from "lucide-svelte";
 	import { supabase } from "$lib/supabaseClient";
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
@@ -281,11 +281,14 @@
 		</div>
 	{/if}
 
-	<div class="mb-6">
-		<h1 class="text-3xl font-bold">Strategic Goals</h1>
+	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+		<div class="flex items-center gap-2">
+			<Target class="w-8 h-8 text-primary" />
+			<h1 class="text-2xl font-bold">Strategic Goals</h1>
+		</div>
 	</div>
 
-	<div class="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
+	<div class="flex flex-col md:flex-row gap-4 mb-2 items-center justify-between">
 		<div class="flex flex-col md:flex-row gap-4 flex-1">
 			<div class="relative flex-1 w-full md:max-w-[300px]">
 				<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
@@ -349,7 +352,7 @@
 							<td class="px-4 py-3">{getSchoolYearById(goal.school_year)}</td>
 							<td class="px-4 py-3">
 								<div class="flex justify-center gap-2">
-									<button onclick={() => goto(`/plans/${goal.id}`)} class="p-1.5 hover:bg-primary/10 rounded-md transition-colors" title="View objectives">
+									<button onclick={() => goto(`/plans/${goal.id}`)} class="p-1.5 hover:bg-primary/10 rounded-md transition-colors text-blue-500" title="View objectives">
 										<Eye size={18} />
 									</button>
 									<button
@@ -357,10 +360,10 @@
 											editingGoal = goal;
 											showForm = true;
 										}}
-										class="p-1.5 hover:bg-primary/10 rounded-md transition-colors"
+										class="hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground"
 										title="Edit goal"
 									>
-										<Edit size={18} />
+										<Pencil size={18} />
 									</button>
 									<button onclick={() => deleteGoal(goal.id)} class="p-1.5 hover:bg-red-100 rounded-md transition-colors text-red-600" title="Delete goal">
 										<Trash2 size={18} />

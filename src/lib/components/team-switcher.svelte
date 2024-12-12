@@ -34,11 +34,11 @@
 							</span>
 							<span class="truncate text-xs">{activeTeam.plan}</span>
 						</div>
-						<ChevronsUpDown class="ml-auto" />
+						<!-- <ChevronsUpDown class="ml-auto" /> -->
 					</Sidebar.MenuButton>
 				{/snippet}
 			</DropdownMenu.Trigger>
-			<DropdownMenu.Content
+			<!-- <DropdownMenu.Content
 				class="w-[--bits-dropdown-menu-anchor-width] min-w-56 rounded-lg"
 				align="start"
 				side={sidebar.isMobile ? "bottom" : "right"}
@@ -63,7 +63,7 @@
 					</div>
 					<div class="text-muted-foreground font-medium">Add team</div>
 				</DropdownMenu.Item>
-			</DropdownMenu.Content>
+			</DropdownMenu.Content> -->
 		</DropdownMenu.Root>
 	</Sidebar.MenuItem>
 </Sidebar.Menu>

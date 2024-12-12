@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { supabase } from "$lib/supabaseClient";
 	import { onMount } from "svelte";
-	import { Plus, PencilIcon, X } from "lucide-svelte";
+	import { Plus, PencilIcon, X, TriangleAlert, TrendingUp } from "lucide-svelte";
 	import RatingForm from "$lib/components/riskManagement-table/RatingForm.svelte";
 	import TableRow from "$lib/components/riskManagement-table/TableRow.svelte";
 
@@ -199,37 +199,61 @@
 </script>
 
 <div class="min-h-screen container">
-	<div class="flex justify-between items-center mb-6">
-		<h1 class="text-2xl font-bold">Ratings Management</h1>
-		<button
-			onclick={() => {
-				editingItem = null;
-				showForm = true;
-			}}
-			class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90"
-		>
-			<Plus size={20} />
-			Add New
-		</button>
-	</div>
-
-	<!-- Dropdown Menu -->
-	<div class="container mx-auto p-4">
-		<label for="dataSelect" class="text-lg font-semibold mr-4">Select Data Type:</label>
-		<div class="relative inline-block w-64">
-			<select id="dataSelect" bind:value={selectedDataType} class="w-full px-4 py-2 bg-card border border-border rounded-lg appearance-none">
+	<div class="mb-6">
+		<!-- Header -->
+		<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+			<div class="flex items-center gap-2">
+				<TrendingUp class="w-8 h-8 text-primary" />
+				<h1 class="text-2xl font-bold">Ratings Management</h1>
+			</div>
+		</div>
+	  
+		<!-- Dropdown and Button on the same line -->
+		<div class="flex justify-between py-3 items-center">
+		  <div class="flex items-center">
+			<label for="dataSelect" class="text-lg font-semibold mr-4">Select Data Type:</label>
+			<div class="relative w-64">
+			  <select
+				id="dataSelect"
+				bind:value={selectedDataType}
+				class="w-full px-4 py-2 bg-card border border-border rounded-lg appearance-none"
+			  >
 				<option value="likelihoodRating">Likelihood Rating</option>
 				<option value="severity">Severity</option>
 				<option value="riskControlRating">Risk Control Rating</option>
 				<option value="riskMonitoringRating">Risk Monitoring Rating</option>
-			</select>
-			<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-				<svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+			  </select>
+			  <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+				<svg
+				  class="w-5 h-5 text-gray-500"
+				  xmlns="http://www.w3.org/2000/svg"
+				  fill="none"
+				  viewBox="0 0 24 24"
+				  stroke="currentColor"
+				>
+				  <path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M19 9l-7 7-7-7"
+				  />
 				</svg>
+			  </div>
 			</div>
+		  </div>
+		  <button
+			onclick={() => {
+			  editingItem = null;
+			  showForm = true;
+			}}
+			class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90"
+		  >
+			<Plus size={20} />
+			Add New
+		  </button>
 		</div>
-	</div>
+	  </div>
+	  
 
 	<!-- Loading Indicator -->
 	{#if isLoading}
@@ -238,7 +262,7 @@
 		</div>
 	{:else}
 		<!-- Tables -->
-	<div class="overflow-x-auto shadow-lg rounded-lg bg-card border border-border">
+	<div class="overflow-x-auto bg-card rounded-lg shadow border border-border">
 		<!-- Likelihood Rating Table -->
 		{#if selectedDataType === "likelihoodRating"}
 			<table class="w-full">

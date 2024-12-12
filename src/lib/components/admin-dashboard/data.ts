@@ -7,25 +7,25 @@ export const dashboardData = {
     cards: [
         {
             title: 'Strategic Goals',
-            value: '0 Goals', // Placeholder for dynamic value
+            value: '0', // Placeholder for dynamic value
             change: 12.5,
             icon: '🎯',
         },
         {
             title: 'Unmitigated Risks',
-            value: '0 Risks', // Placeholder for dynamic value
+            value: '0', // Placeholder for dynamic value
             change: -2.4,
             icon: '⚠️',
         },
         {
             title: 'Opportunities',
-            value: '0 Opportunities', // Placeholder for dynamic value
+            value: '0', // Placeholder for dynamic value
             change: 8.2,
             icon: '💡',
         },
         {
             title: 'Users',
-            value: '0 Users', // Placeholder for dynamic value
+            value: '0', // Placeholder for dynamic value
             change: 5.1,
             icon: '👥',
         },
@@ -74,13 +74,14 @@ export const dashboardData = {
     ],
 };
 
-
 /**
  * Fetch and update the count of strategic goals directly in the dashboardData object.
  */
 export const updateStrategicGoalsCount = async (): Promise<void> => {
     try {
-        const { data, error } = await supabase.from('strategic_goals').select('id');
+        const { data, error } = await supabase
+            .from('strategic_goals')
+            .select('id');
         if (error) throw error;
 
         const strategicGoalsCount = data.length;
@@ -116,7 +117,9 @@ export const updateUnmitigatedRisksCount = async (): Promise<void> => {
  */
 export const updateOpportunitiesCount = async (): Promise<void> => {
     try {
-        const { data, error } = await supabase.from('opportunities').select('id');
+        const { data, error } = await supabase
+            .from('opportunities')
+            .select('id');
         if (error) throw error;
 
         const opportunitiesCount = data.length;

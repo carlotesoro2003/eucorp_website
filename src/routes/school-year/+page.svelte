@@ -2,7 +2,7 @@
 	import { supabase } from "$lib/supabaseClient";
 	import { onMount } from "svelte";
 	import { fade, scale } from "svelte/transition";
-	import { Plus, PencilIcon, Trash2, X, CalendarRange, School } from "lucide-svelte";
+	import { Plus, PencilIcon, Trash2, X, CalendarRange, School, Search } from "lucide-svelte";
 
 	/** Types definitions */
 	interface SchoolYear {
@@ -134,86 +134,101 @@
 	});
 </script>
 
-<div class="min-h-screen w-full bg-background text-foreground">
-	<div class="container py-8 px-4 mx-auto">
-		<!-- Header -->
-		<div class="flex flex-col gap-6 mb-8">
-			<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-				<div class="flex items-center gap-2">
-					<School class="w-8 h-8 text-primary" />
-					<h1 class="text-2xl font-bold">School Years Management</h1>
-				</div>
-				<button onclick={openCreateForm} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-					<Plus size={20} />
-					<span>Add New Year</span>
-				</button>
-			</div>
 
-			<!-- Search input -->
-			<div class="relative">
-				<input type="text" bind:value={searchQuery} placeholder="Search school years..." class="w-full sm:max-w-md px-4 py-2 rounded-lg border border-border bg-card focus:outline-none focus:ring-2 focus:ring-primary/20" />
-			</div>
-		</div>
+	<div class="container px-6 py-6 mx-auto">
+  <!-- Header -->
+  <div class="flex flex-col gap-6 mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div class="flex items-center gap-2">
+        <School class="w-8 h-8 text-primary" />
+        <h1 class="text-2xl font-bold">School Years Management</h1>
+      </div>
+    </div>
 
-		<!-- Error Message -->
-		{#if errorMessage}
-			<div class="mb-6" transition:fade>
-				<div class="bg-destructive/10 text-destructive px-4 py-3 rounded-lg flex items-center gap-2">
-					<X size={20} />
-					<p>{errorMessage}</p>
-				</div>
-			</div>
-		{/if}
+    <div class="flex flex-col md:flex-row justify-between gap-4 w-full">
+      <!-- Search input -->
+      <div class="relative flex-1 w-full md:max-w-[300px]">
+        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+        <input
+          type="text"
+          bind:value={searchQuery}
+          placeholder="Search school years..."
+          class="pl-10 sm:max-w-md px-4 py-2 bg-secondary border-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </div>
+      <!-- Add New Year button -->
+      <div class="flex gap-2 w-full md:w-auto md:justify-end">
+        <button
+          onclick={openCreateForm}
+          class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          <Plus size={20} />
+          <span>Add New Year</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
-		<!-- Loading Indicator -->
-		{#if isLoading}
-			<div class="flex justify-center p-8" transition:fade>
-				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-			</div>
-		{:else if filteredSchoolYears.length === 0}
-			<div class="text-center py-12 bg-card rounded-lg border border-border" transition:fade>
-				<CalendarRange size={48} class="mx-auto text-muted-foreground mb-4" />
-				<h3 class="text-lg font-semibold mb-2">No School Years Found</h3>
-				<p class="text-muted-foreground">Start by adding a new school year.</p>
-			</div>
-		{:else}
-			<!-- School Years Table -->
-			<div class="overflow-x-auto shadow-lg rounded-lg bg-card border border-border" transition:fade>
-				<table class="w-full">
-					<thead class="bg-muted/50">
-						<tr>
-							<th class="px-6 py-4 text-left font-medium">School Year</th>
-							<th class="px-6 py-4 text-left font-medium">Start Date</th>
-							<th class="px-6 py-4 text-left font-medium">End Date</th>
-							<th class="px-6 py-4 text-left font-medium">Mid Year</th>
-							<th class="px-6 py-4 text-left font-medium">Actions</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y divide-border">
-						{#each filteredSchoolYears as item}
-							<tr class="hover:bg-muted/50 transition-colors">
-								<td class="px-6 py-4 font-medium">{item.school_year}</td>
-								<td class="px-6 py-4">{formatDate(item.start_date)}</td>
-								<td class="px-6 py-4">{formatDate(item.end_date)}</td>
-								<td class="px-6 py-4">{item.mid_year ? formatDate(item.mid_year) : "-"}</td>
-								<td class="px-6 py-4">
-									<div class="flex items-center gap-4">
-										<button onclick={() => editItem(item)} class="p-1 hover:text-primary rounded-md transition-colors" title="Edit">
-											<PencilIcon size={18} />
-										</button>
-										<button onclick={() => deleteItem(item.id)} class="p-1 hover:text-destructive rounded-md transition-colors" title="Delete">
-											<Trash2 size={18} />
-										</button>
-									</div>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		{/if}
-	</div>
+  <!-- Error Message -->
+  {#if errorMessage}
+    <div class="mb-6" transition:fade>
+      <div class="bg-destructive/10 text-destructive px-4 py-3 rounded-lg flex items-center gap-2">
+        <X size={20} />
+        <p>{errorMessage}</p>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Loading Indicator -->
+  {#if isLoading}
+    <div class="flex justify-center p-8" transition:fade>
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  {:else if filteredSchoolYears.length === 0}
+    <div class="text-center py-12 bg-card rounded-lg border border-border" transition:fade>
+      <CalendarRange size={48} class="mx-auto text-muted-foreground mb-4" />
+      <h3 class="text-lg font-semibold mb-2">No School Years Found</h3>
+      <p class="text-muted-foreground">Start by adding a new school year.</p>
+    </div>
+  {:else}
+    <!-- School Years Table -->
+    <div class="overflow-x-auto bg-card rounded-lg shadow border border-border" transition:fade>
+      <table class="w-full">
+        <thead class="bg-muted/50">
+          <tr>
+            <th class="px-6 py-4 text-left font-medium">School Year</th>
+            <th class="px-6 py-4 text-left font-medium">Start Date</th>
+            <th class="px-6 py-4 text-left font-medium">End Date</th>
+            <th class="px-6 py-4 text-left font-medium">Mid Year</th>
+            <th class="px-6 py-4 text-left font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border">
+          {#each filteredSchoolYears as item}
+            <tr class="hover:bg-muted/50 transition-colors">
+              <td class="px-6 py-4 font-medium">{item.school_year}</td>
+              <td class="px-6 py-4">{formatDate(item.start_date)}</td>
+              <td class="px-6 py-4">{formatDate(item.end_date)}</td>
+              <td class="px-6 py-4">{item.mid_year ? formatDate(item.mid_year) : "-"}</td>
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-4">
+                  <button onclick={() => editItem(item)} class="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground" title="Edit">
+                    <PencilIcon size={18} />
+                  </button>
+                  <button onclick={() => deleteItem(item.id)} class="p-2 hover:bg-red-100 text-red-500 hover:text-red-600 rounded-lg disabled:opacity-50" title="Delete">
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  {/if}
 </div>
+
+
 
 <!-- Form Modal -->
 {#if showForm}
