@@ -374,19 +374,19 @@
 		<!-- Total Plans -->
 		<div class="bg-card rounded-lg shadow border border-border p-4">
 			<h3 class="text-sm font-medium text-muted-foreground">Total Plans</h3>
-			<p class="text-2xl font-semibold mt-2">{filteredPlans.length}</p>
+			<p class="text-4xl font-semibold mt-2">{filteredPlans.length}</p>
 		</div>
 
 		<!-- Achieved -->
 		<div class="bg-card rounded-lg shadow border border-border p-4">
 			<h3 class="text-sm font-medium text-muted-foreground">Achieved</h3>
-			<p class="text-2xl font-semibold text-green-600 mt-2">{chartData.achieved}</p>
+			<p class="text-4xl font-semibold text-green-600 mt-2">{chartData.achieved}</p>
 		</div>
 
 		<!-- Not Achieved -->
 		<div class="bg-card rounded-lg shadow border border-border p-4">
 			<h3 class="text-sm font-medium text-muted-foreground">Not Achieved</h3>
-			<p class="text-2xl font-semibold text-red-600 mt-2">{chartData.notAchieved}</p>
+			<p class="text-4xl font-semibold text-red-600 mt-2">{chartData.notAchieved}</p>
 		</div>
 
 		<!-- Doughnut Chart -->
