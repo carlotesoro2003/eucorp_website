@@ -219,7 +219,7 @@ onMount(() => {
           />
           <span class="sr-only">Toggle theme</span>
         </Button>
-        <Button variant="outline" size="icon" onclick={() => alert('Notifications clicked!')}>
+        <Button variant="outline" size="icon" onclick={() => alert('Notifications clicked! This feature is not yet available.')}>
           <Bell class="h-[1.2rem] w-[1.2rem]" />
           <span class="sr-only">Notifications</span>
         </Button>

@@ -12,6 +12,7 @@
 	import LogOut from "lucide-svelte/icons/log-out";
 	import { goto } from "$app/navigation";
 	import Settings from "lucide-svelte/icons/settings";
+    import { CircleUser } from "lucide-svelte";
   
 	export let user: User; // Receive user as a prop
   
@@ -124,8 +125,8 @@
 		  <DropdownMenu.Separator />
 		  <DropdownMenu.Group>
 			<DropdownMenu.Item onclick={navigateToProfile}>
-			  <BadgeCheck />
-			  Account
+			  <CircleUser />
+			  Profile
 			</DropdownMenu.Item>
 			<!-- <DropdownMenu.Item>
 			  <Settings />

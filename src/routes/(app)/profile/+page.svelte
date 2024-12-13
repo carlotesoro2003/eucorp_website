@@ -117,11 +117,9 @@
 <div class="min-h-screen bg-gray-50 text-gray-900 w-full py-8 px-4">
 	<div class="max-w-2xl mx-auto">
 		{#if loading}
-			<!-- Loading state -->
-			<div class="flex flex-col items-center justify-center h-[60vh] gap-3" in:fade>
-				<Loader2 class="w-8 h-8 animate-spin text-primary" />
-				<p class="text-lg text-gray-600">Loading your profile...</p>
-			</div>
+		<div class="flex justify-center p-8 ">
+			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+		</div>
 		{:else if session !== null && profile}
 			<!-- Profile form -->
 			<div class="bg-white rounded-xl shadow-sm p-6 md:p-8" in:fly={{ y: 20, duration: 600 }}>
