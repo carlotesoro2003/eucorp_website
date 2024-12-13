@@ -195,7 +195,7 @@ onMount(() => {
       <div class="flex items-center gap-2 px-4">
         <Sidebar.Trigger class="-ml-1" />
         <Separator orientation="vertical" class="mr-2 h-4" />
-        <Breadcrumb.Root>
+        <!-- <Breadcrumb.Root>
           <Breadcrumb.List>
             <Breadcrumb.Item class="hidden md:block">
               <Breadcrumb.Link href="#">Building Your Application</Breadcrumb.Link>
@@ -205,7 +205,7 @@ onMount(() => {
               <Breadcrumb.Page>Data Fetching</Breadcrumb.Page>
             </Breadcrumb.Item>
           </Breadcrumb.List>
-        </Breadcrumb.Root>
+        </Breadcrumb.Root> -->
       </div>
 
       <!-- Right section -->
