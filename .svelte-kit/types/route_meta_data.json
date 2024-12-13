@@ -1,84 +1,84 @@
 {
-	"/": [
-		"src/routes/+layout.ts",
-		"src/routes/+layout.ts"
+	"/(app)": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/api/evaluate-goal": [
-		"src/routes/api/evaluate-goal/+server.ts"
+	"/": [],
+	"/(app)/api/evaluate-goal": [
+		"src/routes/(app)/api/evaluate-goal/+server.ts"
 	],
-	"/api/summary-report-opt-monitoring": [
-		"src/routes/api/summary-report-opt-monitoring/+server.ts"
+	"/(app)/api/summary-report-opt-monitoring": [
+		"src/routes/(app)/api/summary-report-opt-monitoring/+server.ts"
 	],
-	"/api/summary-report-plan-monitoring": [
-		"src/routes/api/summary-report-plan-monitoring/+server.ts"
+	"/(app)/api/summary-report-plan-monitoring": [
+		"src/routes/(app)/api/summary-report-plan-monitoring/+server.ts"
 	],
-	"/auth/callback": [
-		"src/routes/auth/callback/+server.ts"
+	"/(app)/auth/callback": [
+		"src/routes/(app)/auth/callback/+server.ts"
 	],
-	"/classification": [
-		"src/routes/+layout.ts"
+	"/(app)/classification": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/dashboard": [
-		"src/routes/+layout.ts"
+	"/(app)/dashboard": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/departments": [
-		"src/routes/+layout.ts"
+	"/(app)/departments": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/leads": [
-		"src/routes/+layout.ts"
+	"/(app)/leads": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/login": [
-		"src/routes/+layout.ts"
+	"/(app)/login": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/monitoring": [
-		"src/routes/+layout.ts"
+	"/(app)/monitoring": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/monitoring/mid-year": [
-		"src/routes/+layout.ts"
+	"/(app)/monitoring/mid-year": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/monitoring/year-end": [
-		"src/routes/+layout.ts"
+	"/(app)/monitoring/year-end": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/opportunities": [
-		"src/routes/+layout.ts"
+	"/(app)/opportunities": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/plans": [
-		"src/routes/+layout.ts"
+	"/(app)/plans": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/plans/operationalPlans": [
-		"src/routes/+layout.ts"
+	"/(app)/plans/operationalPlans": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/plans/operationalPlans/[id]": [
-		"src/routes/+layout.ts"
+	"/(app)/plans/operationalPlans/[id]": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/plans/strategicPlans": [
-		"src/routes/+layout.ts"
+	"/(app)/plans/strategicPlans": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/plans/[id]": [
-		"src/routes/+layout.ts"
+	"/(app)/plans/[id]": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/plans/[id]/[id]": [
-		"src/routes/+layout.ts"
+	"/(app)/plans/[id]/[id]": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/profile": [
-		"src/routes/+layout.ts"
+	"/(app)/profile": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/riskManagement": [
-		"src/routes/+layout.ts"
+	"/(app)/riskManagement": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/risks": [
-		"src/routes/+layout.ts"
+	"/(app)/risks": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/risks/riskAssessment": [
-		"src/routes/+layout.ts"
+	"/(app)/risks/riskAssessment": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/school-year": [
-		"src/routes/+layout.ts"
+	"/(app)/school-year": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/test-sidebar": [
-		"src/routes/+layout.ts"
+	"/(app)/test-sidebar": [
+		"src/routes/(app)/+layout.ts"
 	],
-	"/users": [
-		"src/routes/+layout.ts"
+	"/(app)/users": [
+		"src/routes/(app)/+layout.ts"
 	]
 }

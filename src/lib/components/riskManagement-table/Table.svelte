@@ -216,7 +216,7 @@
 			  <select
 				id="dataSelect"
 				bind:value={selectedDataType}
-				class="w-full px-4 py-2 bg-card border border-border rounded-lg appearance-none"
+				class="w-full px-4 py-2 bg-card focus:outline-none focus:ring-2 focus:ring-ring border border-border rounded-lg appearance-none"
 			  >
 				<option value="likelihoodRating">Likelihood Rating</option>
 				<option value="severity">Severity</option>

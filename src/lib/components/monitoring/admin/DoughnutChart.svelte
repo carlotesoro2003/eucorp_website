@@ -2,17 +2,22 @@
 	import { onMount } from "svelte";
 	import Chart from "chart.js/auto";
 
-	// Props
+	// Props using new svelte 5 syntax
 	let { chartData }: { chartData: { achieved: number; notAchieved: number } } = $props();
 
-	// Chart instance
-	let chart: Chart<"doughnut", number[], string> | null = null;
-	let canvas: HTMLCanvasElement;
+	// Chart instance and canvas element
+	let chart: Chart | null = $state(null);
+	let canvas: HTMLCanvasElement = $state();
 
-	// Create chart
+	// Create chart function
 	const createChart = () => {
+		if (!canvas) return;
+
 		const ctx = canvas.getContext("2d");
 		if (!ctx) return;
+
+		// Destroy existing chart
+		if (chart) chart.destroy();
 
 		chart = new Chart(ctx, {
 			type: "doughnut",
@@ -38,6 +43,10 @@
 						position: "bottom",
 						labels: {
 							color: document.documentElement.classList.contains("dark") ? "#fff" : "#000",
+							padding: 10,
+							font: {
+								size: 12,
+							},
 						},
 					},
 				},
@@ -47,12 +56,13 @@
 
 	// Update chart when data changes
 	$effect(() => {
-		if (chart) {
+		if (chart && chartData) {
 			chart.data.datasets[0].data = [chartData.achieved, chartData.notAchieved];
 			chart.update();
 		}
 	});
 
+	// Initialize chart when component mounts
 	onMount(() => {
 		createChart();
 		return () => {
@@ -61,6 +71,7 @@
 	});
 </script>
 
-<div class="h-[200px]">
+<!-- Added min-height to ensure canvas has space to render -->
+<div class="h-[200px] min-h-[200px] w-full">
 	<canvas bind:this={canvas}></canvas>
 </div>

@@ -27,26 +27,26 @@
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 		<div class="space-y-4">
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Actions Taken</label>
-				<textarea bind:value={data.actions_taken} class="w-full border-gray-300 rounded-lg"></textarea>
+				<label class="block text-sm font-medium text-gray-700 mb-1">Action Plan</label>
+				<textarea bind:value={data.actions_taken} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
 			</div>
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">KPI</label>
-				<textarea bind:value={data.kpi} class="w-full border-gray-300 rounded-lg"></textarea>
+				<textarea bind:value={data.kpi} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
 			</div>
 		</div>
 		<div class="space-y-4">
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">Target Output</label>
-				<textarea bind:value={data.target_output} class="w-full border-gray-300 rounded-lg"></textarea>
+				<textarea bind:value={data.target_output} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
 			</div>
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">Budget</label>
-				<input type="number" bind:value={data.budget} class="w-full border-gray-300 rounded-lg" />
+				<input type="number" bind:value={data.budget} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
 			</div>
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-1">Key Person Responsible</label>
-				<textarea bind:value={data.key_person_responsible} class="w-full border-gray-300 rounded-lg"></textarea>
+				<textarea bind:value={data.key_person_responsible} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
 			</div>
 		</div>
 	</div>

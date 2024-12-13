@@ -343,6 +343,11 @@
 		if (currentPage > 1) currentPage--;
 	};
 
+	const percentage = $derived(filteredPlans.length > 0 ? ((chartData.achieved / filteredPlans.length) * 100).toFixed(1) : 0);
+
+	// Determine color based on percentage using $derived
+	const percentageColor = $derived(Number(percentage) >= 50 ? "text-green-600" : "text-red-600");
+
 	/** Fetch data when component mounts */	
 	fetchPlanMonitoring();
 	fetchDepartments();
@@ -372,16 +377,32 @@
 	<!-- Stats and Chart -->
 	<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 		<!-- Total Plans -->
-		<div class="bg-card rounded-lg shadow border border-border p-4">
+		
+		<div class="bg-card rounded-md shadow-sm border border-border p-3 max-w-xs">
 			<h3 class="text-sm font-medium text-muted-foreground">Total Plans</h3>
 			<p class="text-4xl font-semibold mt-2">{filteredPlans.length}</p>
+			<p class="text-md mt-3">
+				{#if filteredPlans.length > 0}
+					<span class={percentageColor}>
+						{percentage}%
+					</span>
+					<span class="text-gray-500 ml-1">achieved</span>
+				{:else}
+					<span class="text-gray-500">No plans available</span>
+				{/if}
+			</p>
 		</div>
+		
 
 		<!-- Achieved -->
 		<div class="bg-card rounded-lg shadow border border-border p-4">
 			<h3 class="text-sm font-medium text-muted-foreground">Achieved</h3>
-			<p class="text-4xl font-semibold text-green-600 mt-2">{chartData.achieved}</p>
-		</div>
+			<p class="text-4xl font-semibold text-green-600 mt-2">
+			  {chartData.achieved || 0}
+			</p>
+			
+		  </div>
+		  
 
 		<!-- Not Achieved -->
 		<div class="bg-card rounded-lg shadow border border-border p-4">
@@ -390,9 +411,11 @@
 		</div>
 
 		<!-- Doughnut Chart -->
-		<div class="bg-card rounded-lg shadow border border-border p-4">
+		<div class="bg-card rounded-lg shadow border border-border p-4 min-h-[240px]">
+			<h3 class="text-sm font-medium text-muted-foreground mb-2">Achievement Rate</h3>
 			<DoughnutChart {chartData} />
 		</div>
+		
 	</div>
 
 	<div class="flex flex-col md:flex-row gap-4 mb-2 items-center justify-between">

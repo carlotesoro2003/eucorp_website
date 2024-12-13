@@ -173,6 +173,6 @@
 	});
 </script>
 
-<div class="relative h-[400px] w-full">
+<div class="relative h-[400px] w-full bg-card">
 	<canvas bind:this={canvas}></canvas>
 </div>

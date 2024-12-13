@@ -47,7 +47,7 @@
 		});
   
 		// Navigate to login page after successful logout
-		await goto("/login");
+		await goto("/");
 	  } catch (err) {
 		console.error("Unexpected error during logout:", err);
 	  } finally {
@@ -127,10 +127,10 @@
 			  <BadgeCheck />
 			  Account
 			</DropdownMenu.Item>
-			<DropdownMenu.Item>
+			<!-- <DropdownMenu.Item>
 			  <Settings />
 			  Settings
-			</DropdownMenu.Item>
+			</DropdownMenu.Item> -->
 		  </DropdownMenu.Group>
 		  <DropdownMenu.Separator />
 		  <DropdownMenu.Item onclick={logout}>

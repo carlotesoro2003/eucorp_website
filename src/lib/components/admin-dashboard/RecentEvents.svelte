@@ -55,8 +55,8 @@
 	});
   </script>
   
-  <div class="rounded-lg border border-border p-4 hover:shadow-lg transition-all duration-300">
-	<h2 class="mb-6 text-xl font-semibold text-gray-800">Recent Events</h2>
+  <div class="rounded-lg bg-card border border-border p-4 hover:shadow-lg transition-all duration-300">
+	<h2 class="mb-6 text-xl font-semibold">Recent Events</h2>
 	{#if isLoadingEvents}
 	  <div class="text-center">
 		<span class="loading loading-spinner text-primary"></span>
