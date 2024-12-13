@@ -75,6 +75,9 @@
 	"/(app)/school-year": [
 		"src/routes/(app)/+layout.ts"
 	],
+	"/(app)/summary-report": [
+		"src/routes/(app)/+layout.ts"
+	],
 	"/(app)/test-sidebar": [
 		"src/routes/(app)/+layout.ts"
 	],

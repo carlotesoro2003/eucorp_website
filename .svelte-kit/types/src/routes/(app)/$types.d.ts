@@ -11,7 +11,7 @@ type OutputDataShape<T> = MaybeWithVoid<Omit<App.PageData, RequiredKeys<T>> & Pa
 type EnsureDefined<T> = T extends null | undefined ? {} : T;
 type OptionalUnion<U extends Record<string, any>, A extends keyof U = U extends U ? keyof U : never> = U extends unknown ? { [P in Exclude<A, keyof U>]?: never } & U : never;
 export type Snapshot<T = any> = Kit.Snapshot<T>;
-type LayoutRouteId = RouteId | "/(app)/classification" | "/(app)/dashboard" | "/(app)/departments" | "/(app)/leads" | "/(app)/login" | "/(app)/monitoring" | "/(app)/monitoring/mid-year" | "/(app)/monitoring/year-end" | "/(app)/opportunities" | "/(app)/plans" | "/(app)/plans/operationalPlans" | "/(app)/plans/operationalPlans/[id]" | "/(app)/plans/strategicPlans" | "/(app)/plans/[id]" | "/(app)/plans/[id]/[id]" | "/(app)/profile" | "/(app)/riskManagement" | "/(app)/risks" | "/(app)/risks/riskAssessment" | "/(app)/school-year" | "/(app)/test-sidebar" | "/(app)/users"
+type LayoutRouteId = RouteId | "/(app)/classification" | "/(app)/dashboard" | "/(app)/departments" | "/(app)/leads" | "/(app)/login" | "/(app)/monitoring" | "/(app)/monitoring/mid-year" | "/(app)/monitoring/year-end" | "/(app)/opportunities" | "/(app)/plans" | "/(app)/plans/operationalPlans" | "/(app)/plans/operationalPlans/[id]" | "/(app)/plans/strategicPlans" | "/(app)/plans/[id]" | "/(app)/plans/[id]/[id]" | "/(app)/profile" | "/(app)/riskManagement" | "/(app)/risks" | "/(app)/risks/riskAssessment" | "/(app)/school-year" | "/(app)/summary-report" | "/(app)/test-sidebar" | "/(app)/users"
 type LayoutParams = RouteParams & { id?: string }
 type LayoutParentData = EnsureDefined<import('../$types.js').LayoutData>;
 

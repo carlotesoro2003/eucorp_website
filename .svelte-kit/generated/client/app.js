@@ -26,7 +26,8 @@ export const nodes = [
 	() => import('./nodes/22'),
 	() => import('./nodes/23'),
 	() => import('./nodes/24'),
-	() => import('./nodes/25')
+	() => import('./nodes/25'),
+	() => import('./nodes/26')
 ];
 
 export const server_loads = [];
@@ -53,8 +54,9 @@ export const dictionary = {
 		"/(app)/risks": [21,[2]],
 		"/(app)/risks/riskAssessment": [22,[2]],
 		"/(app)/school-year": [23,[2]],
-		"/(app)/test-sidebar": [24,[2]],
-		"/(app)/users": [25,[2]]
+		"/(app)/summary-report": [24,[2]],
+		"/(app)/test-sidebar": [25,[2]],
+		"/(app)/users": [26,[2]]
 	};
 
 export const hooks = {
