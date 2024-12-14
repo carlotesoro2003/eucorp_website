@@ -245,7 +245,7 @@
 			<div class="space-y-8">
 				{#each filteredPlans as goal}
 					<div class="bg-card rounded-lg p-4 border border-border  shadow-sm" transition:scale>
-						<h2 class="text-xl font-semibold  mb-4">
+						<h2 class="text-xl text-primary font-semibold  mb-4">
 							Strategic Goal {goal.id-65}: {goal.name}
 						</h2>
 						<p class=" mb-6">{goal.description}</p>
@@ -253,7 +253,7 @@
 						<div class="space-y-6">
 							{#each goal.strategic_objectives as objective}
 								<div class="border-l-4 border-primary-600 pl-4">
-									<h3 class="font-medium  mb-3">
+									<h3 class="font-medium  mb-3 text-red-400">
 										Strategic Objective: {objective.name}
 									</h3>
 
@@ -271,43 +271,43 @@
 									<div class="space-y-4">
 										{#each objective.action_plans as plan}
 											<div class="bg-card rounded-lg p-4 border border-border">
-												<h4 class="font-medium  mb-2">
+												<h4 class="font-medium  mb-2 text-yellow-600">
 													Action Plan: {plan.actions_taken}
 												</h4>
 
 												<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 													<div>
-														<span class="text-sm">KPI</span>
-														<p class="mt-1 font-medium">{plan.kpi}</p>
+														<span class="text-sm font-medium">KPI</span>
+														<p class="mt-1 text-sm ">{plan.kpi}</p>
 													</div>
 													<div>
-														<span class="text-sm ">Target Output</span>
-														<p class="mt-1 font-medium">{plan.target_output}</p>
+														<span class="text-sm font-medium">Target Output</span>
+														<p class="mt-1 ">{plan.target_output}</p>
 													</div>
 													<div>
-														<span class="text-sm ">Budget</span>
-														<p class="mt-1 font-medium">${plan.budget}</p>
+														<span class="text-sm font-medium">Budget</span>
+														<p class="mt-1">${plan.budget}</p>
 													</div>
 													<div>
-														<span class="text-sm ">Responsible</span>
-														<p class="mt-1 font-medium">{plan.key_person_responsible}</p>
+														<span class="text-sm font-medium">Responsible</span>
+														<p class="mt-1">{plan.key_person_responsible}</p>
 													</div>
 												</div>
 
 												{#if plan.plan_monitoring}
 													<div class="mt-4 pt-4 border-t">
-														<h5 class="text-sm font-medium  mb-3">Monitoring Details</h5>
+														<h5 class="text-md font-medium  mb-3">Monitoring Details</h5>
 														<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 															<div>
-																<span class="text-sm tex">Actions Taken to Achieve Action Plan</span>
+																<span class="text-sm font-medium ">Actions Taken to Achieve Action Plan</span>
 																<p class="mt-1">{plan.plan_monitoring.evaluation}</p>
 															</div>
 															<div>
-																<span class="text-sm ">Statement</span>
+																<span class="text-sm font-medium">Statement</span>
 																<p class="mt-1">{plan.plan_monitoring.statement}</p>
 															</div>
 															<div>
-																<span class="text-sm ">Status</span>
+																<span class="text-sm font-medium">Status</span>
 																<p class="mt-1">
 																	<span class={plan.plan_monitoring.is_accomplished ? "text-green-600" : "text-red-600"}>
 																		{plan.plan_monitoring.is_accomplished ? "Accomplished" : "Pending"}
@@ -315,7 +315,7 @@
 																</p>
 															</div>
 															<div>
-																<span class="text-sm ">Completed</span>
+																<span class="text-sm font-medium">Completed</span>
                                                                 <p class="mt-1">{plan.plan_monitoring.time_completed ? new Date(plan.plan_monitoring.time_completed).toLocaleString() : "Not Yet"}</p>
 															</div>
 														</div>

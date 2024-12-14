@@ -228,27 +228,27 @@
                         </div>
 
                         <div class="mt-4 pt-4 border-t border-gray-200">
-                            <h5 class="text-sm font-medium  mb-3">Monitoring Details</h5>
+                            <h5 class="text-md font-medium  mb-3">Monitoring Details</h5>
                             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                 <div>
-                                    <span class="text-sm ">Actions Taken to Achieve Opportunity</span>
-                                    <p class="mt-1">{opportunity.evaluation}</p>
+                                    <span class="text-sm font-medium">Actions Taken to Achieve Opportunity</span>
+                                    <p class="mt-1 text-sm">{opportunity.evaluation}</p>
                                 </div>
                                 <div>
-                                    <span class="text-sm ">Statement</span>
-                                    <p class="mt-1">{opportunity.statement}</p>
+                                    <span class="text-sm font-medium">Statement</span>
+                                    <p class="mt-1 text-sm">{opportunity.statement}</p>
                                 </div>
                                 <div>
-                                    <span class="text-sm ">Accomplished</span>
-                                    <p class="mt-1">
+                                    <span class="text-sm font-medium">Accomplished</span>
+                                    <p class="mt-1 text-sm">
                                         <span class={opportunity.is_accomplished ? "text-green-600" : "text-red-600"}>
                                             {opportunity.is_accomplished ? "Yes" : "No"}
                                         </span>
                                     </p>
                                 </div>
                                 <div>
-                                    <span class="text-sm ">Time Completed</span>
-                                    <p class="mt-1">{opportunity.time_completed ? new Date(opportunity.time_completed).toLocaleString() : "Pending"}</p>
+                                    <span class="text-sm font-medium">Time Completed</span>
+                                    <p class="mt-1 text-sm">{opportunity.time_completed ? new Date(opportunity.time_completed).toLocaleString() : "Pending"}</p>
                                 </div>
                             </div>
                         </div>
