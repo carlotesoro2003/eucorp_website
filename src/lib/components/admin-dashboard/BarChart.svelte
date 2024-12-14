@@ -15,7 +15,7 @@
 
 	// Pagination variables
 	let currentPage = 0;
-	const barsPerPage = 9; // Number of bars to display per page
+	let barsPerPage = 9; // Default bars per page
 
 	// Paginated data
 	let paginatedData = {
@@ -24,11 +24,16 @@
 		notAchieved: [] as number[],
 	};
 
+	// Update bars per page based on screen size
+	const updateBarsPerPage = () => {
+		const screenWidth = window.innerWidth;
+		barsPerPage = screenWidth < 640 ? 2 : 9; // Show 2 bars on small screens, 9 on larger screens
+		updatePaginatedData();
+	};
+
 	// Fetch data for the bar chart
 	const fetchStrategicData = async () => {
 		try {
-			console.log("Starting to fetch strategic goals...");
-
 			const { data: result, error } = await supabase
 				.from("strategic_goals")
 				.select(`
@@ -51,8 +56,6 @@
 				console.error("Error fetching strategic goals:", error);
 				return;
 			}
-
-			console.log("Raw data fetched:", result);
 
 			// Sort the goals by goal_no in ascending order
 			const sortedGoals = result.sort((a, b) => a.goal_no - b.goal_no);
@@ -83,7 +86,7 @@
 			data.notAchieved = goals.map((goal) => goal.notAchieved);
 
 			// Initialize paginated data
-			updatePaginatedData();
+			updateBarsPerPage(); // Update the number of bars per page dynamically
 
 		} catch (error) {
 			console.error("Error processing strategic data:", error);
@@ -120,8 +123,6 @@
 							backgroundColor: "#e21d48",
 							borderColor: "#e21d48",
 							borderWidth: 1,
-							barThickness: 100, // Fixed bar thickness
-							maxBarThickness: 150,
 						},
 						{
 							label: "Not Achieved",
@@ -129,8 +130,6 @@
 							backgroundColor: "#e5e7eb",
 							borderColor: "#e5e7eb",
 							borderWidth: 1,
-							barThickness: 100, // Fixed bar thickness
-							maxBarThickness: 150,
 						},
 					],
 				},
@@ -152,9 +151,6 @@
 						y: {
 							stacked: true,
 							beginAtZero: true,
-							ticks: {
-								callback: (value) => `${value}`,
-							},
 						},
 					},
 				},
@@ -182,13 +178,12 @@
 	const handleResize = () => {
 		clearTimeout(resizeTimer);
 		resizeTimer = setTimeout(() => {
-			createChart();
+			updateBarsPerPage(); // Update bars per page on resize
 		}, 250);
 	};
 
 	onMount(() => {
 		const initialize = async () => {
-			console.log("Initializing chart...");
 			await fetchStrategicData(); // Fetch data for the chart
 		};
 
