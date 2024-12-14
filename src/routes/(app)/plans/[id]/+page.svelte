@@ -311,8 +311,7 @@ const handleDelete = async (objective: StrategicObjective) => {
 				</div>
 			{/if}
 
-			{#if objectives.length > 0}
-				<!-- Search and Actions -->
+			<!-- Search and Actions -->
 				<div class="flex flex-col md:flex-row justify-between items-center gap-4">
 					<div class="relative flex-3 w-full md:max-w-[300px]">
 						<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
@@ -330,6 +329,8 @@ const handleDelete = async (objective: StrategicObjective) => {
 						
 					</div>
 				</div>
+
+			{#if objectives.length > 0}
 
 				<!-- Table -->
 				<div class="overflow-x-auto bg-card rounded-lg shadow border border-border">

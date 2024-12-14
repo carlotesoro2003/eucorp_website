@@ -54,12 +54,12 @@
 
             opportunities = monitoringData.map((monitoring) => ({
                 opt_id: monitoring.opt_id,
-                opt_statement: monitoring.opportunities?.opt_statement || "No Statement",
+                opt_statement: monitoring.opportunities?.opt_statement || "Pending Statement",
                 kpi: monitoring.opportunities?.kpi || "No KPI",
-                planned_actions: monitoring.opportunities?.planned_actions || "No Actions Taken",
+                planned_actions: monitoring.opportunities?.planned_actions || "Peinding  Actions Taken",
                 time_completed: monitoring.time_completed,
-                evaluation: monitoring.evaluation || "No Evaluation",
-                statement: monitoring.statement || "No Statement",
+                evaluation: monitoring.evaluation || "Pending Actions Taken",
+                statement: monitoring.statement || "No Remarks",
                 is_accomplished: monitoring.is_accomplished || false,
                 department_name: monitoring.opportunities?.departments?.name || "No Department",
             }));
@@ -97,7 +97,7 @@
         // Header
         doc.setFontSize(12);
         doc.text("MANUEL S. ENVERGA UNIVERSITY FOUNDATION", 14, 10);
-        doc.text("Opportunities Monitoring Report", 14, 16);
+        doc.text("Opportunities Summary Report", 14, 16);
         doc.setFontSize(10);
         doc.text("SY 2024-2025", 14, 22);
 
@@ -137,7 +137,7 @@
                 autoTable(doc, {
                     startY: yPosition,
                     head: [
-                        ["KPI", "Planned Actions", "Actions Taken to Achieve Opportunity", "Statement", "Accomplished", "Time Completed"],
+                        ["KPI", "Planned Actions", "Actions Taken to Achieve Opportunity", "Remarks", "Accomplished", "Time Completed"],
                     ],
                     body: rows,
                     theme: "grid",
@@ -235,7 +235,7 @@
                                     <p class="mt-1 text-sm">{opportunity.evaluation}</p>
                                 </div>
                                 <div>
-                                    <span class="text-sm font-medium">Statement</span>
+                                    <span class="text-sm font-medium">Remarks</span>
                                     <p class="mt-1 text-sm">{opportunity.statement}</p>
                                 </div>
                                 <div>

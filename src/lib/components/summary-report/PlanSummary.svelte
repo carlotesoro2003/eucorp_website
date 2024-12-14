@@ -36,6 +36,7 @@
 
     type StrategicGoal = {
         id: number;
+        goal_no: number;
         name: string;
         description: string;
         kpi: string;
@@ -57,6 +58,7 @@
                 const searchableText = `
 				${goal.id}
                     ${goal.name} 
+                    ${goal.goal_no}
                     ${goal.description}
                     ${goal.strategic_objectives.map(obj => 
                         `${obj.name} 
@@ -95,6 +97,7 @@
         .from("strategic_goals")
         .select(`
             id,
+            goal_no,
             name,
             description,
             kpi,
@@ -168,7 +171,7 @@
 		// Header
 		doc.setFontSize(12);
 		doc.text("MANUEL S. ENVERGA UNIVERSITY FOUNDATION", 14, 10);
-		doc.text("Strategic Plans Report", 14, 16);
+		doc.text("Strategic Plans Summary Report", 14, 16);
 		doc.setFontSize(10);
 		doc.text("SY 2024-2025", 14, 22);
 
@@ -189,7 +192,7 @@
 				if (actionPlans.length > 0) {
 					autoTable(doc, {
 						startY: yPosition,
-						head: [["#", "Action Plan", "KPI", "Target Output", "Budget", "Key Person Responsible", "Actions Taken to Achieve Action Plan", "Statement", "Accomplished", "Time Completed"]],
+						head: [["#", "Action Plan", "KPI", "Target Output", "Budget", "Key Person Responsible", "Actions Taken to Achieve Action Plan", "Remarks", "Accomplished", "Time Completed"]],
 						body: actionPlans,
 						theme: "grid",
 						styles: { font: "times", fontSize: 10 },
@@ -246,7 +249,7 @@
 				{#each filteredPlans as goal}
 					<div class="bg-card rounded-lg p-4 border border-border  shadow-sm" transition:scale>
 						<h2 class="text-xl text-primary font-semibold  mb-4">
-							Strategic Goal {goal.id-65}: {goal.name}
+							Strategic Goal {goal.goal_no} - {goal.name}
 						</h2>
 						<p class=" mb-6">{goal.description}</p>
 
@@ -307,7 +310,7 @@
 																<p class="mt-1">{plan.plan_monitoring.statement}</p>
 															</div>
 															<div>
-																<span class="text-sm font-medium">Status</span>
+																<span class="text-sm font-medium">Remarks</span>
 																<p class="mt-1">
 																	<span class={plan.plan_monitoring.is_accomplished ? "text-green-600" : "text-red-600"}>
 																		{plan.plan_monitoring.is_accomplished ? "Accomplished" : "Pending"}

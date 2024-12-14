@@ -104,8 +104,8 @@
 			departments.forEach((department, deptIndex) => {
 				doc.addPage();
 				doc.text(`${deptIndex === 0 ? "" : "MANUEL S. ENVERGA UNIVERSITY FOUNDATION"}`, 14, 10);
-				doc.text(`Department: ${department}`, 14, 16);
-				doc.text("Risk Monitoring Summary Report", 14, 22);
+				doc.text(`${department} Risk Report`, 14, 16);
+				doc.text("Risk Summary Report", 14, 22);
 				doc.setFontSize(10);
 				let yPosition = 28;
 
