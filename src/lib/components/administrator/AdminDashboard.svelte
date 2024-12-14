@@ -2,6 +2,7 @@
 	import DashboardCards from "$lib/components/admin-dashboard/DashboardCards.svelte";
 	import BarChart from "$lib/components/admin-dashboard/BarChart.svelte";
 	import RiskAnalysis from "$lib/components/admin-dashboard/RiskAnalysis.svelte";
+	import OpportunitiesStatus from "../admin-dashboard/OpportunitiesStatus.svelte";
 	import RecentEvents from "$lib/components/admin-dashboard/RecentEvents.svelte";
 	import Header from "$lib/components/admin-dashboard/Header.svelte";
 	import { dashboardData } from "$lib/components/admin-dashboard/data";
@@ -18,14 +19,14 @@
 
 		<!-- Bar Graph Section -->
 		<div class="rounded-lg border bg-card border-border p-4 hover:shadow-lg transition-all duration-300 ">
-			<h2 class="mb-6 text-xl font-semibold ">Strategic Goal Overiew</h2>
+			<h2 class="mb-6 text-xl font-semibold ">Strategic Goal Overview</h2>
 			<BarChart data={dashboardData.barChart} />
 		</div>
 
 		<!-- Risk Analysis and Recent Events Grid -->
 		<div class="grid gap-8 lg:grid-cols-2">
 			<RiskAnalysis data={dashboardData.riskData} />
-			<RecentEvents events={dashboardData.recentEvents} />
+			<OpportunitiesStatus />
 		</div>
 	</div>
 </main>

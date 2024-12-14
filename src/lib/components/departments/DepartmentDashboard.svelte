@@ -4,6 +4,7 @@
 	import RiskAnalysis from "$lib/components/admin-dashboard/RiskAnalysis.svelte";
 	import RecentEvents from "$lib/components/admin-dashboard/RecentEvents.svelte";
 	import Header from "$lib/components/admin-dashboard/Header.svelte";
+	import OpportunitiesStatus from "../admin-dashboard/OpportunitiesStatus.svelte";
 	import { dashboardData } from "$lib/components/admin-dashboard/data";
 </script>
 
@@ -25,7 +26,7 @@
 		<!-- Risk Analysis and Recent Events Grid -->
 		<div class="grid gap-8 lg:grid-cols-2">
 			<RiskAnalysis data={dashboardData.riskData} />
-			<RecentEvents events={dashboardData.recentEvents} />
+			<OpportunitiesStatus />
 		</div>
 	</div>
 </main>

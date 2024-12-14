@@ -311,7 +311,7 @@
 							<th class="px-4 py-3 text-left" >Target Output</th>
                             <th class="px-4 py-3 text-left">Actions Taken</th>
 							<th class="px-4 py-3 text-left">Status</th>
-							<th class="px-4 py-3 text-center">View Statement</th>
+							<th class="px-4 py-3 text-center">Statement</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-border">

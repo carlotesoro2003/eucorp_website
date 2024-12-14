@@ -557,6 +557,50 @@ const onEditRow = (plan: ActionPlan) => {
 		}
 	};
 
+  let showEditModal = $state(false);
+    let selectedAction: ActionPlan | null = $state(null);
+    let isSubmitting = $state(false);
+    let error = $state<string | null>(null);
+
+    // Handle edit click
+    const handleEdit = (action: ActionPlan) => {
+        selectedAction = { ...action };
+        showEditModal = true;
+    };
+
+    // Handle form submission
+    const handleSubmit = async () => {
+        if (!selectedAction) return;
+        isSubmitting = true;
+        error = null;
+
+        try {
+            const { data, error: updateError } = await supabase
+                .from('action_plan')
+                .update({
+                    actions_taken: selectedAction.actions_taken,
+                    kpi: selectedAction.kpi,
+                    target_output: selectedAction.target_output,
+                    key_person_responsible: selectedAction.key_person_responsible
+                })
+                .eq('id', selectedAction.id)
+                .select();
+
+            if (updateError) throw updateError;
+
+            // Update local data
+            actionPlans = actionPlans.map(plan => 
+                plan.id === selectedAction.id ? { ...plan, ...selectedAction } : plan
+            );
+
+            showEditModal = false;
+        } catch (e) {
+            error = 'Failed to update action plan';
+            console.error(e);
+        } finally {
+            isSubmitting = false;
+        }
+    };
 
 
 
@@ -675,9 +719,12 @@ const onEditRow = (plan: ActionPlan) => {
 										<button onclick={() => approveActionPlan(plan.id)} disabled={isLoading || (currentUserRole === "admin" && plan.is_approved) || (currentUserRole === "vice_president" && (!plan.is_approved || plan.is_approved_vp)) || (currentUserRole === "president" && (!plan.is_approved_vp || plan.is_approved_president))} class="px-2 py-1 rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50 text-sm">
 											{isLoading ? "Processing..." : currentUserRole === "admin" ? (plan.is_approved ? "Admin Approved" : "Approve as Admin") : currentUserRole === "vice_president" ? (plan.is_approved_vp ? "VP Approved" : "Approve as VP") : currentUserRole === "president" ? (plan.is_approved_president ? "President Approved" : "Approve as President") : "Approve"}
 										</button>
-										<button onclick={() => onEditRow(plan)} class="p-1.5 hover:bg-muted rounded-lg">
-											<Pencil size={16} />
-										</button>
+                    <button
+                    onclick={() => handleEdit(plan)}
+                    class="text-muted-foreground hover:text-foreground"
+                >
+                    <Pencil size={16} />
+                </button>
 										<button onclick={() => deleteActionPlan(plan.id)} class="p-1.5 hover:bg-muted rounded-lg text-red-400">
 											<Trash2 size={16} />
 										</button>
@@ -712,4 +759,88 @@ const onEditRow = (plan: ActionPlan) => {
     <p class="text-muted-foreground mb-4">No action plans found for this objective.</p>
   </div>
 	{/if}
+
+  {#if showEditModal}
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" transition:fade>
+        <div class="bg-card p-6 rounded-lg shadow-lg w-full max-w-md mx-4" >
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold">Edit Action Plan</h2>
+                <button onclick={() => showEditModal = false} class="text-muted-foreground hover:text-foreground">
+                    <X size={24} />
+                </button>
+            </div>
+
+            {#if error}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {error}
+                </div>
+            {/if}
+
+            <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4">
+                <div class="space-y-2">
+                    <label for="actions_taken" class="text-sm font-medium">Actions Taken</label>
+                    <textarea 
+                        id="actions_taken"
+                        bind:value={selectedAction.actions_taken}
+                        class="w-full p-2 border rounded-md bg-secondary"
+                        rows="3"
+                    ></textarea>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="kpi" class="text-sm font-medium">KPI</label>
+                    <textarea id="kpi"
+                    bind:value={selectedAction.kpi}
+                     class="w-full p-2 border rounded-md bg-secondary"
+                        rows="3"
+                    ></textarea>
+                  
+                </div>
+
+                <div class="space-y-2">
+                    <label for="target_output" class="text-sm font-medium">Target Output</label>
+                    <textarea 
+                      id="target_output" 
+                      bind:value={selectedAction.target_output}
+                        class="w-full p-2 border rounded-md bg-secondary"
+                        rows = "2"></textarea> 
+                  
+                </div>
+
+                <div class="space-y-2">
+                    <label for="key_person" class="text-sm font-medium">Key Person Responsible</label>
+                    <textarea 
+                    id="key_person" 
+                    bind:value={selectedAction.key_person_responsible}
+                      class="w-full p-2 border rounded-md bg-secondary"
+                      rows = "2"></textarea> 
+                  
+                </div>
+
+                <div class="flex justify-end gap-2 mt-6">
+                    <button
+                        type="button"
+                        onclick={() => showEditModal = false}
+                        class="px-4 py-2 border rounded-md hover:bg-secondary"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
+                    >
+                        {#if isSubmitting}
+                            <span class="flex items-center gap-2">
+                                Saving...
+                            </span>
+                        {:else}
+                            Save Changes
+                        {/if}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
 </div>

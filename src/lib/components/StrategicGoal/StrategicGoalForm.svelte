@@ -64,10 +64,11 @@
 			</div>
 
 			<div class="flex gap-2 pt-4">
+				<button type="button" onclick={onClose} class="flex-1 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80">Cancel</button>
 				<button type="submit" disabled={isSaving} class="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50">
 					{isSaving ? "Saving..." : goal ? "Update" : "Create"} Goal
 				</button>
-				<button type="button" onclick={onClose} class="flex-1 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80">Cancel</button>
+				
 			</div>
 		</form>
 	</div>

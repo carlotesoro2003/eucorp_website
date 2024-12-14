@@ -50,6 +50,12 @@ export const dashboardData = {
             operational: [35, 40, 25],
         },
     },
+    opportunitiesData: {
+        achieved: 0,
+        notAchieved: 0,
+        total: 0,
+        labels: ['Achieved', 'Not Achieved'],
+    },
     recentEvents: [
         {
             title: 'New project milestone achieved',
@@ -92,6 +98,27 @@ export const updateStrategicGoalsCount = async (): Promise<void> => {
     }
 };
 
+export const updateOpportunitiesData = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('opt_monitoring')
+            .select('is_accomplished');
+
+        if (error) throw error;
+
+        const achieved = data.filter((item) => item.is_accomplished).length;
+        const total = data.length;
+
+        dashboardData.opportunitiesData = {
+            achieved,
+            notAchieved: total - achieved,
+            total,
+            labels: ['Achieved', 'Not Achieved'],
+        };
+    } catch (error) {
+        console.error('Error fetching opportunities:', error);
+    }
+};
 /**
  * Fetch and update the count of unmitigated risks directly in the dashboardData object.
  */
