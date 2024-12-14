@@ -11,9 +11,9 @@
 	};
 </script>
 
-<div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+<div class="bg-card rounded-lg p-4 border border-border hover:shadow-lg transition-shadow">
 	<div class="flex justify-between items-start mb-4">
-		<h3 class="text-lg font-semibold text-gray-700">Plan {index + 1}</h3>
+		<h3 class="text-lg font-semibold ">Plan {index + 1}</h3>
 		<div class="flex gap-2">
 			<button onclick={handleSave} class="text-green-500 hover:text-green-700 transition-colors p-2">
 				<Save class="w-5 h-5" />
@@ -27,26 +27,26 @@
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 		<div class="space-y-4">
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Action Plan</label>
-				<textarea bind:value={data.actions_taken} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
+				<label class="block text-sm font-medium  mb-1">Action Plan</label>
+				<textarea bind:value={data.actions_taken}  class="w-full h-24 px-3 py-2 bg-card rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
 			</div>
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">KPI</label>
-				<textarea bind:value={data.kpi} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
+				<label class="block text-sm font-medium  mb-1">KPI</label>
+				<textarea bind:value={data.kpi}  class="w-full h-24 px-3 py-2 bg-card rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
 			</div>
 		</div>
 		<div class="space-y-4">
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Target Output</label>
-				<textarea bind:value={data.target_output} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
+				<label class="block text-sm font-medium  mb-1">Target Output</label>
+				<textarea bind:value={data.target_output}  class="w-full h-24 px-3 py-2 bg-card rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
 			</div>
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Budget</label>
-				<input type="number" bind:value={data.budget} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+				<label class="block text-sm font-medium  mb-1">Budget</label>
+				<input type="number" bind:value={data.budget}  class="w-full h-24 px-3 py-2 bg-card rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/50" />
 			</div>
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Key Person Responsible</label>
-				<textarea bind:value={data.key_person_responsible} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
+				<label class="block text-sm font-medium  mb-1">Key Person Responsible</label>
+				<textarea bind:value={data.key_person_responsible}  class="w-full h-24 px-3 py-2 bg-card rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
 			</div>
 		</div>
 	</div>

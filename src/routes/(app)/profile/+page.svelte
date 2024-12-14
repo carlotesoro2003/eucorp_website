@@ -114,7 +114,7 @@
 	fetchUserProfile();
 </script>
 
-<div class="min-h-screen bg-gray-50 text-gray-900 w-full py-8 px-4">
+<div class="min-h-screen w-full py-8 px-4">
 	<div class="max-w-2xl mx-auto">
 		{#if loading}
 		<div class="flex justify-center p-8 ">
@@ -122,8 +122,8 @@
 		</div>
 		{:else if session !== null && profile}
 			<!-- Profile form -->
-			<div class="bg-white rounded-xl shadow-sm p-6 md:p-8" in:fly={{ y: 20, duration: 600 }}>
-				<h1 class="text-3xl font-bold text-gray-900 mb-8">Profile Settings</h1>
+			<div class="bg-card rounded-xl shadow-sm p-6 md:p-8" in:fly={{ y: 20, duration: 600 }}>
+				<h1 class="text-3xl font-bold  mb-8">Profile Settings</h1>
 
 				<form onsubmit={saveProfile} class="space-y-6">
 					<!-- Profile picture section -->
@@ -160,26 +160,26 @@
 					<!-- Form fields -->
 					<div class="grid md:grid-cols-2 gap-6">
 						<div class="space-y-2">
-							<label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label>
-							<input id="firstName" type="text" bind:value={profile.first_name} class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" placeholder="Enter your first name" />
+							<label for="firstName" class="block text-sm font-mediu">First Name</label>
+							<input id="firstName" type="text" bind:value={profile.first_name} class=" w-full bg-secondary border-secondary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Enter your first name" />
 						</div>
 
 						<div class="space-y-2">
-							<label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
-							<input id="lastName" type="text" bind:value={profile.last_name} class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors" placeholder="Enter your last name" />
+							<label for="lastName" class="block text-sm font-medium">Last Name</label>
+							<input id="lastName" type="text" bind:value={profile.last_name} class="w-full bg-secondary border-secondary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring" />
 						</div>
 
 						<div class="space-y-2">
-							<label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+							<label for="email" class="block text-sm font-medium ">Email</label>
 							<div class="relative">
 								<Mail class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-								<input id="email" type="email" value={profile.email ?? ""} disabled class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-500" />
+								<input id="email" type="email" value={profile.email ?? ""} disabled class="w-full pl-9 pr-4 py-2  bg-secondary border-secondary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring" />
 							</div>
 						</div>
 
 						<div class="space-y-2">
-							<label for="role" class="block text-sm font-medium text-gray-700">Role</label>
-							<input id="role" type="text" value={profile.role ?? "User"} disabled class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-500" />
+							<label for="role" class="block text-sm font-medium">Role</label>
+							<input id="role" type="text" value={profile.role ?? "User"} disabled class="w-full bg-secondary border-secondary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring" />
 						</div>
 					</div>
 

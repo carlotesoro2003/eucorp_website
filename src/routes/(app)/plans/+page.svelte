@@ -354,6 +354,7 @@
 						<th class="px-4 py-3 text-left hidden lg:table-cell">KPI</th>
 						<th class="px-4 py-3 text-left">Lead</th>
 						<th class="px-4 py-3 text-left">School Year</th>
+						<th class="px-4 py-3 text-left">Objectives</th>
 						<th class="px-4 py-3 text-center">Actions</th>
 					</tr>
 				</thead>
@@ -367,10 +368,13 @@
 							<td class="px-4 py-3">{getLeadNameById(goal.lead_id)}</td>
 							<td class="px-4 py-3">{getSchoolYearById(goal.school_year)}</td>
 							<td class="px-4 py-3">
+								<button onclick={() => goto(`/plans/${goal.id}`)} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-primary bg-primary/10 hover:bg-primary/20 rounded-md" title="View objectives">
+									<Eye size={16} /> View
+								</button>
+							</td>
+							<td class="px-4 py-3">
 								<div class="flex justify-center gap-2">
-									<button onclick={() => goto(`/plans/${goal.id}`)} class="p-1.5 hover:bg-primary/10 rounded-md transition-colors text-blue-500" title="View objectives">
-										<Eye size={18} />
-									</button>
+									
 									<button
 										onclick={() => {
 											editingGoal = goal;

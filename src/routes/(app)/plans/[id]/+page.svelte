@@ -348,6 +348,7 @@ const handleDelete = async (objective: StrategicObjective) => {
 								<th class="px-4 py-3 text-left">Persons Involved</th>
 								<th class="px-4 py-3 text-left">Target</th>
 								<th class="px-4 py-3 text-left">Evaluation Measures</th>
+								<th class="px-4 py-3 text-left">Action Plans</th>
 								<th class="px-4 py-3 text-center w-[200px]">Actions</th>
 							</tr>
 						</thead>
@@ -361,10 +362,13 @@ const handleDelete = async (objective: StrategicObjective) => {
 									<td class="px-4 py-3">{objective.target}</td>
 									<td class="px-4 py-3">{objective.eval_measures}</td>
 									<td class="px-4 py-3">
+										<button onclick={() => handleObjectiveClick(objective.id)} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-primary bg-primary/10 hover:bg-primary/20 rounded-md" title="View plans">
+											<Eye size={18} /> View
+										</button>
+									</td>
+									<td class="px-4 py-3">
 										<div class="flex justify-center gap-2">
-											<button onclick={() => handleObjectiveClick(objective.id)} class="p-1.5 hover:bg-primary/10 rounded-md transition-colors text-blue-500" title="View plans">
-												<Eye size={18} />
-											</button>
+											
 											<button onclick={() => (editingObjective = objective)} class="hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground">
 												<Pencil size={18} />
 											</button>

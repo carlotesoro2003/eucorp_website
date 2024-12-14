@@ -56,7 +56,7 @@
 					</button>
 				</th>
 				<th class="px-4 py-3 text-left hidden xl:table-cell">Evaluation Measures</th>
-				<th class="px-4 py-3 text-left w-[120px]">Action</th>
+				<th class="px-4 py-3 text-left w-[120px]">Action Plans</th>
 			</tr>
 		</thead>
 		<tbody class="divide-y divide-border">
@@ -70,7 +70,7 @@
 					<td class="px-4 py-3 hidden xl:table-cell">{objective.eval_measures}</td>
 					<td class="px-4 py-3">
                        
-						<button onclick={() => viewObjective(objective.id)} class="btn btn-ghost btn-sm text-blue-500" title="View Action Plans"><Eye size={18}/></button>
+						<button onclick={() => viewObjective(objective.id)} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-primary bg-primary/10 hover:bg-primary/20 rounded-md"title="View Action Plans"><Eye size={16}/>View</button>
 					</td>
 				</tr>
 			{/each}

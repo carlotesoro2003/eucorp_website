@@ -357,9 +357,9 @@ const totalPages = $derived(Math.ceil(filteredItems.length / itemsPerPage));
 </div>
 
 {#if isLoading}
-	<div class="flex justify-center p-8">
-		<Loader2 class="animate-spin h-8 w-8 text-primary" />
-	</div>
+<div class="flex justify-center p-8 ">
+	<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+</div>
 {:else if errorMessage}
 	<div transition:fade class="flex items-center p-4 rounded-lg bg-red-100 text-red-800">
 		<span>{errorMessage}</span>

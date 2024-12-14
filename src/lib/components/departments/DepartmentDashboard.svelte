@@ -18,7 +18,7 @@
 
 		<!-- Bar Graph Section -->
 		<div class="rounded-lg border border-border p-4 hover:shadow-lg transition-all duration-300 ">
-			<h2 class="mb-6 text-xl font-semibold text-gray-800">Strategic Goal Overiew</h2>
+			<h2 class="mb-6 text-xl font-semibold">Strategic Goal Overiew</h2>
 			<BarChart data={dashboardData.barChart} />
 		</div>
 

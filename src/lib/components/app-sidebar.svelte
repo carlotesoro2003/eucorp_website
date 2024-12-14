@@ -37,6 +37,7 @@
         title: "User Management",
         url: "/users",
         icon: Bot,
+        isActive: true,
         items: [
           { title: "Users", url: "/users" },
           
@@ -51,6 +52,7 @@
         title: "Planning",
         url: "/plans",
         icon: ChartPie,
+        isActive: true,
         items: [
           { title: "Strategic Goals", url: "/plans" },
           { title: "Risks", url: "/risks" },
@@ -61,6 +63,7 @@
         title: "Monitoring",
         url: "/monitoring/mid-year",
         icon: ChartArea,
+        isActive: true,
         items: [
           { title: "Mid-Year Monitoring ", url: "/monitoring/mid-year" },
           { title: "Year-End Monitoring", url: "/monitoring/year-end" },
@@ -94,6 +97,7 @@
         title: "Planning",
         url: "/plans/operationalPlans",
         icon: ChartPie,
+        isActive: true,
         items: [
           { title: "Operational Planning", url: "/plans/operationalPlans" },
           { title: "Risks Register", url: "/risks" },
@@ -104,6 +108,7 @@
         title: "Monitoring",
         url: "/monitoring/mid-year",
         icon: ChartArea,
+        isActive: true,
         items: [
           { title: "Mid-Year Monitoring ", url: "/monitoring/mid-year" },
           { title: "Year-End Monitoring", url: "/monitoring/year-end" },
