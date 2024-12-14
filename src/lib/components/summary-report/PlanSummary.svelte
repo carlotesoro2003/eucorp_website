@@ -1,51 +1,90 @@
 <script lang="ts">
-	import { supabase } from "$lib/supabaseClient";
-	import { Download, Loader2 } from "lucide-svelte";
-	import jsPDF from "jspdf";
-	import autoTable from "jspdf-autotable";
-	import { scale } from "svelte/transition";
+	 import { supabase } from "$lib/supabaseClient";
+    import { Download, Loader2, Search } from "lucide-svelte";
+    import jsPDF from "jspdf";
+    import autoTable from "jspdf-autotable";
+    import { scale } from "svelte/transition";
 
-	// Define types for our data structure
-	type PlanMonitoring = {
-		evaluation: string;
-		statement: string;
-		is_accomplished: boolean;
-		time_completed: string;
-	};
+    // Types remain the same
+    type PlanMonitoring = {
+        evaluation: string;
+        statement: string;
+        is_accomplished: boolean;
+        time_completed: string;
+    };
 
-	type ActionPlan = {
-		id: number;
-		actions_taken: string;
-		kpi: string;
-		target_output: string;
-		budget: number;
-		key_person_responsible: string;
-		plan_monitoring: PlanMonitoring;
-	};
+    type ActionPlan = {
+        id: number;
+        actions_taken: string;
+        kpi: string;
+        target_output: string;
+        budget: number;
+        key_person_responsible: string;
+        plan_monitoring: PlanMonitoring;
+    };
 
-	type StrategicObjective = {
-		id: number;
-		name: string;
-		strategic_initiatives: string;
-		kpi: string;
-		persons_involved: string;
-		target: string;
-		eval_measures: string;
-		action_plans: ActionPlan[];
-	};
+    type StrategicObjective = {
+        id: number;
+        name: string;
+        strategic_initiatives: string;
+        kpi: string;
+        persons_involved: string;
+        target: string;
+        eval_measures: string;
+        action_plans: ActionPlan[];
+    };
 
-	type StrategicGoal = {
-		id: number;
-		name: string;
-		description: string;
-		kpi: string;
-		strategic_objectives: StrategicObjective[];
-	};
+    type StrategicGoal = {
+        id: number;
+        name: string;
+        description: string;
+        kpi: string;
+        strategic_objectives: StrategicObjective[];
+    };
 
-	// Create reactive variables
-	let plansData: StrategicGoal[] = $state([]);
-	let loading = $state(true);
+    // State variables
+    let plansData: StrategicGoal[] = $state([]);
+    let loading = $state(true);
+    let searchQuery: string = $state("");
+    let statusFilter: string = $state("all");
+    let sortField: keyof StrategicGoal = $state("id");
+    let sortDirection: "asc" | "desc" = $state("asc");
 
+    // Derived filtered data
+    const filteredPlans = $derived(
+        plansData
+            .filter((goal) => {
+                const searchableText = `
+				${goal.id}
+                    ${goal.name} 
+                    ${goal.description}
+                    ${goal.strategic_objectives.map(obj => 
+                        `${obj.name} 
+                         ${obj.kpi} 
+                         ${obj.action_plans.map(plan => 
+                             `${plan.actions_taken} 
+                              ${plan.kpi} 
+                              ${plan.target_output}
+                              ${plan.key_person_responsible}`
+                         ).join(' ')}`
+                    ).join(' ')}
+                `.toLowerCase();
+                
+                const matchesSearch = searchQuery === "" || 
+                                    searchableText.includes(searchQuery.toLowerCase());
+                
+            
+
+                return matchesSearch ;
+            })
+            .sort((a, b) => {
+                const aValue = String(a[sortField]);
+                const bValue = String(b[sortField]);
+                return sortDirection === "asc" ? 
+                       aValue.localeCompare(bValue) : 
+                       bValue.localeCompare(aValue);
+            })
+    );
 	// Fetch hierarchical data for plans
         const fetchPlansData = async () => {
     try {
@@ -120,6 +159,7 @@
     };
 
 
+
 	// Generate PDF
 	const generatePDF = () => {
 		const doc = new jsPDF("landscape");
@@ -176,87 +216,98 @@
 	fetchPlansData();
 </script>
 
-<div class="w-full min-h-screen bg-gray-50 text-gray-900">
+<div class="w-full min-h-screen ">
 	<div class="max-w-7xl mx-auto p-6">
 		<div class="flex justify-between items-center mb-8">
-			<h1 class="text-2xl font-bold text-gray-800">Strategic Planning Summary Report</h1>
-			<button onclick={generatePDF} class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" disabled={loading}>
+			<h1 class="text-2xl font-bold">Strategic Planning Summary Report</h1>
+			<button onclick={generatePDF} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 justify-center flex-1 md:flex-initial" disabled={loading}>
 				<Download class="w-4 h-4" />
 				Export PDF
 			</button>
 		</div>
-
+		<div class="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
+            <div class="relative flex-1 md:max-w-[300px]">
+                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+                <input 
+                    type="text" 
+                    bind:value={searchQuery} 
+                    placeholder="Search plans..." 
+                    class="pl-10 pr-4 py-2 bg-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring" 
+                />
+            </div>
+          
+        </div>
 		{#if loading}
 			<div class="flex justify-center items-center p-12" transition:scale>
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
 			</div>
 		{:else}
 			<div class="space-y-8">
-				{#each plansData as goal}
-					<div class="bg-white rounded-xl shadow-sm p-6" transition:scale>
-						<h2 class="text-xl font-semibold text-gray-800 mb-4">
-							Strategic Goal: {goal.name}
+				{#each filteredPlans as goal}
+					<div class="bg-card rounded-lg p-4 border border-border  shadow-sm" transition:scale>
+						<h2 class="text-xl font-semibold  mb-4">
+							Strategic Goal {goal.id-65}: {goal.name}
 						</h2>
-						<p class="text-gray-600 mb-6">{goal.description}</p>
+						<p class=" mb-6">{goal.description}</p>
 
 						<div class="space-y-6">
 							{#each goal.strategic_objectives as objective}
-								<div class="border-l-4 border-blue-600 pl-4">
-									<h3 class="font-medium text-gray-800 mb-3">
+								<div class="border-l-4 border-primary-600 pl-4">
+									<h3 class="font-medium  mb-3">
 										Strategic Objective: {objective.name}
 									</h3>
 
 									<div class="grid gap-4 md:grid-cols-2 mb-4">
-										<div class="p-3 bg-gray-50 rounded">
-											<span class="text-sm font-medium text-gray-600">KPI:</span>
+										<div class="p-3  rounded">
+											<span class="text-sm font-medium ">KPI:</span>
 											<p class="mt-1">{objective.kpi}</p>
 										</div>
-										<div class="p-3 bg-gray-50 rounded">
-											<span class="text-sm font-medium text-gray-600">Target:</span>
+										<div class="p-3  rounded">
+											<span class="text-sm font-medium ">Target:</span>
 											<p class="mt-1">{objective.target}</p>
 										</div>
 									</div>
 
 									<div class="space-y-4">
 										{#each objective.action_plans as plan}
-											<div class="bg-gray-50 rounded-lg p-4">
-												<h4 class="font-medium text-gray-800 mb-2">
+											<div class="bg-card rounded-lg p-4 border border-border">
+												<h4 class="font-medium  mb-2">
 													Action Plan: {plan.actions_taken}
 												</h4>
 
 												<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 													<div>
-														<span class="text-sm text-gray-600">KPI</span>
+														<span class="text-sm">KPI</span>
 														<p class="mt-1 font-medium">{plan.kpi}</p>
 													</div>
 													<div>
-														<span class="text-sm text-gray-600">Target Output</span>
+														<span class="text-sm ">Target Output</span>
 														<p class="mt-1 font-medium">{plan.target_output}</p>
 													</div>
 													<div>
-														<span class="text-sm text-gray-600">Budget</span>
+														<span class="text-sm ">Budget</span>
 														<p class="mt-1 font-medium">${plan.budget}</p>
 													</div>
 													<div>
-														<span class="text-sm text-gray-600">Responsible</span>
+														<span class="text-sm ">Responsible</span>
 														<p class="mt-1 font-medium">{plan.key_person_responsible}</p>
 													</div>
 												</div>
 
 												{#if plan.plan_monitoring}
-													<div class="mt-4 pt-4 border-t border-gray-200">
-														<h5 class="text-sm font-medium text-gray-600 mb-3">Monitoring Details</h5>
+													<div class="mt-4 pt-4 border-t">
+														<h5 class="text-sm font-medium  mb-3">Monitoring Details</h5>
 														<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 															<div>
-																<span class="text-sm text-gray-600">Actions Taken to Achieve Action Plan</span>
+																<span class="text-sm tex">Actions Taken to Achieve Action Plan</span>
 																<p class="mt-1">{plan.plan_monitoring.evaluation}</p>
 															</div>
 															<div>
-																<span class="text-sm text-gray-600">Statement</span>
+																<span class="text-sm ">Statement</span>
 																<p class="mt-1">{plan.plan_monitoring.statement}</p>
 															</div>
 															<div>
-																<span class="text-sm text-gray-600">Status</span>
+																<span class="text-sm ">Status</span>
 																<p class="mt-1">
 																	<span class={plan.plan_monitoring.is_accomplished ? "text-green-600" : "text-red-600"}>
 																		{plan.plan_monitoring.is_accomplished ? "Accomplished" : "Pending"}
@@ -264,8 +315,8 @@
 																</p>
 															</div>
 															<div>
-																<span class="text-sm text-gray-600">Completed</span>
-                                                                <p class="mt-1">{new Date(plan.plan_monitoring.time_completed).toLocaleString()}</p>
+																<span class="text-sm ">Completed</span>
+                                                                <p class="mt-1">{plan.plan_monitoring.time_completed ? new Date(plan.plan_monitoring.time_completed).toLocaleString() : "Not Yet"}</p>
 															</div>
 														</div>
 													</div>

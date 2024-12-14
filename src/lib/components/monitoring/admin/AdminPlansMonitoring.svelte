@@ -378,7 +378,7 @@
 	<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 		<!-- Total Plans -->
 		
-		<div class="bg-card rounded-md shadow-sm border border-border p-3 max-w-xs">
+		<div class="bg-card rounded-md shadow-sm border border-border p-4">
 			<h3 class="text-sm font-medium text-muted-foreground">Total Plans</h3>
 			<p class="text-4xl font-semibold mt-2">{filteredPlans.length}</p>
 			<p class="text-md mt-3">

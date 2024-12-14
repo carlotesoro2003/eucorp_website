@@ -1,28 +1,50 @@
 <script lang="ts">
-	import { supabase } from "$lib/supabaseClient";
-	import { onMount } from "svelte";
-	import { fade, scale } from "svelte/transition";
-	import { Plus, PencilIcon, Trash2, X, CalendarRange, School, Search } from "lucide-svelte";
+	 import { supabase } from "$lib/supabaseClient";
+    import { onMount } from "svelte";
+    import { fade, scale } from "svelte/transition";
+    import { Plus, PencilIcon, Trash2, X, CalendarRange, School, Search } from "lucide-svelte";
 
-	/** Types definitions */
-	interface SchoolYear {
-		id: number;
-		school_year: string;
-		start_date: string;
-		end_date: string;
-		mid_year?: string;
-	}
+    /** Types definitions */
+    interface SchoolYear {
+        id: number;
+        school_year: string;
+        start_date: string;
+        end_date: string;
+        mid_year?: string;
+    }
 
-	/** State variables */
-	let schoolYears: SchoolYear[] = $state([]);
-	let isLoading: boolean = $state(false);
-	let errorMessage: string | null = $state(null);
-	let showForm: boolean = $state(false);
-	let editingItem: SchoolYear | null = $state(null);
-	let searchQuery: string = $state("");
+    /** Form data interface */
+    interface FormData {
+        school_year: string;
+        start_date: string;
+        end_date: string;
+        mid_year?: string;
+    }
 
-	/** Derived filtered school years based on search query */
-	const filteredSchoolYears = $derived(schoolYears.filter((year) => year.school_year.toLowerCase().includes(searchQuery.toLowerCase())));
+    /** State variables */
+    let schoolYears: SchoolYear[] = $state([]);
+    let isLoading: boolean = $state(false);
+    let errorMessage: string | null = $state(null);
+    let showForm: boolean = $state(false);
+    let editingItem: SchoolYear | null = $state(null);
+    let searchQuery: string = $state("");
+    let formData: FormData = $state({
+        school_year: "",
+        start_date: "",
+        end_date: "",
+        mid_year: ""
+    });
+
+    /** Get minimum date for end date based on start date */
+    const getMinEndDate = () => editingItem.start_date || new Date().toISOString().split('T')[0];
+
+    /** Derived filtered school years based on search query */
+    const filteredSchoolYears = $derived(
+        schoolYears.filter((year) => 
+            year.school_year.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+    );
+
 
 	/** Fetch school years */
 	const fetchSchoolYears = async () => {
@@ -250,14 +272,28 @@
 						<input id="school_year" type="text" bind:value={editingItem.school_year} class="w-full px-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="2023-2024" required />
 					</div>
 
-					<div>
-						<label for="start_date" class="block text-sm font-medium mb-1">Start Date</label>
-						<input id="start_date" type="date" bind:value={editingItem.start_date} class="w-full px-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20" required />
-					</div>
-
-					<div>
-						<label for="end_date" class="block text-sm font-medium mb-1">End Date</label>
-						<input id="end_date" type="date" bind:value={editingItem.end_date} class="w-full px-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20" required />
+					<div class="grid grid-cols-2 gap-4">
+						<div class="space-y-2">
+							<label for="start_date" class="text-sm font-medium">Start Date</label>
+							<input
+								type="date"
+								id="start_date"
+								bind:value={editingItem.start_date}
+								class="w-full px-3 py-2 border rounded-md"
+								required
+							/>
+						</div>
+						<div class="space-y-2">
+							<label for="end_date" class="text-sm font-medium">End Date</label>
+							<input
+								type="date"
+								id="end_date"
+								bind:value={editingItem.end_date}
+								min={getMinEndDate()}
+								class="w-full px-3 py-2 border rounded-md"
+								required
+							/>
+						</div>
 					</div>
 				</div>
 

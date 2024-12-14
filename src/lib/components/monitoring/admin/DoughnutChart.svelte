@@ -53,7 +53,7 @@
 			},
 		});
 	};
-
+	
 	// Update chart when data changes
 	$effect(() => {
 		if (chart && chartData) {

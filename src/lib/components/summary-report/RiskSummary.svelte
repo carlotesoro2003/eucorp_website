@@ -200,11 +200,11 @@
 	fetchRiskMonitoringData();
 </script>
 
-<div class="w-full min-h-screen bg-gray-50 text-gray-900">
+<div class="w-full min-h-screen">
 	<div class="max-w-7xl mx-auto p-6">
 		<div class="flex justify-between items-center mb-8">
-			<h1 class="text-2xl font-bold text-gray-800">Risks Summary Report</h1>
-			<button onclick={generatePDF} class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" disabled={loading}>
+			<h1 class="text-2xl font-bold">Risks Summary Report</h1>
+			<button onclick={generatePDF} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 justify-center flex-1 md:flex-initial" disabled={loading}>
 				<Download class="w-4 h-4" />
 				Export PDF
 			</button>
@@ -238,39 +238,39 @@
 		{:else if filteredRisks.length > 0}
 			<div class="space-y-8">
 				{#each filteredRisks as risk}
-					<div class="bg-white rounded-xl shadow-sm p-6" transition:scale>
-						<h2 class="text-xl font-semibold text-gray-800 mb-4">
+					<div class="bg-card rounded-lg p-4 border border-border  shadow-sm" transition:scale>
+						<h2 class="text-xl font-semibold  mb-4">
 							Risk: {risk.risk_statement}
 						</h2>
 
 						<div class="grid gap-4 md:grid-cols-2 mb-4">
-							<div class="p-3 bg-gray-50 rounded">
-								<span class="text-sm font-medium text-gray-600">RRN:</span>
+							<div class="p-3  rounded">
+								<span class="text-sm font-medium ">RRN:</span>
 								<p class="mt-1">{risk.rrn}</p>
 							</div>
-							<div class="p-3 bg-gray-50 rounded">
-								<span class="text-sm font-medium text-gray-600">Likelihood:</span>
+							<div class="p-3 rounded">
+								<span class="text-sm font-medium">Likelihood:</span>
 								<p class="mt-1">{risk.likelihood_rating}</p>
 							</div>
-							<div class="p-3 bg-gray-50 rounded">
-								<span class="text-sm font-medium text-gray-600">Severity:</span>
+							<div class="p-3 rounded">
+								<span class="text-sm font-medium">Severity:</span>
 								<p class="mt-1">{risk.severity}</p>
 							</div>
-							<div class="p-3 bg-gray-50 rounded">
-								<span class="text-sm font-medium text-gray-600">Control:</span>
+							<div class="p-3 rounded">
+								<span class="text-sm font-medium">Control:</span>
 								<p class="mt-1">{risk.control_rating}</p>
 							</div>
 						</div>
 
 						<div class="mt-4 pt-4 border-t border-gray-200">
-							<h5 class="text-sm font-medium text-gray-600 mb-3">Monitoring Details</h5>
+							<h5 class="text-sm font-medium  mb-3">Monitoring Details</h5>
 							<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 								<div>
-									<span class="text-sm text-gray-600">Monitoring Rating</span>
+									<span class="text-sm">Monitoring Rating</span>
 									<p class="mt-1">{risk.monitoring_rating}</p>
 								</div>
 								<div>
-									<span class="text-sm text-gray-600">Status</span>
+									<span class="text-sm">Status</span>
 									<p class="mt-1">{risk.status}</p>
 								</div>
 							</div>
