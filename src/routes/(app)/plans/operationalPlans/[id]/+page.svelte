@@ -226,7 +226,7 @@
 
 	<!-- Strategic Details -->
 	<div class="bg-card border border-border rounded-lg shadow p-6">
-		<h1 class="text-2xl font-bold">Strategic PLanning Details</h1>
+		<h1 class="text-2xl font-bold">Strategic Planning Details</h1>
 		{#if strategicGoal && strategicObjective}
 			<div class="mt-4 space-y-2">
 				<h5 class="text-md font-medium">
