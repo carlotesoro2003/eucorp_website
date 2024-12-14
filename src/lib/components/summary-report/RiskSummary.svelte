@@ -239,7 +239,7 @@
 			<div class="space-y-8">
 				{#each filteredRisks as risk}
 					<div class="bg-card rounded-lg p-4 border border-border  shadow-sm" transition:scale>
-						<h2 class="text-xl font-semibold  mb-4">
+						<h2 class="text-xl font-semibold  mb-4 text-primary">
 							Risk: {risk.risk_statement}
 						</h2>
 
@@ -262,7 +262,7 @@
 							</div>
 						</div>
 
-						<div class="mt-4 pt-4 border-t border-gray-200">
+						<div class="mt-4 pt-4 mx-4 border-t border-gray-200">
 							<h5 class="text-sm font-medium  mb-3">Monitoring Details</h5>
 							<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 								<div>
