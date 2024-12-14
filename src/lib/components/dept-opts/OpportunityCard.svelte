@@ -31,7 +31,7 @@
 		<div class="flex justify-between items-start">
 			<h3 class="text-lg font-medium truncate">Opportunity {index + 1}</h3>
 			<div class="flex gap-2">
-				<button onclick={handleSave} class="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground" title="Save opportunity">
+				<button onclick={handleSave} class="text-green-500 hover:text-green-700 transition-colors p-2">
 					<Save size={18} />
 				</button>
 				<button onclick={onDelete} class="p-2 hover:bg-red-100 text-red-500 hover:text-red-600 rounded-lg" title="Delete opportunity">

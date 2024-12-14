@@ -211,7 +211,7 @@
 			</div>
 
 			<div class="flex gap-4">
-				<button onclick={addCard} class="inline-flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors">
+				<button onclick={addCard} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
 					<Plus class="w-4 h-4 mr-2" />
 					Add New Opportunity
 				</button>

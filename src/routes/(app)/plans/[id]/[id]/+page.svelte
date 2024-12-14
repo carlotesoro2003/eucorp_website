@@ -697,8 +697,8 @@ const onEditRow = (plan: ActionPlan) => {
 			</div>
 		</div>
 	{:else}
-		<div class="flex justify-center p-8" transition:fade>
-			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-		</div>
+  <div class="text-center py-12 bg-card rounded-lg border border-border">
+    <p class="text-muted-foreground mb-4">No action plans found for this objective.</p>
+  </div>
 	{/if}
 </div>

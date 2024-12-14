@@ -46,6 +46,7 @@
 	let showAlert: boolean = $state(false);
 	let alertMessage: string = $state("");
 	let alertType: "success" | "error" = $state("success");
+	let isSaving: boolean = $state(false);
 
 	/** Data Variables */
 	let strategicGoals: StrategicGoal[] = $state([]);
@@ -145,6 +146,7 @@
 
 	/** Handle Save */
 	const handleSave = async (formData: Partial<StrategicGoal>) => {
+		isSaving = true;
 		if (!currentSchoolYearId) {
 			displayAlert("No current school year found. Cannot save goal.", "error");
 			return;
@@ -178,6 +180,7 @@
 				closeForm();
 			}
 		}
+		isSaving = false;
 	};
 
 	/** Delete Goal */
@@ -395,6 +398,6 @@
 	{/if}
 
 	{#if showForm}
-		<StrategicGoalForm goal={editingGoal} {leads} onSave={handleSave} onClose={closeForm} />
+		<StrategicGoalForm goal={editingGoal} {leads} {isSaving} onSave={handleSave} onClose={closeForm} />
 	{/if}
 </div>

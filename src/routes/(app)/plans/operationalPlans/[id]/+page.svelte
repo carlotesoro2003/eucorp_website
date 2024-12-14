@@ -270,7 +270,7 @@
 
 
 			<div class="flex justify-end mt-4">
-				<button onclick={addNewPlan} class=" bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80">
+				<button onclick={addNewPlan} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
 					<Plus class="w-4 h-4 mr-2" />
 					Add New Plan
 				</button>

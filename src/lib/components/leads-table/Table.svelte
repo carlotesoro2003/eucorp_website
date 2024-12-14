@@ -23,6 +23,7 @@
 	let isLoading: boolean = $state(false);
 	let errorMessage: string | null = $state(null);
 	let successMessage: string | null = $state(null);
+	let isSaving: boolean = $state(false);
 
 	// Derived values with sorting and filtering
 	const filteredLeads = $derived(
@@ -90,6 +91,7 @@
 
 	// Handle save
 	const handleSave = async (lead: { name: string }) => {
+		isSaving = true;
 		const { error } = editingLead ? await supabase.from("leads").update({ name: lead.name }).eq("id", editingLead.id) : await supabase.from("leads").insert([{ name: lead.name }]);
 
 		if (error) {
@@ -101,6 +103,7 @@
 			await fetchLeads();
 			closeForm();
 		}
+		isSaving = false;
 	};
 
 	// Initialize leads on mount
@@ -186,7 +189,7 @@
 				<button onclick={closeForm} class="absolute right-4 top-4 p-1 hover:bg-muted rounded-lg">
 					<X size={20} />
 				</button>
-				<LeadForm lead={editingLead} onSave={handleSave} />
+				<LeadForm lead={editingLead} {isSaving} onSave={handleSave} />
 			</div>
 		</div>
 	{/if}

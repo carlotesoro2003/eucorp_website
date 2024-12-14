@@ -13,12 +13,22 @@
 		notAchieved: [] as number[],
 	};
 
+	// Pagination variables
+	let currentPage = 0;
+	const barsPerPage = 9; // Number of bars to display per page
+
+	// Paginated data
+	let paginatedData = {
+		goals: [] as string[],
+		achieved: [] as number[],
+		notAchieved: [] as number[],
+	};
+
 	// Fetch data for the bar chart
 	const fetchStrategicData = async () => {
 		try {
 			console.log("Starting to fetch strategic goals...");
 
-			// Fetch strategic goals, objectives, and action plans
 			const { data: result, error } = await supabase
 				.from("strategic_goals")
 				.select(`
@@ -44,27 +54,20 @@
 
 			console.log("Raw data fetched:", result);
 
-			// Process data
-			const goals = result.map((goal) => {
-				console.log(`Processing goal: ${goal.name}`);
+			// Sort the goals by goal_no in ascending order
+			const sortedGoals = result.sort((a, b) => a.goal_no - b.goal_no);
 
+			// Process data
+			const goals = sortedGoals.map((goal) => {
 				const achievedCount = goal.strategic_objectives
-					.flatMap((objective) => {
-						return objective.action_plans.flatMap((plan) =>
-							plan.plan_monitoring.filter((monitor) => monitor.is_accomplished)
-						);
-					}).length;
+					.flatMap((objective) => objective.action_plans.flatMap((plan) =>
+						plan.plan_monitoring.filter((monitor) => monitor.is_accomplished)
+					)).length;
 
 				const notAchievedCount = goal.strategic_objectives
-					.flatMap((objective) => {
-						return objective.action_plans.flatMap((plan) =>
-							plan.plan_monitoring.filter((monitor) => !monitor.is_accomplished)
-						);
-					}).length;
-
-				console.log(
-					`Goal: ${goal.name}, Achieved: ${achievedCount}, Not Achieved: ${notAchievedCount}`
-				);
+					.flatMap((objective) => objective.action_plans.flatMap((plan) =>
+						plan.plan_monitoring.filter((monitor) => !monitor.is_accomplished)
+					)).length;
 
 				return {
 					goal_no: goal.goal_no,
@@ -75,16 +78,28 @@
 			});
 
 			// Populate chart data
-			console.log("Processed data for chart:", goals);
-
 			data.goals = goals.map((goal) => `Strategic Goal No. ${goal.goal_no}`);
 			data.achieved = goals.map((goal) => goal.achieved);
 			data.notAchieved = goals.map((goal) => goal.notAchieved);
 
-			console.log("Final chart data:", data);
+			// Initialize paginated data
+			updatePaginatedData();
+
 		} catch (error) {
 			console.error("Error processing strategic data:", error);
 		}
+	};
+
+	// Update paginated data based on current page
+	const updatePaginatedData = () => {
+		const start = currentPage * barsPerPage;
+		const end = start + barsPerPage;
+
+		paginatedData.goals = data.goals.slice(start, end);
+		paginatedData.achieved = data.achieved.slice(start, end);
+		paginatedData.notAchieved = data.notAchieved.slice(start, end);
+
+		createChart();
 	};
 
 	// Create and update chart
@@ -97,11 +112,11 @@
 			chart = new Chart(ctx, {
 				type: "bar",
 				data: {
-					labels: data.goals,
+					labels: paginatedData.goals,
 					datasets: [
 						{
 							label: "Achieved",
-							data: data.achieved,
+							data: paginatedData.achieved,
 							backgroundColor: "#e21d48",
 							borderColor: "#e21d48",
 							borderWidth: 1,
@@ -110,7 +125,7 @@
 						},
 						{
 							label: "Not Achieved",
-							data: data.notAchieved,
+							data: paginatedData.notAchieved,
 							backgroundColor: "#e5e7eb",
 							borderColor: "#e5e7eb",
 							borderWidth: 1,
@@ -147,6 +162,21 @@
 		}
 	};
 
+	// Handle pagination
+	const goToNextPage = () => {
+		if ((currentPage + 1) * barsPerPage < data.goals.length) {
+			currentPage++;
+			updatePaginatedData();
+		}
+	};
+
+	const goToPreviousPage = () => {
+		if (currentPage > 0) {
+			currentPage--;
+			updatePaginatedData();
+		}
+	};
+
 	// Handle resize for responsiveness
 	let resizeTimer: ReturnType<typeof setTimeout>;
 	const handleResize = () => {
@@ -160,7 +190,6 @@
 		const initialize = async () => {
 			console.log("Initializing chart...");
 			await fetchStrategicData(); // Fetch data for the chart
-			createChart(); // Create the chart with the fetched data
 		};
 
 		initialize();
@@ -175,4 +204,22 @@
 
 <div class="relative h-[400px] w-full bg-card">
 	<canvas bind:this={canvas}></canvas>
+</div>
+
+<!-- Pagination Controls -->
+<div class="flex justify-center mt-4 space-x-4">
+	<button 
+		class="flex items-center gap-2 bg-secondary text-foreground hover:bg-gray-200 px-4 py-2 rounded-lg hover:bg-secondary/80 justify-center flex-1 md:flex-initial"
+		on:click={goToPreviousPage}
+		disabled={currentPage === 0}
+	>
+		Previous
+	</button>
+	<button 
+		class="flex items-center gap-2 bg-secondary text-foreground hover:bg-gray-200 px-4 py-2 rounded-lg hover:bg-secondary/80 justify-center flex-1 md:flex-initial"
+		on:click={goToNextPage}
+		disabled={(currentPage + 1) * barsPerPage >= data.goals.length}
+	>
+		Next
+	</button>
 </div>

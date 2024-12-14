@@ -3,7 +3,7 @@
 	import { supabase } from "$lib/supabaseClient";
 	import { page } from "$app/stores";
 	import { goto } from "$app/navigation";
-	import { Search, FileDown, Pencil, Plus, ChevronLeft, ArrowUpDown, Download } from "lucide-svelte";
+	import { Search, FileDown, Pencil, Plus, ChevronLeft, ArrowUpDown, Download, Trash2 } from "lucide-svelte";
 	import jsPDF from "jspdf";
 	import autoTable from "jspdf-autotable";
 	import EditObjectiveForm from "$lib/components/strategic-objectives/EditObjectiveForm.svelte";
@@ -235,7 +235,31 @@
 
 		doc.save("StrategicObjectives.pdf");
 	};
+	// Add state for delete loading
+let isDeleting = $state(false);
 
+// Update delete handler
+const handleDelete = async (objective: StrategicObjective) => {
+    if (!confirm('Are you sure you want to delete this objective?')) return;
+    
+    isDeleting = true;
+    try {
+        const { error } = await supabase
+            .from("strategic_objectives")
+            .delete()
+            .eq("id", objective.id);
+
+        if (error) throw error;
+        
+        await fetchGoalDetails();
+        alert('Objective deleted successfully');
+    } catch (error) {
+        console.error("Error deleting objective:", error);
+        alert('Failed to delete objective');
+    } finally {
+        isDeleting = false;
+    }
+};
 	/** Initialize data */
 	onMount(() => {
 		goalId = $page.params.id ? parseInt($page.params.id) : null;
@@ -343,6 +367,13 @@
 											<button onclick={() => (editingObjective = objective)} class="hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground">
 												<Pencil size={18} />
 											</button>
+											<button 
+    onclick={() => handleDelete(objective)}
+    class="p-1.5 hover:bg-muted rounded-lg text-red-400 hover:text-red-500 disabled:opacity-50"
+    disabled={isDeleting}
+>
+    <Trash2 size={18} />
+</button>
 										</div>
 									</td>
 								</tr>
