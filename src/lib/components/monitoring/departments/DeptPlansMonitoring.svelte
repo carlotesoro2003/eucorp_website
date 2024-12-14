@@ -386,7 +386,7 @@
 	<!-- Evaluation Modal -->
 	{#if showEvaluationModal}
 		<div transition:fade={{ duration: 200 }} class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-			<div transition:slide={{ duration: 200 }} class="bg-background rounded-lg shadow-xl w-full max-w-lg mx-4">
+			<div  class="bg-background rounded-lg shadow-xl w-full max-w-lg mx-4">
 				<div class="flex items-center justify-between p-4 border-b border-border">
 					<h2 class="text-lg font-semibold">Actions Taken</h2>
 					<button onclick={closeEvaluationModal} class="p-1 hover:bg-muted rounded-full">
@@ -424,7 +424,7 @@
 	<!-- Dialog -->
 	{#if showDialog}
 		<div transition:fade={{ duration: 200 }} class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-			<div transition:slide={{ duration: 200 }} class="bg-background rounded-lg shadow-xl w-full max-w-lg mx-4">
+			<div  class="bg-background rounded-lg shadow-xl w-full max-w-lg mx-4">
 				<div class="flex items-center justify-between p-4 border-b border-border">
 					<h2 class="text-lg font-semibold">Evaluation Statement</h2>
 					<button onclick={() => (showDialog = false)} class="p-1 hover:bg-muted rounded-full">

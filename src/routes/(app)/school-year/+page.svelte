@@ -254,7 +254,7 @@
 
 <!-- Form Modal -->
 {#if showForm}
-	<div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50" transition:fade>
+	<div transition:fade={{ duration: 200 }} class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
 		<div class="bg-card p-6 rounded-lg w-full max-w-md relative border border-border shadow-lg" transition:scale={{ duration: 200 }}>
 			<div class="flex justify-between items-center mb-6">
 				<h2 class="text-xl font-semibold">

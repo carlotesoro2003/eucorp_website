@@ -7,6 +7,7 @@
 	import Header from "$lib/components/dept-risks-table/risk-assessment-table/Header.svelte";
 	import type { Risk, Classification, LikelihoodRating, Severity, RiskControlRating, RiskMonitoringRating, RiskAssessment } from "$lib/types/RiskTypes";
     import { ChevronLeft } from "lucide-svelte";
+    import { fade } from "svelte/transition";
   
 	// State variables
 	let risks: Risk[] = $state([]);
@@ -194,16 +195,16 @@
 	<ChevronLeft size={20} />
 	Back
 </a>	
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="min-h-screen">
 	<Header {departmentName} />
 
 	<main class="container mx-auto px-4 py-8">
 		<Notifications {successMessage} {errorMessage} />
 
 		{#if isLoading}
-			<div class="flex justify-center items-center min-h-[400px]">
-				<div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
-			</div>
+		<div class="flex justify-center p-8" transition:fade>
+			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+		</div>
 		{:else}
 			<RiskTable {savedRisks} {classification} {riskAssessments} {isSaving} onAssess={handleOpenDialog} />
 

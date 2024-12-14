@@ -64,7 +64,7 @@
 						</td>
 						<td class="px-4 py-3">{risk.actions}</td>
 						<td class="px-4 py-3">{risk.key_persons}</td>
-						<td class="px-4 py-3">${risk.budget}</td>
+						<td class="px-4 py-3">P{risk.budget}</td>
 						<td class="px-4 py-3">
 							<div class="flex justify-center">
 								{#if risk.id && isRiskAssessed(risk.id)}

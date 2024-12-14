@@ -2,7 +2,7 @@
 	let { departmentName }: { departmentName: string } = $props();
 </script>
 
-<header class="bg-white dark:bg-gray-800 shadow-sm">
+<header>
 	<div class="container mx-auto px-4 py-6">
 		<h1 class="text-3xl font-bold text-gray-900 dark:text-white">
 			{departmentName} Risk Register
