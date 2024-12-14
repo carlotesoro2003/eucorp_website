@@ -3,6 +3,7 @@
 		import TableRow from "$lib/components/user-table/TableRow.svelte";
 		import UserForm from "$lib/components/user-table/UserForm.svelte";
 		import { supabase, supabaseAdmin } from "$lib/supabaseClient";
+    import { fade } from "svelte/transition";
 
 		/** User type definition */
 		type User = {
@@ -351,7 +352,7 @@
 		
 
 		{#if showForm}
-			<div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+			<div transition:fade={{ duration: 200 }} class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
 				<div class="bg-card p-6 rounded-lg w-full max-w-md relative border border-border">
 					<button onclick={closeForm} class="absolute right-4 top-4 p-1 hover:bg-muted rounded-lg">
 						<X size={20} />
