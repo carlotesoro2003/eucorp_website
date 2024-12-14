@@ -34,6 +34,7 @@
 	let isLoadingPage: boolean = $state(true);
 	let actionPlans: ActionPlan[] = $state([]);
 	let profileId: string | null = $state(null);
+	let isSubmitting = $state(false);
 
 	/** Pagination state */
 	let currentPage: number = $state(1);
@@ -193,6 +194,7 @@
 	/** Evaluate action plan using AI */
 	const evaluateActionPlan = async () => {
 		if (!selectedPlan) return;
+		isSubmitting = true;
 
 		actionPlans = actionPlans.map((plan) => (plan.id === selectedPlan?.id ? { ...plan, isLoading: true } : plan));
 
@@ -242,7 +244,9 @@
 		} catch (error) {
 			console.error("Error evaluating action plan:", error);
 			actionPlans = actionPlans.map((plan) => (plan.id === selectedPlan?.id ? { ...plan, isLoading: false } : plan));
-		}
+		} finally {
+        isSubmitting = false;
+    }
 	};
 
 	onMount(async () => {
@@ -412,9 +416,13 @@
 					</div>
 					<div class="flex justify-end gap-3">
 						<button onclick={closeEvaluationModal} class="px-4 py-2 text-sm hover:bg-muted rounded-md">Cancel</button>
-						<button onclick={evaluateActionPlan} class="px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-md" disabled={!evaluationText || selectedPlan?.isLoading}>
-							{selectedPlan?.isLoading ? "Evaluating..." : "Submit"}
-						</button>
+						<button 
+    onclick={evaluateActionPlan} 
+    class="px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-md disabled:opacity-50" 
+    disabled={!evaluationText || selectedPlan?.isLoading || isSubmitting}
+>
+    {isSubmitting ? "Submitting..." : "Submit"}
+					</button>
 					</div>
 				</div>
 			</div>
