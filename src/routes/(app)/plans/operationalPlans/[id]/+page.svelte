@@ -98,10 +98,13 @@
 
 	/** Save an action plan */
 	const savePlan = async (plan: ActionPlan, isNew: boolean) => {
-		if (!plan.profile_id || !plan.department_id || !plan.objective_id) {
-			displayAlert("Plan is missing required fields.", "error");
+		if (!profile?.id || !profile.department_id || !objective_id) {
+			displayAlert("Missing required profile or objective information.", "error");
 			return;
 		}
+
+		// Ensure department_id is set
+		plan.department_id = profile.department_id;
 
 		isSaving = true;
 		try {
@@ -122,6 +125,7 @@
 			isSaving = false;
 		}
 	};
+
 
 	/** Delete an action plan */
 	const deletePlan = async (id: number) => {
@@ -153,12 +157,13 @@
 				kpi: "",
 				target_output: "",
 				key_person_responsible: "",
-				objective_id: objective_id,
+				objective_id: objective_id,	
 				profile_id: profile.id,
-				department_id: profile.department_id,
+				department_id: profile.department_id, // Prefill department_id
 			},
 		];
 	};
+
 
 	/** Remove a new plan from the list */
 	const deleteNewPlan = (index: number) => {

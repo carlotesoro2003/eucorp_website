@@ -231,23 +231,23 @@
 			sortDirection = "asc";
 		}
 
-		// Sort numerically if sorting `goal_no`
-		if (field === "goal_no") {
-			strategicGoals.sort((a, b) =>
-				sortDirection === "asc"
-					? Number(a.goal_no) - Number(b.goal_no)
-					: Number(b.goal_no) - Number(a.goal_no)
-			);
-		} else {
-			// Default lexicographical sorting for other fields
-			strategicGoals.sort((a, b) => {
-				const aValue = String(a[field]);
-				const bValue = String(b[field]);
+		// Reapply sorting logic
+		strategicGoals.sort((a, b) => {
+			const aValue = a[field];
+			const bValue = b[field];
+
+			// Handle numeric sorting for goal_no
+			if (field === "goal_no") {
 				return sortDirection === "asc"
-					? aValue.localeCompare(bValue)
-					: bValue.localeCompare(aValue);
-			});
-		}
+					? Number(aValue) - Number(bValue)
+					: Number(bValue) - Number(aValue);
+			}
+
+			// Default string sorting for other fields
+			return sortDirection === "asc"
+				? String(aValue).localeCompare(String(bValue))
+				: String(bValue).localeCompare(String(aValue));
+		});
 	};
 
 
@@ -259,15 +259,28 @@
 				const searchFields = `${goal.name} ${goal.description} ${goal.kpi}`.toLowerCase();
 				const matchesSearch = searchFields.includes(searchQuery.toLowerCase());
 				const matchesLead = leadFilter === "all" || goal.lead_id === leadFilter;
-				const matchesSchoolYear = schoolYearFilter === "all" || goal.school_year === schoolYearFilter;
+				const matchesSchoolYear =
+					schoolYearFilter === "all" || goal.school_year === schoolYearFilter;
 				return matchesSearch && matchesLead && matchesSchoolYear;
 			})
 			.sort((a, b) => {
-				const aValue = String(a[sortField]);
-				const bValue = String(b[sortField]);
-				return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+				const aValue = a[sortField];
+				const bValue = b[sortField];
+
+				// Handle numeric sorting for goal_no
+				if (sortField === "goal_no") {
+					return sortDirection === "asc"
+						? Number(aValue) - Number(bValue)
+						: Number(bValue) - Number(aValue);
+				}
+
+				// Default string sorting for other fields
+				return sortDirection === "asc"
+					? String(aValue).localeCompare(String(bValue))
+					: String(bValue).localeCompare(String(aValue));
 			})
 	);
+
 
 	/** Derived paginated items */
 	const paginatedItems = $derived(

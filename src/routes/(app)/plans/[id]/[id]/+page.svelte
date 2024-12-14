@@ -208,7 +208,6 @@
     }
   };
 
-
   const fetchVPAndPresidentNames = async () => {
     try {
       const { data, error } = await supabase
@@ -223,17 +222,24 @@
         return;
       }
 
-      const vp = data.find((user) => user.role === "vice_president");
-      const president = data.find((user) => user.role === "president");
+      // Collect all Vice Presidents and Presidents
+      const vicePresidents = data
+        .filter((user) => user.role === "vice_president")
+        .map((vp) => `${vp.first_name} ${vp.last_name}`);
+      const presidents = data
+        .filter((user) => user.role === "president")
+        .map((president) => `${president.first_name} ${president.last_name}`);
 
-      vicePresidentName = vp ? `${vp.first_name} ${vp.last_name}` : "N/A";
-      presidentName = president ? `${president.first_name} ${president.last_name}` : "N/A";
+      // Join names with commas for display
+      vicePresidentName = vicePresidents.length ? vicePresidents.join(", ") : "N/A";
+      presidentName = presidents.length ? presidents.join(", ") : "N/A";
     } catch (error) {
       console.error("Error fetching VP and President details:", error);
       vicePresidentName = "N/A";
       presidentName = "N/A";
     }
   };
+
 
 
   const applyFilters = () => {
@@ -392,23 +398,28 @@
     doc.text("_________________________", 100, signatureStartY);
     doc.text("Corporate Planning Officer", 100, signatureStartY + 5);
 
-    // Vice President
-    if (displayedActionPlans.some((plan) => plan.is_approved_vp)) {
-      doc.text(`${vicePresidentName || "N/A"} (sgnd)`, 180, signatureStartY - 5);
-    } else {
-      doc.text(`${vicePresidentName || "N/A"}`, 180, signatureStartY - 5);
-    }
+    // Vice President section
+    doc.text(
+      vicePresidentName.includes("(sgnd)")
+        ? `${vicePresidentName}`
+        : `${vicePresidentName} (sgnd)`,
+      180,
+      signatureStartY - 5
+    );
     doc.text("_________________________", 180, signatureStartY);
-    doc.text("Vice President", 180, signatureStartY + 5);
+    doc.text("Vice President(s)", 180, signatureStartY + 5);
 
-    // President
-    if (displayedActionPlans.some((plan) => plan.is_approved_president)) {
-      doc.text(`${presidentName || "N/A"} (sgnd)`, 260, signatureStartY - 5);
-    } else {
-      doc.text(`${presidentName || "N/A"}`, 260, signatureStartY - 5);
-    }
+    // President section
+    doc.text(
+      presidentName.includes("(sgnd)")
+        ? `${presidentName}`
+        : `${presidentName} (sgnd)`,
+      260,
+      signatureStartY - 5
+    );
     doc.text("_________________________", 260, signatureStartY);
-    doc.text("President", 260, signatureStartY + 5);
+    doc.text("President(s)", 260, signatureStartY + 5);
+
 
     doc.save("ActionPlans.pdf");
   };
