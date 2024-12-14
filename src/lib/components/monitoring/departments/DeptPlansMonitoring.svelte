@@ -321,7 +321,7 @@
 								<td class="px-4 py-3">{plan.objective_name}</td>
 								<td class="px-4 py-3">
 									<div class="flex items-center gap-2">
-										<p class="line-clamp-2">{plan.actions_taken}</p>
+										<p>{plan.actions_taken}</p>
 									</div>
 								</td>
 								<td class="px-4 py-3">{plan.kpi}</td>

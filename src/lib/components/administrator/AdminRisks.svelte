@@ -14,7 +14,8 @@
 		actions: string;
 		key_persons: string;
 		budget: number;
-		profile_id: string;
+    profile_id: string;
+    department_id: string;
 		is_approved: boolean;
 		is_approved_vp: boolean;
 		is_approved_president: boolean;
@@ -67,6 +68,37 @@
   let isLoading = true;
   let isApproving = false;
   let deletingRiskId: string | null = null;
+
+  let searchQuery: string = $state("");
+	let currentPage: number = $state(1);
+	let itemsPerPage: number = $state(5);
+	let showMobileFilters: boolean = $state(false);
+	let sortField: string = $state("rrn");
+	let sortDirection: "asc" | "desc" = $state("asc");
+	let departmentFilter: string = $state("all");
+
+  let risks: Risk[] = $state([]);
+	let departments: any[] = $state([]);
+	let riskAssessments: any[] = $state([]);
+	let classification: any[] = $state([]);
+	let likelihoodRatings: any[] = $state([]);
+	let severities: any[] = $state([]);
+	let riskControlRatings: any[] = $state([]);
+	let riskMonitoringRatings: any[] = $state([]);
+	let loading: boolean = $state(true);
+	let userRole: string | null = $state(null);
+	let adminName: string | null = $state(null);
+	let vicePresidentName: string | null = $state(null);
+	let presidentName: string | null = $state(null);
+	let approvingId: string | null = $state(null);
+	let deletingId: string | null = $state(null);
+
+  let classificationFilter: number | "all" = $state("all");
+	let budgetRange: { min: number | null; max: number | null } = $state({
+		min: null,
+		max: null,
+	});
+
 
 
   const fetchCurrentUserRole = async () => {
@@ -278,6 +310,80 @@ const approveRisk = async (id: string) => {
   }
 };
 
+const approveAllRisks = async () => {
+  isApproving = true;
+
+  try {
+    // Determine the field to update based on the user's role
+    let updateField = {};
+    if (userRole === "admin") {
+      updateField = { is_approved: true };
+    } else if (userRole === "vice_president") {
+      updateField = { is_approved_vp: true };
+    } else if (userRole === "president") {
+      updateField = { is_approved_president: true };
+    } else {
+      console.error("Invalid role for approval.");
+      isApproving = false;
+      return;
+    }
+
+    // Update approval for all displayed risks
+    const riskIds = displayedRisks.map((risk) => risk.id);
+
+    const { error } = await supabase
+      .from("risks")
+      .update(updateField)
+      .in("id", riskIds);
+
+    if (error) throw error;
+
+    // If the President is approving, add risks to the `risk_monitoring` table
+    if (userRole === "president") {
+      const approvedRisks = displayedRisks;
+
+      for (const risk of approvedRisks) {
+        const { data: assessments, error: assessmentError } = await supabase
+          .from("risk_assessment")
+          .select("*")
+          .eq("risk_id", risk.id);
+
+        if (assessmentError) {
+          console.error("Error fetching risk assessments:", assessmentError);
+          continue;
+        }
+
+        const monitoringEntries = assessments.map((assessment) => ({
+          risk_id: risk.id,
+          likelihood_rating_id: assessment.lr,
+          severity_id: assessment.s,
+          control_rating_id: assessment.rcr,
+          monitoring_rating_id: assessment.rmr,
+          department_id: risk.department_id,
+        }));
+
+        const { error: monitoringError } = await supabase
+          .from("risk_monitoring")
+          .insert(monitoringEntries);
+
+        if (monitoringError) {
+          console.error("Error inserting into risk_monitoring:", monitoringError);
+        }
+      }
+    }
+
+    // Refresh the risks list
+    await fetchRisks();
+    console.log("All risks approved successfully.");
+  } catch (error) {
+    console.error("Error approving all risks:", error);
+  } finally {
+    isApproving = false;
+  }
+};
+
+
+
 
   const deleteRisk = async (id: string) => {
     deletingRiskId = id;
@@ -452,36 +558,7 @@ const init = async () => {
 	};
 
 
-  let searchQuery: string = $state("");
-	let currentPage: number = $state(1);
-	let itemsPerPage: number = $state(5);
-	let showMobileFilters: boolean = $state(false);
-	let sortField: string = $state("rrn");
-	let sortDirection: "asc" | "desc" = $state("asc");
-	let departmentFilter: string = $state("all");
-
-  let risks: Risk[] = $state([]);
-	let departments: any[] = $state([]);
-	let riskAssessments: any[] = $state([]);
-	let classification: any[] = $state([]);
-	let likelihoodRatings: any[] = $state([]);
-	let severities: any[] = $state([]);
-	let riskControlRatings: any[] = $state([]);
-	let riskMonitoringRatings: any[] = $state([]);
-	let loading: boolean = $state(true);
-	let userRole: string | null = $state(null);
-	let adminName: string | null = $state(null);
-	let vicePresidentName: string | null = $state(null);
-	let presidentName: string | null = $state(null);
-	let approvingId: string | null = $state(null);
-	let deletingId: string | null = $state(null);
-
-  let classificationFilter: number | "all" = $state("all");
-	let budgetRange: { min: number | null; max: number | null } = $state({
-		min: null,
-		max: null,
-	});
-
+  
 
   const toggleSort = (field: string) => {
 		if (sortField === field) {
@@ -574,6 +651,14 @@ const init = async () => {
 				<Download size={20} />
 				Export
 			</button>
+      <button
+      onclick={approveAllRisks}
+      class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+      disabled={isApproving}
+    >
+      {isApproving ? "Processing..." : "Approve All Risks"}
+    </button>
+    
 		</div>
 	</div>
 

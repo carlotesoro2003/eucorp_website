@@ -98,6 +98,7 @@
 				action_plans (
 					actions_taken,
 					kpi,
+					target_output,
 					objective_id,
 					strategic_objectives (
 						name,
@@ -125,6 +126,7 @@
 				department: departmentMap[plan.department_id] || "Unassigned",
 				actions_taken: plan.action_plans?.actions_taken || "No Actions Taken",
 				kpi: plan.action_plans?.kpi || "No KPI",
+				target_output: plan.action_plans?.target_output || "No Target Output",
 				objective: plan.action_plans?.strategic_objectives?.name || "No Objective",
 				goal: plan.action_plans?.strategic_objectives?.strategic_goals?.name || "No Goal",
 				goal_no: plan.action_plans?.strategic_objectives?.strategic_goals?.goal_no || 0,
@@ -567,6 +569,7 @@
 						<th class="px-4 py-3 text-left">Department</th>
 						<th class="px-4 py-3 text-left">Action Plans</th>
 						<th class="px-4 py-3 text-left">KPI</th>
+						<th class="px-4 py-3 text-left">Target Output</th>
 						<th class="px-4 py-3 text-left">Actions Taken</th>
 						<th class="px-4 py-3 text-left">Statement</th>
 						<th class="px-4 py-3 text-left">Status</th>
@@ -579,6 +582,7 @@
 							<td class="px-4 py-3">{plan.department}</td>
 							<td class="px-4 py-3">{plan.actions_taken}</td>
 							<td class="px-4 py-3">{plan.kpi}</td>
+							<td class="px-4 py-3">{plan.target_output}</td>
 							<td class="px-4 py-3">{plan.evaluation || "Pending"}</td>
 							<td class="px-4 py-3">{plan.statement || "Pending"}</td>
 							<td class="px-4 py-3">

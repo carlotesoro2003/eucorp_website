@@ -51,6 +51,10 @@
 					<label class="block text-sm font-medium text-muted-foreground mb-1">Planned Actions</label>
 					<textarea bind:value={data.planned_actions} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
 				</div>
+				<div>
+					<label class="block text-sm font-medium text-muted-foreground mb-1">Key Persons</label>
+					<textarea bind:value={data.key_persons} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+				</div>
 			</div>
 			<div class="space-y-4">
 				<div>
@@ -58,10 +62,15 @@
 					<textarea bind:value={data.kpi} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
 				</div>
 				<div>
+					<label class="block text-sm font-medium text-muted-foreground mb-1">Target Output</label>
+					<textarea bind:value={data.target_output} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+				</div>
+				<div>
 					<label class="block text-sm font-medium text-muted-foreground mb-1">Budget</label>
 					<input type="number" bind:value={data.budget} class="w-full rounded-lg bg-background border border-border p-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
 				</div>
 			</div>
 		</div>
+		
 	</div>
 </div>

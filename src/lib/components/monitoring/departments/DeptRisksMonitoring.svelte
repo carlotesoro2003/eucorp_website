@@ -78,35 +78,58 @@ const getControlRatingBadgeColor = (rating: string | null) => {
 // Previous risk control rating for comparison
 let previousRiskControlRating: number | null = null;
 	/** Fetch risk monitoring data */
+	/** Fetch risks only for the user's department */
 	const fetchRiskMonitoring = async () => {
 		try {
-			const { data, error } = await supabase.from("risk_monitoring").select(`
-				id,
-				risks (
-					rrn,
-					risk_statement
-				),
-				likelihood_rating:likelihood_rating_id(name),
-				severity:severity_id(name),
-				control_rating:control_rating_id(name),
-				monitoring_rating:monitoring_rating_id(status),
-				is_achieved
-			`);
+			// Fetch the logged-in user's department ID
+			const { data: sessionData } = await supabase.auth.getSession();
+			if (!sessionData?.session) throw new Error("User not logged in");
+
+			const userId = sessionData.session.user.id;
+
+			// Get user's department
+			const { data: userProfile, error: profileError } = await supabase
+				.from("profiles")
+				.select("department_id")
+				.eq("id", userId)
+				.single();
+
+			if (profileError || !userProfile?.department_id) {
+				throw new Error("Failed to fetch user department");
+			}
+
+			const departmentId = userProfile.department_id;
+
+			// Fetch risks for the department
+			const { data, error } = await supabase
+				.from("risk_monitoring")
+				.select(`
+					id,
+					risks (
+						rrn,
+						risk_statement
+					),
+					likelihood_rating:likelihood_rating_id(name),
+					severity:severity_id(name),
+					control_rating:control_rating_id(name),
+					monitoring_rating:monitoring_rating_id(status),
+					is_achieved
+				`)
+				.eq("department_id", departmentId); // Filter by department ID
 
 			if (error) throw error;
 
-			risksMonitoring = data
-				.map((item: any) => ({
-					id: item.id,
-					rrn: item.risks.rrn,
-					risk_statement: item.risks.risk_statement,
-					likelihood_rating: item.likelihood_rating?.name || "Not Available",
-					severity: item.severity?.name || "Not Available",
-					control_rating: item.control_rating?.name || "Not Available",
-					monitoring_rating: item.monitoring_rating?.status || "Not Available",
-					is_achieved: item.is_achieved,
-				}))
-				.sort((a, b) => a.rrn.localeCompare(b.rrn)); // Sort by rrn
+			risksMonitoring = data.map((item: any) => ({
+				id: item.id,
+				rrn: item.risks.rrn,
+				risk_statement: item.risks.risk_statement,
+				likelihood_rating: item.likelihood_rating?.name || "Not Available",
+				severity: item.severity?.name || "Not Available",
+				control_rating: item.control_rating?.name || "Not Available",
+				monitoring_rating: item.monitoring_rating?.status || "Not Available",
+				is_achieved: item.is_achieved,
+			})).sort((a, b) => a.rrn.localeCompare(b.rrn)); // Sort by rrn
+			;	
 		} catch (error) {
 			console.error("Error fetching risk monitoring data:", error);
 			errorMessage = "Failed to fetch risk monitoring data.";
@@ -357,9 +380,9 @@ const totalPages = $derived(Math.ceil(filteredItems.length / itemsPerPage));
 </div>
 
 {#if isLoading}
-<div class="flex justify-center p-8 ">
-	<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-</div>
+	<div class="flex justify-center p-8">
+		<Loader2 class="animate-spin h-8 w-8 text-primary" />
+	</div>
 {:else if errorMessage}
 	<div transition:fade class="flex items-center p-4 rounded-lg bg-red-100 text-red-800">
 		<span>{errorMessage}</span>
