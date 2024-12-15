@@ -4,7 +4,7 @@
   import jsPDF from "jspdf";
   import autoTable from "jspdf-autotable";
   import { page } from "$app/stores";
-  import { Pencil, Search, ArrowUpDown, Save, X, Trash2 } from "lucide-svelte"; 
+  import { Pencil, Search, ArrowUpDown, Save, X, Trash2, ChevronLeft } from "lucide-svelte"; 
   import { fade, slide } from "svelte/transition";
 
 
@@ -609,11 +609,16 @@ const onEditRow = (plan: ActionPlan) => {
 
 <div class="flex flex-col gap-4 p-4 container mx-auto">
 	<!-- Header -->
-	<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-		<div class="flex items-center gap-2">
-			<h1 class="text-2xl font-bold">Action Plans</h1>
-		</div>
-	</div>
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    
+    <div class="flex items-center gap-2">
+        <a href={`/plans/${objective?.id}`} class="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+        <ChevronLeft size={20} />
+        Back to Strategic Objectives
+      </a>
+      <h1 class="text-2xl font-bold">Action Plans</h1>
+    </div>
+  </div>
 
 	<!-- Filters -->
 	<div class="flex flex-col md:flex-row gap-4 mb-6">
