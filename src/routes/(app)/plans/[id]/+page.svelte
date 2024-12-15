@@ -3,7 +3,7 @@
 	import { supabase } from "$lib/supabaseClient";
 	import { page } from "$app/stores";
 	import { goto } from "$app/navigation";
-	import { Search, FileDown, Pencil, Plus, ChevronLeft, ArrowUpDown, Download, Trash2 } from "lucide-svelte";
+	import { Search, FileDown, Pencil, Plus, ChevronLeft, ArrowUpDown, Download, Trash2, Check, Target } from "lucide-svelte";
 	import jsPDF from "jspdf";
 	import autoTable from "jspdf-autotable";
 	import EditObjectiveForm from "$lib/components/strategic-objectives/EditObjectiveForm.svelte";
@@ -21,6 +21,8 @@
 		eval_measures: string;
 		strategic_goal_id: number;
 		profile_id: string;
+		hasActionPlans?: boolean;
+		notApproved?: number;
 	}
 
 	interface StrategicGoal {
@@ -152,7 +154,11 @@
 		isLoading = true;
 
 		try {
-			const { data: goalData, error: goalError } = await supabase.from("strategic_goals").select("id, name, goal_no, lead_id").eq("id", goalId).single();
+			const { data: goalData, error: goalError } = await supabase
+				.from("strategic_goals")
+				.select("id, name, goal_no, lead_id")
+				.eq("id", goalId)
+				.single();
 
 			if (goalError || !goalData) {
 				throw new Error("Failed to fetch goal details");
@@ -166,7 +172,11 @@
 			};
 
 			if (goalData.lead_id) {
-				const { data: leadData, error: leadError } = await supabase.from("leads").select("name").eq("id", goalData.lead_id).single();
+				const { data: leadData, error: leadError } = await supabase
+					.from("leads")
+					.select("name")
+					.eq("id", goalData.lead_id)
+					.single();
 
 				if (leadError) {
 					console.error("Error fetching lead name:", leadError);
@@ -175,19 +185,46 @@
 				}
 			}
 
-			const { data: objectiveData, error: objectiveError } = await supabase.from("strategic_objectives").select("*").eq("strategic_goal_id", goalId);
+			// Fetch objectives and include action plan status
+			const { data: objectiveData, error: objectiveError } = await supabase
+				.from("strategic_objectives")
+				.select(`
+					id,
+					name,
+					strategic_initiatives,
+					kpi,
+					persons_involved,
+					target,
+					eval_measures,
+					action_plans (
+						is_approved
+					)
+				`)
+				.eq("strategic_goal_id", goalId);
 
 			if (objectiveError) {
 				throw new Error("Failed to fetch objectives");
 			}
 
-			objectives = objectiveData || [];
+			objectives = (objectiveData || []).map((objective) => {
+				const actionPlans = objective.action_plans || [];
+				const notApproved = actionPlans.filter((plan) => plan.is_approved === false).length;
+				const hasActionPlans = actionPlans.length > 0;
+
+				return {
+					...objective,
+					notApproved,
+					hasActionPlans,
+					allApproved: hasActionPlans && notApproved === 0,
+				};
+			});
 		} catch (error) {
 			console.error(error);
 		} finally {
 			isLoading = false;
 		}
 	};
+
 
 	/** Export to PDF */
 	const exportToPDF = () => {
@@ -349,6 +386,7 @@ const handleDelete = async (objective: StrategicObjective) => {
 								<th class="px-4 py-3 text-left">Target</th>
 								<th class="px-4 py-3 text-left">Evaluation Measures</th>
 								<th class="px-4 py-3 text-left">Action Plans</th>
+								<th class="px-4 py-3 text-center w-[200px]">Plan Status</th>
 								<th class="px-4 py-3 text-center w-[200px]">Actions</th>
 							</tr>
 						</thead>
@@ -366,24 +404,39 @@ const handleDelete = async (objective: StrategicObjective) => {
 											<Eye size={18} /> View
 										</button>
 									</td>
+										<td class="px-4 py-3 text-center">
+										{#if !objective.hasActionPlans}
+											<span class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg" title="No plans added">
+												N/A
+											</span>
+										{:else if (objective.notApproved > 0)}
+											<span class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-red-100 text-red-700 rounded-lg" title="{objective.notApproved} plans not approved">
+												<Target size={16} />
+												{objective.notApproved} 
+											</span>
+										{:else}
+											<span class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-green-100 text-green-700 rounded-lg" title="All plans approved">
+												<Check size={16} />
+											</span>
+										{/if}
+									</td>
 									<td class="px-4 py-3">
 										<div class="flex justify-center gap-2">
-											
 											<button onclick={() => (editingObjective = objective)} class="hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground">
 												<Pencil size={18} />
 											</button>
-											<button 
-    onclick={() => handleDelete(objective)}
-    class="p-1.5 hover:bg-muted rounded-lg text-red-400 hover:text-red-500 disabled:opacity-50"
-    disabled={isDeleting}
->
-    <Trash2 size={18} />
-</button>
+											<button
+												onclick={() => handleDelete(objective)}
+												class="p-1.5 hover:bg-muted rounded-lg text-red-400 hover:text-red-500 disabled:opacity-50"
+												disabled={isDeleting}
+											>
+												<Trash2 size={18} />
+											</button>
 										</div>
 									</td>
 								</tr>
 							{/each}
-						</tbody>
+						</tbody>						
 					</table>
 				</div>
 
