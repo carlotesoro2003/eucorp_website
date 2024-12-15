@@ -192,11 +192,37 @@
 	};
 
 	/** Remove risk row */
-	const removeRow = (index: number) => {
-		if (risks.length > 0 && index === risks.length - 1) {
-			nextRrnNumber--;
+	const removeRow = async (index: number) => {
+		const riskToDelete = risks[index];
+
+		if (riskToDelete.isNew) {
+			// If the risk is new and not saved in the database, just remove it locally
+			risks = risks.filter((_, i) => i !== index);
+			nextRrnNumber--; // Adjust RRN for new risks
+			return;
 		}
-		risks = risks.filter((_, i) => i !== index);
+
+		try {
+			// Delete the risk from the database
+			const { error } = await supabase
+				.from("risks")
+				.delete()
+				.eq("rrn", riskToDelete.rrn);
+
+			if (error) throw error;
+
+			// Remove the risk from local state
+			risks = risks.filter((_, i) => i !== index);
+			successMessage = "Risk deleted successfully!";
+		} catch (error) {
+			console.error("Error deleting risk:", error);
+			errorMessage = "Failed to delete risk.";
+		} finally {
+			setTimeout(() => {
+				successMessage = null;
+				errorMessage = null;
+			}, 3000);
+		}
 	};
 
 	
@@ -245,11 +271,11 @@
 			<div class="grid grid-cols-1 gap-4 mb-6">
 				{#each risks as risk, index}
 					<RiskCard 
-						{risk} 
-						{classification} 
-						{index} 
-						removeRow={removeRow} 
-						onUpdate={(index) => markRiskAsEdited(index)} 
+					{risk} 
+					{classification} 
+					{index} 
+					removeRow={(index) => removeRow(index)} 
+					onUpdate={(index) => markRiskAsEdited(index)} 
 					/>
 				{/each}
 			</div>

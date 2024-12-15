@@ -43,7 +43,7 @@
 				.select("*")
 				.eq("objective_id", objective_id)
 				.eq("department_id", profile.department_id)
-				.order("id", { ascending: true }); // Sort by `id` or another timestamp field if available
+				.order("id", { ascending: true });
 
 			if (error) throw error;
 
@@ -55,7 +55,6 @@
 			isLoading = false;
 		}
 	};
-
 
 	/** Add a new plan to the list */
 	const addNewPlan = () => {
@@ -80,98 +79,85 @@
 		];
 	};
 
-	/** Mark Edited Plan */
-	const markPlanAsEdited = (index: number, isNew = false) => {
+	/** Handle field edit */
+	const handleEditPlan = (index: number, field: string, value: any, isNew: boolean) => {
 		if (isNew) {
-			newPlans[index].isEdited = true;
+			newPlans[index] = { ...newPlans[index], [field]: value }; // Update new plans
 		} else {
-			actionPlans[index].isEdited = true;
+			actionPlans[index] = { ...actionPlans[index], [field]: value, isEdited: true }; // Mark the plan as edited
 		}
 	};
 
+	/** Delete an existing plan */
+	const deletePlan = async (id: number) => {
+		try {
+			const { error } = await supabase
+				.from("action_plans")
+				.delete()
+				.eq("id", id);
+
+			if (error) throw error;
+
+			// Refresh data
+			await fetchActionPlans();
+			successMessage = "Plan deleted successfully!";
+		} catch (error) {
+			console.error("Error deleting plan:", error);
+			errorMessage = "Failed to delete plan.";
+		}
+	};
 
 	/** Delete a new plan */
 	const deleteNewPlan = (index: number) => {
 		newPlans = newPlans.filter((_, i) => i !== index);
 	};
 
-	/** Delete an existing plan */
-	const deletePlan = async (planId: number) => {
+
+	/** Save individual plan */
+	const saveIndividualPlan = async (index: number, isNew: boolean) => {
 		try {
+			let plan;
+			if (isNew) {
+				plan = newPlans[index];
+			} else {
+				plan = actionPlans[index];
+			}
+
+			// Remove unnecessary fields
+			const { isEdited, isNew: _, ...sanitizedPlan } = plan;
+
+			// Save to the database
 			const { error } = await supabase
 				.from("action_plans")
-				.delete()
-				.eq("id", planId);
+				.upsert(sanitizedPlan, { onConflict: "id" });
 
 			if (error) throw error;
 
-			// Refresh the action plans list
-			await fetchActionPlans();
-			successMessage = "Plan deleted successfully.";
-		} catch (error) {
-			console.error("Error deleting plan:", error);
-			errorMessage = "Failed to delete plan.";
-		} finally {
-			setTimeout(() => {
-				successMessage = null;
-				errorMessage = null;
-			}, 3000);
-		}
-	};
-
-	/** Save All Action Plans */
-	const submitAllPlans = async () => {
-		isSaving = true;
-		try {
-			// Filter new or edited action plans
-			const newOrEditedPlans = [
-				...newPlans,
-				...actionPlans.filter((plan) => plan.isNew || plan.isEdited),
-			];
-
-			// Remove `isNew` and `isEdited` fields before saving
-			const sanitizedPlans = newOrEditedPlans.map(({ isNew, isEdited, ...rest }) => rest);
-
-			if (sanitizedPlans.length > 0) {
-				// Upsert the sanitized plans
-				const { error } = await supabase
-					.from("action_plans")
-					.upsert(sanitizedPlans, { onConflict: "id" }); // Adjust the conflict keys as per your schema
-
-				if (error) throw error;
-
-				// Refresh action plans
+			// Refresh data
+			if (isNew) {
+				newPlans = newPlans.filter((_, i) => i !== index); // Remove from new plans
 				await fetchActionPlans();
-				newPlans = []; // Clear new plans after submission
-				successMessage = "All action plans submitted successfully.";
 			} else {
-				successMessage = "No changes to save.";
+				actionPlans[index].isEdited = false; // Mark as saved
 			}
+
+			successMessage = "Plan saved successfully!";
 		} catch (error) {
-			console.error("Error submitting all action plans:", error);
-			errorMessage = "Failed to submit all action plans.";
-		} finally {
-			isSaving = false;
-			setTimeout(() => {
-				successMessage = null;
-				errorMessage = null;
-			}, 3000);
+			console.error("Error saving plan:", error);
+			errorMessage = "Failed to save plan.";
 		}
 	};
-
-
 
 	/** Fetch data on mount */
 	onMount(async () => {
 		try {
-			// Example: Objective ID is retrieved from a parameter
 			const { params } = $page;
 			objective_id = parseInt(params.id);
 
 			if (!objective_id) {
 				errorMessage = "Objective ID is missing.";
 				console.error("Objective ID is null or invalid:", params.id);
-				return; // Exit early
+				return;
 			}
 
 			const user = await supabase.auth.getUser();
@@ -198,20 +184,15 @@
 			errorMessage = "Initialization failed.";
 		}
 	});
-
 </script>
 
 <div class="flex flex-col gap-4 p-4 container mx-auto">
 	<!-- Alerts -->
 	{#if successMessage}
-		<div class="p-4 rounded-lg bg-green-100 text-green-800">
-			<span>{successMessage}</span>
-		</div>
+		<div class="p-4 rounded-lg bg-green-100 text-green-800">{successMessage}</div>
 	{/if}
 	{#if errorMessage}
-		<div class="p-4 rounded-lg bg-red-100 text-red-800">
-			<span>{errorMessage}</span>
-		</div>
+		<div class="p-4 rounded-lg bg-red-100 text-red-800">{errorMessage}</div>
 	{/if}
 
 	<!-- Action Plans -->
@@ -227,16 +208,18 @@
 					<PlanCard
 						data={plan}
 						planNumber={index + 1}
-						onSave={(updatedPlan) => markPlanAsEdited(index)}
+						onEdit={(field, value) => handleEditPlan(index, field, value, false)}
+						onSave={() => saveIndividualPlan(index, false)}
 						onDelete={() => deletePlan(plan.id!)}
 					/>
 				{/each}
 
-				{#each newPlans as newPlan, index (index)}
+				{#each newPlans as newPlan, index}
 					<PlanCard
 						data={newPlan}
 						planNumber={actionPlans.length + index + 1}
-						onSave={() => markPlanAsEdited(index, true)}
+						onEdit={(field, value) => handleEditPlan(index, field, value, true)}
+						onSave={() => saveIndividualPlan(index, true)}
 						onDelete={() => deleteNewPlan(index)}
 					/>
 				{/each}
@@ -246,14 +229,6 @@
 				<button onclick={addNewPlan} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
 					<Plus class="w-4 h-4 mr-2" />
 					Add New Plan
-				</button>
-				<button onclick={submitAllPlans} disabled={isSaving} class="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50">
-					{#if isSaving}
-						<div class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-					{:else}
-						<Save class="w-4 h-4 mr-2" />
-					{/if}
-					Submit All Plans
 				</button>
 			</div>
 		{/if}
