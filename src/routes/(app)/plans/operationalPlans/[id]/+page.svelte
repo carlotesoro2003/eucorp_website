@@ -83,7 +83,8 @@
 			const { data, error } = await supabase
 				.from("action_plans")
 				.select("*")
-				.eq("objective_id", objective_id);
+				.eq("objective_id", objective_id)
+				.eq("department_id", profile?.department_id);
 
 			if (error) throw error;
 
