@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Search, ArrowUpDown, Plus, Edit, Trash2, Eye, Pencil, Target } from "lucide-svelte";
+	import { Search, ArrowUpDown, Plus, Edit, Trash2, Eye, Pencil, Target, Check } from "lucide-svelte";
 	import { supabase } from "$lib/supabaseClient";
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
@@ -15,6 +15,8 @@
 		kpi: string;
 		lead_id: number | null;
 		school_year: number | null;
+		notApproved?: number; // Add this line
+		hasActionPlans?: boolean; // Add this line
 	};
 
 	type Lead = {
@@ -64,6 +66,7 @@
 		await fetchLeads();
 		await fetchSchoolYears();
 		await fetchStrategicGoals();
+		await fetchStrategicGoalsWithNotApprovedCounts();			
 		loading = false;
 	};
 
@@ -115,6 +118,53 @@
 			strategicGoals = data as StrategicGoal[];
 		}
 	};
+
+	/** Fetch Strategic Goals with Not Approved Counts */
+	const fetchStrategicGoalsWithNotApprovedCounts = async () => {
+		try {
+			const { data: result, error } = await supabase
+				.from("strategic_goals")
+				.select(`
+					id,
+					goal_no,
+					name,
+					description,
+					kpi,
+					lead_id,
+					school_year,
+					strategic_objectives (
+						action_plans (
+							is_approved
+						)
+					)
+				`)
+				.order("goal_no", { ascending: true });
+
+			if (error) {
+				displayAlert("Error fetching strategic goals", "error");
+				console.error("Error fetching strategic goals:", error);
+				return;
+			}
+
+			// Process goals and calculate not approved action plans or no action plans
+			strategicGoals = result.map((goal) => {
+				const objectives = goal.strategic_objectives || [];
+				const actionPlans = objectives.flatMap((objective) => objective.action_plans || []);
+
+				const notApproved = actionPlans.filter((plan) => plan.is_approved === false).length;
+
+				return {
+					...goal,
+					notApproved,
+					hasActionPlans: actionPlans.length > 0, // Check if there are any action plans
+				};
+			});
+		} catch (error) {
+			console.error("Error processing not approved action plans data:", error);
+		}
+	};
+
+
 
 
 	/** Calculate Next Goal Number */
@@ -355,6 +405,7 @@
 						<th class="px-4 py-3 text-left">Lead</th>
 						<th class="px-4 py-3 text-left">School Year</th>
 						<th class="px-4 py-3 text-left">Objectives</th>
+						<th class="px-4 py-3 text-center">Plan Status</th>
 						<th class="px-4 py-3 text-center">Actions</th>
 					</tr>
 				</thead>
@@ -368,13 +419,42 @@
 							<td class="px-4 py-3">{getLeadNameById(goal.lead_id)}</td>
 							<td class="px-4 py-3">{getSchoolYearById(goal.school_year)}</td>
 							<td class="px-4 py-3">
-								<button onclick={() => goto(`/plans/${goal.id}`)} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-primary bg-primary/10 hover:bg-primary/20 rounded-md" title="View objectives">
+								<button
+									onclick={() => goto(`/plans/${goal.id}`)}
+									class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-primary bg-primary/10 hover:bg-primary/20 rounded-md"
+									title="View objectives"
+								>
 									<Eye size={16} /> View
 								</button>
 							</td>
+							<td class="px-4 py-3 text-center">
+								{#if !goal.hasActionPlans}
+									<span
+										class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg"
+										title="No Action Plans"
+									>
+										N/A
+									</span>
+								{:else if (goal.notApproved ?? 0) > 0}
+									<span
+										class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-red-100 text-red-700 rounded-lg"
+										title="{goal.notApproved} Action Plans Not Approved"
+									>
+										<Target size={16} />
+										{goal.notApproved}
+									</span>
+								{:else}
+									<span
+										class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-green-100 text-green-700 rounded-lg"
+										title="All Action Plans Approved"
+									>
+										<Check size={16} />
+									</span>
+								{/if}
+							</td>
 							<td class="px-4 py-3">
-								<div class="flex justify-center gap-2">
-									
+								<div class="flex justify-center gap-2 items-center">
+									<!-- Action Buttons -->
 									<button
 										onclick={() => {
 											editingGoal = goal;
@@ -385,7 +465,11 @@
 									>
 										<Pencil size={18} />
 									</button>
-									<button onclick={() => deleteGoal(goal.id)} class="p-1.5 hover:bg-red-100 rounded-md transition-colors text-red-600" title="Delete goal">
+									<button
+										onclick={() => deleteGoal(goal.id)}
+										class="p-1.5 hover:bg-red-100 rounded-md transition-colors text-red-600"
+										title="Delete goal"
+									>
 										<Trash2 size={18} />
 									</button>
 								</div>
@@ -393,6 +477,7 @@
 						</tr>
 					{/each}
 				</tbody>
+				
 			</table>
 		</div>
 

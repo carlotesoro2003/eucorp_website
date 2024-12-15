@@ -39,6 +39,7 @@ export const POST = async ({ request }) => {
 2. Verify that each element of the target (quantitative and qualitative) is addressed explicitly, and confirm whether the data satisfies, exceeds, or falls short of the requirements.
 3. Highlight any inconsistencies, missing details, or misalignments between the evaluation, the data, and the target criteria.
 4. Avoid introducing unrelated information or interpretations beyond what is provided in the target or data.
+5. Be meticolous with typographical errors, grammar, and punctuation.
 
 Respond in a concise, logical paragraph that directly analyzes the data and evaluation. Do not use phrases such as "yes" or "no" to start the explanation. Avoid structured formats like bullet points, and focus solely on the provided details to ensure clarity and accuracy.`,
             },
