@@ -17,6 +17,8 @@
 		budget: number;
 		profile_id: string;
 		department_id: string;
+		isNew?: boolean;
+		isEdited?: boolean;
 	}
 
 	interface Classification {
@@ -116,7 +118,7 @@
 		}
 	};
 
-	/** Add new risk row */
+	/** Add New Risk Row */
 	const addRow = () => {
 		const formattedRrn = `RRN-${departmentName}-${String(nextRrnNumber).padStart(3, "0")}`;
 		nextRrnNumber++;
@@ -131,32 +133,50 @@
 				budget: 0,
 				profile_id: profile?.id || "",
 				department_id: profile?.department_id || "",
+				isNew: true, // Mark as new
 			},
 		];
 	};
 
-	/** Remove risk row */
-	const removeRow = (index: number) => {
-		if (risks.length > 0 && index === risks.length - 1) {
-			nextRrnNumber--;
+	/** Mark Edited Risk */
+	const markRiskAsEdited = (index: number) => {
+		if (risks[index]) {
+			risks[index].isEdited = true;
 		}
-		risks = risks.filter((_, i) => i !== index);
 	};
 
-	/** Save all risks */
+	/** Save Risks */
 	const saveRisks = async () => {
 		isSaving = true;
 		try {
-			const sanitizedRisks = risks.map(({ id, ...risk }) => risk);
-			const { error } = await supabase.from("risks").upsert(sanitizedRisks, { onConflict: "rrn" });
-			if (error) throw error;
+			// Filter new or edited risks
+			const newOrEditedRisks = risks.filter((risk) => risk.isNew || risk.isEdited);
 
-			const updatedRisks = await supabase.from("risks").select("*").eq("profile_id", profile?.id);
+			// Remove `isNew` and `isEdited` before saving
+			const sanitizedRisks = newOrEditedRisks.map(({ isNew, isEdited, id, ...rest }) => rest);
 
-			if (updatedRisks.error) throw updatedRisks.error;
+			if (sanitizedRisks.length > 0) {
+				// Save new or updated risks
+				const { error } = await supabase
+					.from("risks")
+					.upsert(sanitizedRisks, { onConflict: "rrn" });
 
-			risks = updatedRisks.data || [];
-			successMessage = "Risks saved successfully!";
+				if (error) throw error;
+
+				// Fetch the latest risks to refresh the list
+				const { data: updatedRisks, error: fetchError } = await supabase
+					.from("risks")
+					.select("*")
+					.eq("profile_id", profile?.id);
+
+				if (fetchError) throw fetchError;
+
+				risks = updatedRisks || [];
+				successMessage = "Risks saved successfully!";
+			} else {
+				successMessage = "No changes to save.";
+			}
+
 			setTimeout(() => {
 				successMessage = null;
 			}, 3000);
@@ -170,6 +190,16 @@
 			isSaving = false;
 		}
 	};
+
+	/** Remove risk row */
+	const removeRow = (index: number) => {
+		if (risks.length > 0 && index === risks.length - 1) {
+			nextRrnNumber--;
+		}
+		risks = risks.filter((_, i) => i !== index);
+	};
+
+	
 
 	onMount(async () => {
 		isLoading = true;
@@ -214,9 +244,16 @@
 			<!-- Risk Cards -->
 			<div class="grid grid-cols-1 gap-4 mb-6">
 				{#each risks as risk, index}
-					<RiskCard {risk} {classification} {index} {removeRow} />
+					<RiskCard 
+						{risk} 
+						{classification} 
+						{index} 
+						removeRow={removeRow} 
+						onUpdate={(index) => markRiskAsEdited(index)} 
+					/>
 				{/each}
 			</div>
+			
 
 			<!-- Action Buttons -->
 			<div class="flex flex-wrap gap-4">

@@ -7,7 +7,7 @@
 
 	// Props
 	let {
-		selectedRisk,
+		selectedRisk,	
 		likelihoodRating,
 		severity,
 		riskControlRating,
@@ -37,7 +37,16 @@
 	});
 
 	// Derived state for form validation
-	const isFormValid = $derived(assessment.likelihoodRating !== null && assessment.severity !== null && assessment.riskControlRating !== null && assessment.riskMonitoringRating !== null);
+	const isFormValid = $derived(
+		assessment.likelihoodRating !== null &&
+		assessment.severity !== null &&
+		assessment.riskControlRating !== null &&
+		assessment.riskMonitoringRating !== null
+	);
+
+	//reload page 
+    let isPageReloading = $state(false);
+
 
 	// Calculate risk control rating when likelihood or severity changes
 	$effect(() => {
@@ -55,9 +64,11 @@
 
 	/** Handle assessment save */
 	const handleSave = async () => {
-		if (!isFormValid || !selectedRisk) return;
+		if (!isFormValid || !selectedRisk || isSaving || isPageReloading) return;
 
-		isSaving = true;
+		// Immediately trigger full-page loading spinner
+		isPageReloading = true;
+
 		try {
 			// Insert new assessment
 			const { data, error } = await supabase
@@ -73,27 +84,30 @@
 
 			if (error) throw error;
 
-			// Fetch updated risk assessments to refresh the UI
-			const { data: updatedAssessments, error: fetchError } = await supabase.from("risk_assessment").select("*");
-
-			if (fetchError) throw fetchError;
-
+			// Show success message
 			onSuccess("Assessment saved successfully");
-			onClose();
+
+			// Reload the page immediately
+			location.reload();
 		} catch (error) {
 			onError("Failed to save assessment");
-		} finally {
-			isSaving = false;
+			isPageReloading = false; // Reset loading state if there's an error
 		}
 	};
+
+
 </script>
 
-<!-- Rest of your component remains the same -->
 
 
-<!-- Backdrop -->
-<div  transition:fade={{ duration: 200 }} class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-	<!-- Dialog -->
+{#if isPageReloading}
+<!-- Full-page Loading Spinner -->
+<div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+	<div class="animate-spin w-12 h-12 border-4 border-white border-t-transparent rounded-full"></div>
+</div>
+{:else}
+<!-- Page Content -->
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
 	<div class="bg-card rounded-xl max-w-xl w-full shadow-xl">
 		<!-- Header -->
 		<div class="flex items-center justify-between p-6 border-b dark:border-gray-700">
@@ -108,14 +122,12 @@
 
 		<!-- Body -->
 		<div class="p-6 space-y-6">
-			<!-- Risk Statement -->
 			<div class="bg-card border border-border p-4 rounded-lg">
 				<h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Risk Statement</h3>
 				<p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedRisk?.risk_statement}</p>
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<!-- Likelihood Rating -->
 				<div class="space-y-2">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Likelihood Rating</label>
 					<select bind:value={assessment.likelihoodRating} class="bg-secondary border-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring px-3 py-2">
@@ -126,7 +138,6 @@
 					</select>
 				</div>
 
-				<!-- Severity -->
 				<div class="space-y-2">
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Severity</label>
 					<select bind:value={assessment.severity} class="bg-secondary border-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring px-3 py-2">
@@ -138,7 +149,6 @@
 				</div>
 			</div>
 
-			<!-- Risk Control Rating -->
 			<div class="space-y-2">
 				<label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Risk Control Rating</label>
 				<div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
@@ -156,7 +166,6 @@
 				</div>
 			</div>
 
-			<!-- Monitoring Rating -->
 			<div class="space-y-2">
 				<label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Monitoring Rating</label>
 				<select bind:value={assessment.riskMonitoringRating} class="bg-secondary border-secondary rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-ring px-3 py-2">
@@ -172,9 +181,12 @@
 
 		<!-- Footer -->
 		<div class="flex items-center justify-end gap-3 p-6 border-t dark:border-gray-700">
-			<button onclick={onClose} disabled={isSaving} class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
-			<button onclick={handleSave} disabled={!isFormValid || isSaving} class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 justify-center flex-1 md:flex-initial whitespace-nowrap">
-				{#if isSaving}
+			<button onclick={onClose} disabled={isSaving || isPageReloading} class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+			<button 
+				onclick={handleSave} 
+				disabled={!isFormValid || isSaving || isPageReloading} 
+				class="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 justify-center flex-1 md:flex-initial whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
+				{#if isSaving || isPageReloading}
 					<div class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
 				{/if}
 				Save Assessment
@@ -182,3 +194,5 @@
 		</div>
 	</div>
 </div>
+{/if}
+
